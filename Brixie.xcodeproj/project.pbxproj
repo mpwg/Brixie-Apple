@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		40E9B59C2E675D0200906173 /* RebrickableLegoAPIClient in Frameworks */ = {isa = PBXBuildFile; productRef = 40E9B59B2E675D0200906173 /* RebrickableLegoAPIClient */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		4024719A2E65926A001A8343 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40E9B59C2E675D0200906173 /* RebrickableLegoAPIClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = Brixie;
 			packageProductDependencies = (
+				40E9B59B2E675D0200906173 /* RebrickableLegoAPIClient */,
 			);
 			productName = Brixie;
 			productReference = 402471882E659269001A8343 /* Brixie.app */;
@@ -208,6 +214,9 @@
 			);
 			mainGroup = 4024717F2E659269001A8343;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				40E9B59A2E675D0200906173 /* XCRemoteSwiftPackageReference "Rebrickable-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 402471892E659269001A8343 /* Products */;
 			projectDirPath = "";
@@ -630,6 +639,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		40E9B59A2E675D0200906173 /* XCRemoteSwiftPackageReference "Rebrickable-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mpwg/Rebrickable-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		40E9B59B2E675D0200906173 /* RebrickableLegoAPIClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 40E9B59A2E675D0200906173 /* XCRemoteSwiftPackageReference "Rebrickable-swift" */;
+			productName = RebrickableLegoAPIClient;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 402471802E659269001A8343 /* Project object */;
 }
