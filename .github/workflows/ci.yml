@@ -14,34 +14,34 @@ concurrency:
 jobs:
   build-and-test:
     name: Build and Test (${{ matrix.platform }} - ${{ matrix.configuration }})
-    runs-on: macOS-15
+    runs-on: macOS-latest
     strategy:
       fail-fast: false
       matrix:
         destination: 
-          - platform=iOS Simulator,name=iPhone 16,OS=18.1
+          - platform=iOS Simulator,name=iPhone 16,OS=26.0
           - platform=macOS,arch=arm64
-          - platform=visionOS Simulator,name=Apple Vision Pro,OS=2.0
+          - platform=visionOS Simulator,name=Apple Vision Pro,OS=26.0
         configuration: [Debug, Release]
         include:
-          - destination: platform=iOS Simulator,name=iPhone 16,OS=18.1
+          - destination: platform=iOS Simulator,name=iPhone 16,OS=26.0
             scheme: Brixie
             platform: iOS
           - destination: platform=macOS,arch=arm64
             scheme: Brixie
             platform: macOS
-          - destination: platform=visionOS Simulator,name=Apple Vision Pro,OS=2.0
+          - destination: platform=visionOS Simulator,name=Apple Vision Pro,OS=26.0
             scheme: Brixie
             platform: visionOS
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '16.1'
+        xcode-version: latest-beta
 
     - name: Install xcpretty
       run: |
@@ -108,16 +108,16 @@ jobs:
 
   code-quality:
     name: Code Quality
-    runs-on: macOS-15
+    runs-on: macOS-latest
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '16.1'
+        xcode-version: latest-beta
 
     - name: Install Tools
       run: |
@@ -134,25 +134,25 @@ jobs:
         xcodebuild \
           -project Brixie.xcodeproj \
           -scheme Brixie \
-          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.1' \
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=26.0' \
           -configuration Debug \
           analyze \
           | xcpretty
 
   archive:
     name: Archive Build
-    runs-on: macOS-15
+    runs-on: macOS-latest
     needs: [build-and-test, code-quality]
     if: github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '16.1'
+        xcode-version: latest-beta
 
     - name: Install xcpretty
       run: |
