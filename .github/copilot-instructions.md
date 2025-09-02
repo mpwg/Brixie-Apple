@@ -15,7 +15,7 @@ Brixie is a modern multi-platform SwiftUI application for browsing and searching
 
 ### Prerequisites
 - Xcode 15.0+ with iOS 26.0+ SDK
-- macOS 14.0+ for development
+- macOS 15.0+ for development
 - Valid Rebrickable API key for runtime functionality
 
 ### Building
@@ -38,19 +38,19 @@ xcodebuild -project Brixie.xcodeproj -scheme Brixie clean build
 
 ```bash
 # Run unit tests (Swift Testing framework)
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15'
+xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26'
 
 # Run UI tests (XCTest framework)  
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:BrixieUITests
+xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26' -only-testing:BrixieUITests
 
 # Run specific unit test
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:BrixieTests/BrixieTests/example
+xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26' -only-testing:BrixieTests/BrixieTests/example
 ```
 
 **Test Framework Notes:**
 - `BrixieTests/`: Uses Swift Testing framework (`import Testing`, `@Test` annotations)
-- `BrixieUITests/`: Uses XCTest framework (`import XCTest`, `XCTestCase` classes)
-- Do NOT mix testing frameworks - unit tests use `#expect()`, UI tests use `XCTAssert()`
+- `BrixieUITests/`: Uses XCTest framework  (`import Testing`, `@Test` annotations)
+- Unit tests use `#expect()`
 
 ### Environment Setup
 1. Clone repository and open `Brixie.xcodeproj` in Xcode
