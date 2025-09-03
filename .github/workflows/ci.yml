@@ -73,7 +73,7 @@ jobs:
       run: xcodebuild	-showsdks
 
     - name: Xcode showdestinations 
-      run: xcodebuild	-showdestinations 
+      run: xcodebuild	-showdestinations -project Brixie.xcodeproj
      
     - name: Resolve Swift Package Dependencies
       run: |
