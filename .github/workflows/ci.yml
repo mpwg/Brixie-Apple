@@ -22,6 +22,9 @@ jobs:
       - name: Show Xcode Version
         run: xcodebuild -version
 
+      - name: List all destinations
+        run: instruments -s devices
+
       - name: Cache Swift Package Manager
         uses: actions/cache@v4
         with:
@@ -36,7 +39,7 @@ jobs:
         run: |
           echo "🔨 Building iOS App..."
           if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
-            -destination "platform=iOS Simulator,OS=26.0,name=iPhone 16" \
+            -destination generic/platform=iOS \
             build; then
             echo "✅ Build completed successfully"
           else
