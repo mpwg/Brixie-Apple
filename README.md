@@ -1,3 +1,13 @@
+[![iOS CI](https://github.com/mpwg/Brixie-Apple/actions/workflows/ci.yml/badge.svg)](https://github.com/mpwg/Brixie-Apple/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/mpwg/Brixie-Apple/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/mpwg/Brixie-Apple/actions/workflows/github-code-scanning/codeql)
+
+[![Dependabot Updates](https://github.com/mpwg/Brixie-Apple/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/mpwg/Brixie-Apple/actions/workflows/dependabot/dependabot-updates)
+
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Xcode 26](https://img.shields.io/badge/Xcode-26-orange.svg?logo=xcode&logoColor=f5f5f5)](https://swift.org)
+[![iOS](https://img.shields.io/badge/iOS-26+-lightgrey.svg?logo=apple)](https://developer.apple.com)
+[![macOS](https://img.shields.io/badge/macOS-26+-lightgrey.svg?logo=apple)](https://developer.apple.com)
+
 # Brixie
 
 A modern SwiftUI application for browsing and searching LEGO sets using the Rebrickable API.
