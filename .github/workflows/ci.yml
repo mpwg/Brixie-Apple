@@ -27,7 +27,7 @@ jobs:
           - destination: platform=iOS Simulator,name=Any iOS Device,OS=26.0
             scheme: Brixie
             platform: iOS
-          - destination: platform=macOS,arch=arm64
+          - destination: macOS,variant=Mac Catalyst,name=Any Mac
             scheme: Brixie
             platform: macOS
 #          - destination: platform=visionOS Simulator,name=Apple Vision Pro,OS=26.0
