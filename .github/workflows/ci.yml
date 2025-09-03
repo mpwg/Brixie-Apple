@@ -21,7 +21,6 @@ jobs:
         destination: 
           - platform=iOS Simulator,name=iPhone 16,OS=26.0
           - platform=macOS,variant=Mac Catalyst,name=Any Mac
- #         - platform=visionOS Simulator,name=Apple Vision Pro,OS=26.0
         configuration: [Debug, Release]
         include:
           - destination: platform=iOS Simulator,name=Any iOS Device,OS=26.0
@@ -30,10 +29,6 @@ jobs:
           - destination: macOS,variant=Mac Catalyst,name=Any Mac
             scheme: Brixie
             platform: macOS
-#          - destination: platform=visionOS Simulator,name=Apple Vision Pro,OS=26.0
-#            scheme: Brixie
-#            platform: visionOS
-
     steps:
     - name: Checkout
       uses: actions/checkout@v5
