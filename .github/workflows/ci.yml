@@ -22,9 +22,6 @@ jobs:
       - name: Show Xcode Version
         run: xcodebuild -version
 
-      - name: List all destinations
-        run: instruments -s devices
-
       - name: Cache Swift Package Manager
         uses: actions/cache@v4
         with:
