@@ -66,6 +66,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-derived-data-
 
+    - name: Xcode Version
+      run: xcodebuild -list
+
+    - name: Xcode SDKs
+      run: xcodebuild	-showsdks
+
+    - name: Xcode showdestinations 
+      run: xcodebuild	-showdestinations 
+     
     - name: Resolve Swift Package Dependencies
       run: |
         xcodebuild -resolvePackageDependencies -project Brixie.xcodeproj -scheme Brixie
