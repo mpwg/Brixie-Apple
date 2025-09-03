@@ -37,7 +37,7 @@ jobs:
           echo "🔨 Building iOS App..."
           if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
             -destination generic/platform=iOS \
-            build; then
+            build CODE_SIGNING_ALLOWED=NO; then
             echo "✅ Build completed successfully"
           else
             echo "❌ Build failed"
