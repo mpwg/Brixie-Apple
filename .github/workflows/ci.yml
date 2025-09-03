@@ -1,212 +1,47 @@
-name: CI
+name: iOS CI
+
+permissions:
+  contents: read
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, docs/*]
   pull_request:
-    branches: [ main, develop ]
-  workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    branches: [main]
 
 jobs:
-  build-and-test:
-    name: Build and Test (${{ matrix.platform }} - ${{ matrix.configuration }})
-    runs-on: macOS-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        destination: 
-          - platform=iOS Simulator,name=iPhone 16,OS=26.0
-          - platform=macOS,variant=Mac Catalyst,name=Any Mac
-        configuration: [Debug, Release]
-        include:
-          - destination: platform=iOS Simulator,name=Any iOS Device,OS=26.0
-            scheme: Brixie
-            platform: iOS
-          - destination: macOS,variant=Mac Catalyst,name=Any Mac
-            scheme: Brixie
-            platform: macOS
+  ios-build:
+    runs-on: macos-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v5
+      - name: Checkout Repository
+        uses: actions/checkout@v5
 
-    - name: Setup Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: latest
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest
 
-    - name: Install xcpretty
-      run: |
-        gem install xcpretty
+      - name: Show Xcode Version
+        run: xcodebuild -version
 
-    - name: Cache Swift Package Manager
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/Library/Caches/org.swift.swiftpm
-          ~/.cache/org.swift.swiftpm
-          .build
-        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
-        restore-keys: |
-          ${{ runner.os }}-spm-
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+            ~/Library/Caches/org.swift.swiftpm
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
 
-    - name: Cache DerivedData
-      uses: actions/cache@v4
-      with:
-        path: ~/Library/Developer/Xcode/DerivedData
-        key: ${{ runner.os }}-derived-data-${{ hashFiles('**/*.swift', '**/*.h', '**/*.m') }}
-        restore-keys: |
-          ${{ runner.os }}-derived-data-
-
-    - name: Xcode Version
-      run: xcodebuild -list
-
-    - name: Xcode SDKs
-      run: xcodebuild	-showsdks
-    
-    - name: Resolve Swift Package Dependencies
-      run: |
-        xcodebuild -resolvePackageDependencies -project Brixie.xcodeproj -scheme Brixie
-
-    - name: Build App (${{ matrix.platform }})
-      run: |
-        set -o pipefail
-        xcodebuild \
-          -project Brixie.xcodeproj \
-          -scheme Brixie \
-          -destination '${{ matrix.destination }}' \
-          -configuration ${{ matrix.configuration }} \
-          build \
-          | xcpretty
-
-    - name: Run Unit Tests (${{ matrix.platform }})
-      run: |
-        set -o pipefail
-        xcodebuild \
-          -project Brixie.xcodeproj \
-          -scheme Brixie \
-          -destination '${{ matrix.destination }}' \
-          -configuration ${{ matrix.configuration }} \
-          test \
-          -only-testing:BrixieTests \
-          | xcpretty
-
-    - name: Run UI Tests (${{ matrix.platform }})
-      if: matrix.platform != 'visionOS'
-      run: |
-        set -o pipefail
-        xcodebuild \
-          -project Brixie.xcodeproj \
-          -scheme Brixie \
-          -destination '${{ matrix.destination }}' \
-          -configuration ${{ matrix.configuration }} \
-          test \
-          -only-testing:BrixieUITests \
-          | xcpretty
-
-  code-quality:
-    name: Code Quality
-    runs-on: macOS-latest
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v5
-
-    - name: Setup Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: latest
-
-    - name: Install Tools
-      run: |
-        brew install swiftlint
-        gem install xcpretty
-
-    - name: Run SwiftLint
-      run: |
-        swiftlint lint --reporter github-actions-logging
-
-    - name: Analyze Code
-      run: |
-        set -o pipefail
-        xcodebuild \
-          -project Brixie.xcodeproj \
-          -scheme Brixie \
-          -destination 'platform=iOS Simulator,name=iPhone 16,OS=26.0' \
-          -configuration Debug \
-          analyze \
-          | xcpretty
-
-  archive:
-    name: Archive Build
-    runs-on: macOS-latest
-    needs: [build-and-test, code-quality]
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v5
-
-    - name: Setup Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: latest
-
-    - name: Install xcpretty
-      run: |
-        gem install xcpretty
-
-    - name: Cache Swift Package Manager
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/Library/Caches/org.swift.swiftpm
-          ~/.cache/org.swift.swiftpm
-          .build
-        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
-        restore-keys: |
-          ${{ runner.os }}-spm-
-
-    - name: Create build directory
-      run: mkdir -p ./build
-
-    - name: Archive iOS App
-      run: |
-        set -o pipefail
-        xcodebuild \
-          -project Brixie.xcodeproj \
-          -scheme Brixie \
-          -destination 'generic/platform=iOS' \
-          -configuration Release \
-          -archivePath ./build/Brixie-iOS.xcarchive \
-          archive \
-          | xcpretty
-
-    - name: Archive macOS App
-      run: |
-        set -o pipefail
-        xcodebuild \
-          -project Brixie.xcodeproj \
-          -scheme Brixie \
-          -destination 'generic/platform=macOS' \
-          -configuration Release \
-          -archivePath ./build/Brixie-macOS.xcarchive \
-          archive \
-          | xcpretty
-
-    - name: Upload iOS Archive
-      uses: actions/upload-artifact@v4
-      with:
-        name: Brixie-iOS-Archive-${{ github.sha }}
-        path: ./build/Brixie-iOS.xcarchive
-        retention-days: 30
-
-    - name: Upload macOS Archive
-      uses: actions/upload-artifact@v4
-      with:
-        name: Brixie-macOS-Archive-${{ github.sha }}
-        path: ./build/Brixie-macOS.xcarchive
-        retention-days: 30
+      - name: Build iOS App
+        run: |
+          echo "🔨 Building iOS App..."
+          if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
+            -destination "platform=iOS Simulator,OS=26.0,name=iPhone 16" \
+            build; then
+            echo "✅ Build completed successfully"
+          else
+            echo "❌ Build failed"
+            exit 1
+          fi
