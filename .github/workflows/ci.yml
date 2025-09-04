@@ -42,8 +42,7 @@ jobs:
           set -o pipefail
           if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
             -destination generic/platform=iOS \
-            build CODE_SIGNING_ALLOWED=NO \
-          | xcpretty; then
+            build CODE_SIGNING_ALLOWED=NO | xcpretty; then
             echo "✅ Build completed successfully"
           else
             echo "❌ Build failed"
