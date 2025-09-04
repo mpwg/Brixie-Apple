@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        buildname: [macOS]
+        buildname: [macOS, iOS]
         include:
           - destination: generic/platform=macOS
             buildname: macOS
