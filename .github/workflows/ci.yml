@@ -1,4 +1,4 @@
-name: iOS CI
+name: CI bUILDS
 
 permissions:
   contents: read
@@ -36,9 +36,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Build iOS App
+      - name: Build macOS App
         run: |
-          echo "🔨 Building iOS App..."
+          echo "🔨 Building macOS App..."
           set -o pipefail
           if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
             -destination generic/platform=macOS \
