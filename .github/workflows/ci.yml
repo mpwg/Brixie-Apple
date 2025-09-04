@@ -10,8 +10,13 @@ on:
     branches: [main]
 
 jobs:
-  ios-build:
-    runs-on: macos-latest
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest]
+        destination: [generic/platform=macOS]        
+    name: Build - ${{matrix.destination}} on ${{ matrix.os }}
+    runs-on:  ${{ matrix.os }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -41,7 +46,7 @@ jobs:
           echo "🔨 Building macOS App..."
           set -o pipefail
           if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
-            -destination generic/platform=macOS \
+            -destination $ {{matrix.destination}} \
             build CODE_SIGNING_ALLOWED=NO | xcpretty; then
             echo "✅ Build completed successfully"
           else
