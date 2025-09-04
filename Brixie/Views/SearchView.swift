@@ -51,11 +51,11 @@ struct SearchView: View {
                 .font(.system(size: 60))
                 .foregroundStyle(.gray)
             
-            Text("Search Not Available")
+            Text(NSLocalizedString("Search Not Available", comment: "Search not available title"))
                 .font(.title2)
                 .fontWeight(.semibold)
             
-            Text("Configure your API key in Settings to enable search")
+            Text(NSLocalizedString("Configure your API key in Settings to enable search", comment: "Search not available detail"))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -80,7 +80,7 @@ struct SearchView: View {
         VStack(alignment: .leading, spacing: 16) {
             if !recentSearches.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Recent Searches")
+                    Text(NSLocalizedString("Recent Searches", comment: "Recent searches heading"))
                         .font(.headline)
                         .padding(.horizontal)
                     
@@ -108,11 +108,11 @@ struct SearchView: View {
                     .font(.system(size: 60))
                     .foregroundStyle(.blue)
                 
-                Text("Search LEGO Sets")
+                Text(NSLocalizedString("Search LEGO Sets", comment: "Search screen title"))
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                Text("Search by set name, number, or theme")
+                Text(NSLocalizedString("Search by set name, number, or theme", comment: "Search prompt"))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -126,7 +126,7 @@ struct SearchView: View {
             ProgressView()
                 .scaleEffect(1.2)
             
-            Text("Searching...")
+            Text(NSLocalizedString("Searching...", comment: "Searching indicator"))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -138,11 +138,11 @@ struct SearchView: View {
                 .font(.system(size: 60))
                 .foregroundStyle(.gray)
             
-            Text("No Results")
+            Text(NSLocalizedString("No Results", comment: "No results title"))
                 .font(.title2)
                 .fontWeight(.semibold)
             
-            Text("No sets found for '\(searchText)'")
+            Text(String(format: NSLocalizedString("No sets found for '%@'", comment: "No results message"), searchText))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }

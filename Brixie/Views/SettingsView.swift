@@ -71,7 +71,7 @@ struct SettingsView: View {
             }
             
             Link(destination: URL(string: "https://rebrickable.com/api/")!) {
-                Label("Get API Key", systemImage: "link")
+                Label(NSLocalizedString("Get API Key", comment: "Get API Key link"), systemImage: "link")
             }
         }, header: {
             Text("API Configuration")
@@ -121,11 +121,11 @@ struct SettingsView: View {
             }
             
             Link(destination: URL(string: "https://brixie.net")!) {
-                Label("Visit Website", systemImage: "globe")
+                Label(NSLocalizedString("Visit Website", comment: "Visit website"), systemImage: "globe")
             }
             
             Link(destination: URL(string: "https://rebrickable.com")!) {
-                Label("Rebrickable", systemImage: "building.2")
+                Label(NSLocalizedString("Rebrickable", comment: "Rebrickable link"), systemImage: "building.2")
             }
         }, header: {
             Text("About")

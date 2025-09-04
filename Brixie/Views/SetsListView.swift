@@ -195,7 +195,7 @@ struct SetRowView: View {
                     .font(.headline)
                     .lineLimit(2)
                 
-                Text("Set #\(set.setNum)")
+                Text(String(format: NSLocalizedString("Set #%@", comment: "Set number display"), set.setNum))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
@@ -208,7 +208,7 @@ struct SetRowView: View {
                         .foregroundStyle(.blue)
                         .clipShape(Capsule())
                     
-                    Text("\(set.numParts) pieces")
+                    Text(String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -228,4 +228,19 @@ struct SetRowView: View {
 #Preview {
     SetsListView()
         .modelContainer(for: LegoSet.self, inMemory: true)
+}
+
+#Preview {
+    // Small preview for the row component used in lists
+    let sample = LegoSet(
+        setNum: "10294-1",
+        name: "Titanic",
+        year: 2021,
+        themeId: 1,
+        numParts: 9090
+    )
+
+    SetRowView(set: sample)
+        .padding()
+        .previewLayout(.sizeThatFits)
 }
