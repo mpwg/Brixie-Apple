@@ -49,7 +49,7 @@ jobs:
 
       - name: Build macOS App
         run: |
-          echo "🔨 Building macOS App..."
+          echo "🔨 Build - ${{matrix.buildname}} on ${{ matrix.os }}..."
           set -o pipefail
           if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
             -destination ${{matrix.destination}} \
