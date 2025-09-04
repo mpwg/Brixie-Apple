@@ -1,4 +1,4 @@
-name: iOS CI
+name: CI Builds
 
 permissions:
   contents: read
@@ -15,7 +15,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-
+        
+      - name: Install xcpretty
+        run: |
+          gem install xcpretty -v '0.3.0'
+        
       - name: Setup Xcode 26
         run: sudo xcode-select -switch /Applications/Xcode_26.0.app
 
@@ -32,12 +36,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Build iOS App
+      - name: Build macOS App
         run: |
-          echo "🔨 Building iOS App..."
+          echo "🔨 Building macOS App..."
+          set -o pipefail
           if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
-            -destination generic/platform=iOS \
-            build CODE_SIGNING_ALLOWED=NO; then
+            -destination generic/platform=macOS \
+            build CODE_SIGNING_ALLOWED=NO | xcpretty; then
             echo "✅ Build completed successfully"
           else
             echo "❌ Build failed"
