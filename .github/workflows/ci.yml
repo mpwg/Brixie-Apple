@@ -13,9 +13,13 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest]
-        destination: [generic/platform=macOS]
-    name: Build - ${{matrix.destination}} on ${{ matrix.os }}
+        buildname: [macOS]
+        include:
+          - destination: generic/platform=macOS
+            buildname: macOS
+          - os: macos-latest       
+
+    name: Build - ${{matrix.buildname}} on ${{ matrix.os }}
     runs-on:  ${{ matrix.os }}
     steps:
       - name: Checkout Repository
