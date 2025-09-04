@@ -13,10 +13,12 @@ jobs:
   build:
     strategy:
       matrix:
-        buildname: [macOS]
+        buildname: [macOS, iOS]
         include:
           - destination: generic/platform=macOS
             buildname: macOS
+          - destination: generic/platform=iOS
+            buildname: iOS
           - os: macos-latest       
 
     name: Build - ${{matrix.buildname}} on ${{ matrix.os }}
