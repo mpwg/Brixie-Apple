@@ -10,19 +10,35 @@ on:
     branches: [main]
 
 jobs:
-  ios-build:
-    runs-on: macos-latest
+  build:
+    strategy:
+      matrix:
+        buildname: [macOS, iOS]
+        include:
+          - destination: generic/platform=macOS
+            buildname: macOS
+          - destination: generic/platform=iOS
+            buildname: iOS
+          - os: macos-latest
+          - xcode: latest-stable
+    name: Build - ${{matrix.buildname}} on ${{ matrix.os }}
+    runs-on:  ${{ matrix.os }}
     steps:
+      - name: Setup Xcode ${{ matrix.xcode }}
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode }}
+      - name: List
+        run: |
+          xcrun simctl list
+          
       - name: Checkout Repository
         uses: actions/checkout@v5
         
       - name: Install xcpretty
         run: |
-          gem install xcpretty -v '0.3.0'
+          gem install xcpretty
         
-      - name: Setup Xcode 26
-        run: sudo xcode-select -switch /Applications/Xcode_26.0.app
-
       - name: Show Xcode Version
         run: xcodebuild -version
 
@@ -36,12 +52,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Build macOS App
+      - name: Build ${{matrix.buildname}} App
         run: |
-          echo "🔨 Building macOS App..."
+          echo "🔨 Build - ${{matrix.buildname}} on ${{ matrix.os }}..."
           set -o pipefail
           if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
-            -destination generic/platform=macOS \
+            -destination ${{matrix.destination}} \
             build CODE_SIGNING_ALLOWED=NO | xcpretty; then
             echo "✅ Build completed successfully"
           else
