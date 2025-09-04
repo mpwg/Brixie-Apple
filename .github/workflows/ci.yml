@@ -16,9 +16,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      - name: Install xcpretty
-        run: |
-          gem install xcpretty
+          gem install xcpretty -v '0.3.0'
         
       - name: Setup Xcode 26
         run: sudo xcode-select -switch /Applications/Xcode_26.0.app
