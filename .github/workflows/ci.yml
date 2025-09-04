@@ -21,6 +21,7 @@ jobs:
             buildname: iOS
           - os: macos-latest
           - xcode: latest
+          - xcpretty: 0.3.0
     name: Build - ${{matrix.buildname}} on ${{ matrix.os }}
     runs-on:  ${{ matrix.os }}
     steps:
@@ -34,7 +35,7 @@ jobs:
         
       - name: Install xcpretty
         run: |
-          gem install xcpretty -v '0.3.0'
+          gem install xcpretty -v ${{ matrix.xcpretty }}'
         
       - name: Show Xcode Version
         run: xcodebuild -version
