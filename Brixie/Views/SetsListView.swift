@@ -229,3 +229,18 @@ struct SetRowView: View {
     SetsListView()
         .modelContainer(for: LegoSet.self, inMemory: true)
 }
+
+#Preview {
+    // Small preview for the row component used in lists
+    let sample = LegoSet(
+        setNum: "10294-1",
+        name: "Titanic",
+        year: 2021,
+        themeId: 1,
+        numParts: 9090
+    )
+
+    SetRowView(set: sample)
+        .padding()
+        .previewLayout(.sizeThatFits)
+}

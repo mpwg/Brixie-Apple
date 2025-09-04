@@ -113,6 +113,18 @@ class ImageCacheService {
     }
 }
 
+#Preview {
+    Group {
+        AsyncCachedImage(urlString: nil)
+            .previewDisplayName("Placeholder")
+            .frame(width: 100, height: 100)
+
+        AsyncCachedImage(urlString: "https://via.placeholder.com/150")
+            .previewDisplayName("Remote Image")
+            .frame(width: 150, height: 150)
+    }
+}
+
 // SwiftUI Image extension for easy async loading
 struct AsyncCachedImage: View {
     let urlString: String?

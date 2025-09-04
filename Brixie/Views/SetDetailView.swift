@@ -268,3 +268,35 @@ struct FullScreenImageView: View {
     }
     .modelContainer(for: LegoSet.self, inMemory: true)
 }
+
+#Preview {
+    // Preview for InfoRow
+    VStack {
+        InfoRow(label: "Set Number", value: "10294-1")
+        Divider()
+        InfoRow(label: "Year", value: "2021")
+    }
+    .padding()
+    .previewLayout(.sizeThatFits)
+}
+
+#Preview {
+    // Preview for StatCard
+    HStack(spacing: 12) {
+        StatCard(title: "Pieces", value: "9090", icon: "cube.box", color: .blue)
+        StatCard(title: "Year", value: "2021", icon: "calendar", color: .green)
+    }
+    .padding()
+    .previewLayout(.sizeThatFits)
+}
+
+#Preview {
+    // Preview for FullScreenImageView with a nil and a sample URL
+    Group {
+        FullScreenImageView(imageURL: nil)
+            .previewDisplayName("No Image")
+
+        FullScreenImageView(imageURL: "https://example.com/image.jpg")
+            .previewDisplayName("With Image")
+    }
+}
