@@ -73,7 +73,7 @@ struct SetDetailView: View {
                 }
             
             if set.imageURL != nil {
-                Text("Tap to view full size")
+                Text(NSLocalizedString("Tap to view full size", comment: "Hint for image tap"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -82,7 +82,7 @@ struct SetDetailView: View {
     
     private var setInfoView: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Set Information")
+            Text(NSLocalizedString("Set Information", comment: "Set information heading"))
                 .font(.title2)
                 .fontWeight(.semibold)
             
@@ -103,7 +103,7 @@ struct SetDetailView: View {
     
     private var statisticsView: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Statistics")
+            Text(NSLocalizedString("Statistics", comment: "Statistics heading"))
                 .font(.title2)
                 .fontWeight(.semibold)
             
@@ -121,7 +121,7 @@ struct SetDetailView: View {
                     icon: "calendar",
                     color: .green
                 )
-                
+
                 if let lastViewed = set.lastViewed {
                     StatCard(
                         title: "Last Viewed",
@@ -146,15 +146,15 @@ struct SetDetailView: View {
             Button {
                 toggleFavorite()
             } label: {
-                Label(isFavorite ? "Remove from Favorites" : "Add to Favorites", 
-                      systemImage: isFavorite ? "heart.slash" : "heart")
+                                Label(isFavorite ? NSLocalizedString("Remove from Favorites", comment: "Remove favorite action") : NSLocalizedString("Add to Favorites", comment: "Add favorite action"),
+                                            systemImage: isFavorite ? "heart.slash" : "heart")
             }
             .buttonStyle(.borderedProminent)
             .tint(isFavorite ? .red : .blue)
             
             if let imageURL = set.imageURL {
                 ShareLink(item: URL(string: imageURL)!) {
-                    Label("Share Image", systemImage: "square.and.arrow.up")
+                                        Label(NSLocalizedString("Share Image", comment: "Share image action"), systemImage: "square.and.arrow.up")
                 }
                 .buttonStyle(.bordered)
             }

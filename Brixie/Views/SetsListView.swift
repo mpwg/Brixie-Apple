@@ -195,7 +195,7 @@ struct SetRowView: View {
                     .font(.headline)
                     .lineLimit(2)
                 
-                Text("Set #\(set.setNum)")
+                Text(String(format: NSLocalizedString("Set #%@", comment: "Set number display"), set.setNum))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
@@ -208,7 +208,7 @@ struct SetRowView: View {
                         .foregroundStyle(.blue)
                         .clipShape(Capsule())
                     
-                    Text("\(set.numParts) pieces")
+                    Text(String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

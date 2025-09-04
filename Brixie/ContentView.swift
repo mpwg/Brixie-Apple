@@ -16,25 +16,25 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             SetsListView()
                 .tabItem {
-                    Label("Sets", systemImage: "building.2")
+                    Label(NSLocalizedString("Sets", comment: "Tab label for sets"), systemImage: "building.2")
                 }
                 .tag(0)
             
             SearchView()
                 .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
+                    Label(NSLocalizedString("Search", comment: "Tab label for search"), systemImage: "magnifyingglass")
                 }
                 .tag(1)
             
             FavoritesView()
                 .tabItem {
-                    Label("Favorites", systemImage: "heart")
+                    Label(NSLocalizedString("Favorites", comment: "Tab label for favorites"), systemImage: "heart")
                 }
                 .tag(2)
             
             SettingsView()
                 .tabItem {
-                    Label("Settings", systemImage: "gear")
+                    Label(NSLocalizedString("Settings", comment: "Tab label for settings"), systemImage: "gear")
                 }
                 .tag(3)
         }
