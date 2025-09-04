@@ -1,4 +1,4 @@
-name: CI bUILDS
+name: CI Builds
 
 permissions:
   contents: read
