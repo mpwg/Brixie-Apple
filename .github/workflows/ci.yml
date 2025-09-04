@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        destination: [generic/platform=macOS]        
+        destination: [generic/platform=macOS]
     name: Build - ${{matrix.destination}} on ${{ matrix.os }}
     runs-on:  ${{ matrix.os }}
     steps:
