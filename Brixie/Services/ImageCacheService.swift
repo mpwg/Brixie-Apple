@@ -7,22 +7,16 @@
 
 import Foundation
 import SwiftUI
-
-#if canImport(UIKit)
 import UIKit
-#endif
-
-#if canImport(AppKit)
-import AppKit
-#endif
 
 @Observable
-class ImageCacheService {
+final class ImageCacheService: @unchecked Sendable {
     static let shared = ImageCacheService()
     
     private let cache = NSCache<NSString, UIImage>()
     private let fileManager = FileManager.default
     private let cacheDirectory: URL
+    private let queue = DispatchQueue(label: "com.brixie.imagecache", qos: .utility)
     
     private init() {
         // Set up cache directory
@@ -39,7 +33,14 @@ class ImageCacheService {
     
     func loadImage(from urlString: String) async -> UIImage? {
         // Check memory cache first
-        if let cachedImage = cache.object(forKey: NSString(string: urlString)) {
+        let cachedImage = await withCheckedContinuation { continuation in
+            queue.async {
+                let image = self.cache.object(forKey: NSString(string: urlString))
+                continuation.resume(returning: image)
+            }
+        }
+        
+        if let cachedImage = cachedImage {
             return cachedImage
         }
         
@@ -50,7 +51,12 @@ class ImageCacheService {
         if let imageData = try? Data(contentsOf: fileURL),
            let image = UIImage(data: imageData) {
             // Store in memory cache
-            cache.setObject(image, forKey: NSString(string: urlString))
+            await withCheckedContinuation { continuation in
+                queue.async {
+                    self.cache.setObject(image, forKey: NSString(string: urlString))
+                    continuation.resume()
+                }
+            }
             return image
         }
         
@@ -66,7 +72,12 @@ class ImageCacheService {
             guard let image = UIImage(data: data) else { return nil }
             
             // Store in memory cache
-            cache.setObject(image, forKey: NSString(string: urlString))
+            await withCheckedContinuation { continuation in
+                queue.async {
+                    self.cache.setObject(image, forKey: NSString(string: urlString))
+                    continuation.resume()
+                }
+            }
             
             // Store in disk cache
             let cacheKey = urlString.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? urlString
@@ -85,7 +96,9 @@ class ImageCacheService {
     }
     
     func clearCache() {
-        cache.removeAllObjects()
+        queue.sync {
+            cache.removeAllObjects()
+        }
         
         // Clear disk cache
         do {
