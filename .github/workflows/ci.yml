@@ -13,27 +13,29 @@ jobs:
   build:
     strategy:
       matrix:
-        buildname: [macOS, iOS]
+        buildname: [macOS]
         include:
           - destination: generic/platform=macOS
             buildname: macOS
           - destination: generic/platform=iOS
             buildname: iOS
           - os: macos-latest
+          - xcode: latest
+          - xcpretty: 0.3.0
     name: Build - ${{matrix.buildname}} on ${{ matrix.os }}
     runs-on:  ${{ matrix.os }}
     steps:
-      - name: Setup Xcode 
+      - name: Setup Xcode ${{ matrix.xcode }}
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest
+          xcode-version: ${{ matrix.xcode }}
           
       - name: Checkout Repository
         uses: actions/checkout@v5
         
       - name: Install xcpretty
         run: |
-          gem install xcpretty -v '0.3.0'
+          gem install xcpretty -v ${{ matrix.xcpretty }}'
         
       - name: Show Xcode Version
         run: xcodebuild -version
