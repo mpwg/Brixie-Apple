@@ -39,7 +39,7 @@ jobs:
           echo "🔨 Building iOS App..."
           set -o pipefail
           if xcodebuild -project Brixie.xcodeproj -scheme Brixie \
-            -destination generic/platform=iOS \
+            -destination generic/platform=macOS \
             build CODE_SIGNING_ALLOWED=NO | xcpretty; then
             echo "✅ Build completed successfully"
           else
