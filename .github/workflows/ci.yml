@@ -19,11 +19,16 @@ jobs:
             buildname: macOS
           - destination: generic/platform=iOS
             buildname: iOS
-          - os: macos-latest       
+          - os: macos-latest
+          - xcode: latest
 
     name: Build - ${{matrix.buildname}} on ${{ matrix.os }}
     runs-on:  ${{ matrix.os }}
     steps:
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{xcode}}
+          
       - name: Checkout Repository
         uses: actions/checkout@v5
         
@@ -31,9 +36,6 @@ jobs:
         run: |
           gem install xcpretty -v '0.3.0'
         
-      - name: Setup Xcode 26
-        run: sudo xcode-select -switch /Applications/Xcode_26.0.app
-
       - name: Show Xcode Version
         run: xcodebuild -version
 
@@ -47,7 +49,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Build macOS App
+      - name: Build ${{matrix.buildname}} App
         run: |
           echo "🔨 Build - ${{matrix.buildname}} on ${{ matrix.os }}..."
           set -o pipefail
