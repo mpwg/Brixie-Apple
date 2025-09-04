@@ -35,7 +35,7 @@ jobs:
         
       - name: Install xcpretty
         run: |
-          gem install xcpretty -v ${{ matrix.xcpretty }}'
+          gem install xcpretty -v '${{ matrix.xcpretty }}'
         
       - name: Show Xcode Version
         run: xcodebuild -version
