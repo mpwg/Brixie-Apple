@@ -276,25 +276,72 @@ struct RangeSlider: View {
     @Binding var range: ClosedRange<Int>
     let bounds: ClosedRange<Int>
     
+    @State private var isDraggingLower = false
+    @State private var isDraggingUpper = false
+    
     var body: some View {
         GeometryReader { geometry in
             let totalRange = bounds.upperBound - bounds.lowerBound
             let lowerPercent = Double(range.lowerBound - bounds.lowerBound) / Double(totalRange)
             let upperPercent = Double(range.upperBound - bounds.lowerBound) / Double(totalRange)
+            let sliderHeight: CGFloat = 4
+            let handleDiameter: CGFloat = 24
             
             ZStack(alignment: .leading) {
+                // Track
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))
-                    .frame(height: 4)
+                    .frame(height: sliderHeight)
                 
+                // Selected range
                 Rectangle()
                     .fill(Color.blue)
-                    .frame(width: geometry.size.width * (upperPercent - lowerPercent))
-                    .offset(x: geometry.size.width * lowerPercent)
-                    .frame(height: 4)
+                    .frame(width: geometry.size.width * CGFloat(upperPercent - lowerPercent))
+                    .offset(x: geometry.size.width * CGFloat(lowerPercent))
+                    .frame(height: sliderHeight)
+                
+                // Lower handle
+                Circle()
+                    .fill(isDraggingLower ? Color.blue : Color.white)
+                    .overlay(Circle().stroke(Color.blue, lineWidth: 2))
+                    .frame(width: handleDiameter, height: handleDiameter)
+                    .offset(x: geometry.size.width * CGFloat(lowerPercent) - handleDiameter / 2)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                isDraggingLower = true
+                                let x = min(max(0, value.location.x), geometry.size.width)
+                                let percent = x / geometry.size.width
+                                let newLower = Int(round(percent * Double(totalRange))) + bounds.lowerBound
+                                range = max(bounds.lowerBound, min(newLower, range.upperBound - 1))...range.upperBound
+                            }
+                            .onEnded { _ in
+                                isDraggingLower = false
+                            }
+                    )
+                
+                // Upper handle
+                Circle()
+                    .fill(isDraggingUpper ? Color.blue : Color.white)
+                    .overlay(Circle().stroke(Color.blue, lineWidth: 2))
+                    .frame(width: handleDiameter, height: handleDiameter)
+                    .offset(x: geometry.size.width * CGFloat(upperPercent) - handleDiameter / 2)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                isDraggingUpper = true
+                                let x = min(max(0, value.location.x), geometry.size.width)
+                                let percent = x / geometry.size.width
+                                let newUpper = Int(round(percent * Double(totalRange))) + bounds.lowerBound
+                                range = range.lowerBound...min(bounds.upperBound, max(newUpper, range.lowerBound + 1))
+                            }
+                            .onEnded { _ in
+                                isDraggingUpper = false
+                            }
+                    )
             }
         }
-        .frame(height: 20)
+        .frame(height: 32)
     }
 }
 
