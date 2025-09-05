@@ -10,7 +10,7 @@ import SwiftData
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @AppStorage("rebrickableAPIKey") private var apiKey = ""
+    @StateObject private var apiKeyManager = APIKeyManager.shared
     @State private var showingAPIKeyAlert = false
     @State private var showingClearCacheAlert = false
     @State private var cacheSize = "Calculating..."
@@ -26,7 +26,7 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.large)
         }
         .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            TextField("Rebrickable API Key", text: $apiKey)
+            TextField("Rebrickable API Key", text: $apiKeyManager.apiKey)
             Button("Save") { }
             Button("Cancel", role: .cancel) { }
         } message: {
@@ -51,7 +51,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading) {
                     Text("API Key")
                         .fontWeight(.medium)
-                    if apiKey.isEmpty {
+                    if !apiKeyManager.hasValidAPIKey {
                         Text("Not configured")
                             .font(.caption)
                             .foregroundStyle(.secondary)

@@ -10,6 +10,7 @@ import SwiftData
 
 struct CategoriesView: View {
     @Environment(\.modelContext) private var modelContext
+    @StateObject private var apiKeyManager = APIKeyManager.shared
     @State private var themeService: LegoThemeService?
     @State private var themes: [LegoTheme] = []
     @State private var searchText = ""
@@ -98,8 +99,7 @@ struct CategoriesView: View {
     private func initializeService() async {
         guard themeService == nil else { return }
         
-        let apiKey = UserDefaults.standard.string(forKey: "RebrickableAPIKey") ?? ""
-        themeService = LegoThemeService(modelContext: modelContext, apiKey: apiKey)
+        themeService = LegoThemeService(modelContext: modelContext, apiKey: apiKeyManager.apiKey)
         
         let cachedThemes = themeService?.getCachedThemes() ?? []
         if !cachedThemes.isEmpty {

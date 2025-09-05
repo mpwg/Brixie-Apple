@@ -12,6 +12,7 @@ struct CategoryDetailView: View {
     let theme: LegoTheme
     
     @Environment(\.modelContext) private var modelContext
+    @StateObject private var apiKeyManager = APIKeyManager.shared
     @State private var themeService: LegoThemeService?
     @State private var sets: [LegoSet] = []
     @State private var searchText = ""
@@ -165,8 +166,7 @@ struct CategoryDetailView: View {
     private func initializeService() async {
         guard themeService == nil else { return }
         
-        let apiKey = UserDefaults.standard.string(forKey: "RebrickableAPIKey") ?? ""
-        themeService = LegoThemeService(modelContext: modelContext, apiKey: apiKey)
+        themeService = LegoThemeService(modelContext: modelContext, apiKey: apiKeyManager.apiKey)
         
         await loadSets(reset: true)
     }

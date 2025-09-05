@@ -10,7 +10,7 @@ import SwiftData
 
 struct SearchView: View {
     @Environment(\.modelContext) private var modelContext
-    @AppStorage("rebrickableAPIKey") private var apiKey = ""
+    @StateObject private var apiKeyManager = APIKeyManager.shared
     @State private var searchText = ""
     @State private var searchResults: [LegoSet] = []
     @State private var isSearching = false
@@ -21,7 +21,7 @@ struct SearchView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                if legoSetService == nil {
+                if !apiKeyManager.hasValidAPIKey {
                     noServiceView
                 } else {
                     searchContentView
@@ -160,8 +160,8 @@ struct SearchView: View {
     }
     
     private func setupServiceIfNeeded() {
-        if !apiKey.isEmpty && legoSetService == nil {
-            legoSetService = LegoSetService(modelContext: modelContext, apiKey: apiKey)
+        if apiKeyManager.hasValidAPIKey && legoSetService == nil {
+            legoSetService = LegoSetService(modelContext: modelContext, apiKey: apiKeyManager.apiKey)
         }
     }
     

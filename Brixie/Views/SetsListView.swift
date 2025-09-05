@@ -12,7 +12,7 @@ struct SetsListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \LegoSet.year, order: .reverse) private var cachedSets: [LegoSet]
     
-    @AppStorage("rebrickableAPIKey") private var apiKey = ""
+    @StateObject private var apiKeyManager = APIKeyManager.shared
     @State private var legoSetService: LegoSetService?
     @State private var sets: [LegoSet] = []
     @State private var showingAPIKeyAlert = false
@@ -22,7 +22,7 @@ struct SetsListView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if legoSetService == nil {
+                if !apiKeyManager.hasValidAPIKey {
                     apiKeyPromptView
                 } else if sets.isEmpty && !cachedSets.isEmpty {
                     cachedSetsView
@@ -43,7 +43,7 @@ struct SetsListView: View {
             }
         }
         .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            TextField("Rebrickable API Key", text: $apiKey)
+            TextField("Rebrickable API Key", text: $apiKeyManager.apiKey)
             Button("Save") {
                 setupService()
             }
@@ -52,7 +52,7 @@ struct SetsListView: View {
             Text("Enter your Rebrickable API key to fetch LEGO sets")
         }
         .onAppear {
-            if legoSetService == nil && !apiKey.isEmpty {
+            if legoSetService == nil && apiKeyManager.hasValidAPIKey {
                 setupService()
             }
         }
@@ -142,7 +142,7 @@ struct SetsListView: View {
     }
     
     private func setupService() {
-        legoSetService = LegoSetService(modelContext: modelContext, apiKey: apiKey)
+        legoSetService = LegoSetService(modelContext: modelContext, apiKey: apiKeyManager.apiKey)
         Task {
             await loadSets()
         }
