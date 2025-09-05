@@ -39,7 +39,7 @@ class LegoThemeService {
                     id: apiTheme.id,
                     name: apiTheme.name,
                     parentId: apiTheme.parentId,
-                    setCount: apiTheme.setCount ?? 0
+                    setCount: 0 //TODO: FIXME!
                 )
             }
             
