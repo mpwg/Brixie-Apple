@@ -64,7 +64,7 @@ struct CategoryDetailView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 if let service = themeService {
                     if service.isLoading && sets.isEmpty {
