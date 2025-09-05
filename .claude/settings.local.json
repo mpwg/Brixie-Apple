@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xcodebuild:*)"
+      "Bash(xcodebuild:*)",
+      "Bash(find:*)",
+      "Read(//Users/mat/Library/Developer/Xcode/DerivedData/**)",
+      "WebFetch(domain:github.com)",
+      "Read(//private/tmp/**)",
+      "Read(//tmp/Rebrickable-swift/Sources/RebrickableLegoAPIClient/Models/**)",
+      "Read(//tmp/Rebrickable-swift/Sources/RebrickableLegoAPIClient/APIs/**)",
+      "Read(//tmp/Rebrickable-swift/**)"
     ],
     "deny": [],
     "ask": []

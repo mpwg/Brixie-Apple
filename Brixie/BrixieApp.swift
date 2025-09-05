@@ -13,6 +13,7 @@ struct BrixieApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             LegoSet.self,
+            LegoTheme.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
