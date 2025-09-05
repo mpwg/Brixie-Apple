@@ -21,16 +21,49 @@ struct SearchView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                if !apiKeyManager.hasValidAPIKey {
-                    noServiceView
-                } else {
-                    searchContentView
+            ZStack {
+                Color.brixieBackground
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 0) {
+                    if !apiKeyManager.hasValidAPIKey {
+                        noServiceView
+                    } else {
+                        searchContentView
+                    }
                 }
             }
-            .navigationTitle("Search Sets")
-            .navigationBarTitleDisplayMode(.large)
-            .searchable(text: $searchText, prompt: "Search LEGO sets...")
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("Search Sets")
+                        .font(.brixieTitle)
+                        .foregroundStyle(.brixieText)
+                }
+            }
+            .searchable(text: $searchText, prompt: "Search LEGO sets...") {
+                if !recentSearches.isEmpty {
+                    Section("Recent Searches") {
+                        ForEach(recentSearches, id: \.self) { search in
+                            Button {
+                                searchText = search
+                                performSearch()
+                            } label: {
+                                HStack {
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(.brixieAccent)
+                                    Text(search)
+                                        .foregroundStyle(.brixieText)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                    }
+                }
+            }
             .onSubmit(of: .search) {
                 performSearch()
             }
@@ -56,25 +89,23 @@ struct SearchView: View {
     }
     
     private var noServiceView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 60))
-                .foregroundStyle(.gray)
-            
-            Text(NSLocalizedString("Search Not Available", comment: "Search not available title"))
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text(NSLocalizedString("Configure your API key to enable search", comment: "Search not available detail"))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            
-            Button("Enter API Key") {
-                showingAPIKeyAlert = true
+        BrixieHeroSection(
+            title: "Search LEGO Sets",
+            subtitle: "Find your favorite LEGO sets by name, number, or theme. Connect your API key to get started.",
+            icon: "magnifyingglass.circle.fill"
+        ) {
+            VStack(spacing: 16) {
+                Button("Connect API Key") {
+                    showingAPIKeyAlert = true
+                }
+                .buttonStyle(BrixieButtonStyle(variant: .primary))
+                
+                Button("Browse Categories") {
+                    // Navigate to categories
+                }
+                .buttonStyle(BrixieButtonStyle(variant: .ghost))
             }
-            .buttonStyle(.borderedProminent)
         }
-        .padding()
     }
     
     private var searchContentView: some View {
@@ -82,95 +113,118 @@ struct SearchView: View {
             if searchText.isEmpty {
                 recentSearchesView
             } else if isSearching {
-                loadingView
+                modernLoadingView
             } else if searchResults.isEmpty && showingNoResults {
-                noResultsView
+                modernNoResultsView
             } else {
-                searchResultsView
+                modernSearchResultsView
             }
         }
     }
     
     private var recentSearchesView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            if !recentSearches.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(NSLocalizedString("Recent Searches", comment: "Recent searches heading"))
-                        .font(.headline)
-                        .padding(.horizontal)
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack(spacing: 8) {
-                            ForEach(recentSearches, id: \.self) { search in
-                                Button(search) {
-                                    searchText = search
-                                    performSearch()
-                                }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(.blue.opacity(0.1))
-                                .foregroundStyle(.blue)
-                                .clipShape(Capsule())
-                            }
+        ScrollView {
+            VStack(spacing: 24) {
+                if !recentSearches.isEmpty {
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text(NSLocalizedString("Recent Searches", comment: "Recent searches heading"))
+                                .font(.brixieHeadline)
+                                .foregroundStyle(.brixieText)
+                            Spacer()
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            LazyHStack(spacing: 12) {
+                                ForEach(recentSearches, id: \.self) { search in
+                                    Button {
+                                        searchText = search
+                                        performSearch()
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "clock.arrow.circlepath")
+                                                .font(.system(size: 10))
+                                                .foregroundStyle(.brixieAccent)
+                                            Text(search)
+                                                .font(.brixieCaption)
+                                                .foregroundStyle(.brixieAccent)
+                                        }
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            Capsule()
+                                                .fill(.brixieAccent.opacity(0.15))
+                                                .overlay(
+                                                    Capsule()
+                                                        .stroke(.brixieAccent.opacity(0.3), lineWidth: 1)
+                                                )
+                                        )
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                        }
                     }
                 }
-            }
-            
-            VStack(spacing: 20) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 60))
-                    .foregroundStyle(.blue)
                 
-                Text(NSLocalizedString("Search LEGO Sets", comment: "Search screen title"))
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                
-                Text(NSLocalizedString("Search by set name, number, or theme", comment: "Search prompt"))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
-    
-    private var loadingView: some View {
-        VStack(spacing: 20) {
-            ProgressView()
-                .scaleEffect(1.2)
-            
-            Text(NSLocalizedString("Searching...", comment: "Searching indicator"))
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    private var noResultsView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "questionmark.circle")
-                .font(.system(size: 60))
-                .foregroundStyle(.gray)
-            
-            Text(NSLocalizedString("No Results", comment: "No results title"))
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text(String(format: NSLocalizedString("No sets found for '%@'", comment: "No results message"), searchText))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding()
-    }
-    
-    private var searchResultsView: some View {
-        List {
-            ForEach(searchResults) { set in
-                NavigationLink(destination: SetDetailView(set: set)) {
-                    SetRowView(set: set)
+                BrixieHeroSection(
+                    title: "Discover LEGO Sets",
+                    subtitle: "Search through thousands of LEGO sets by name, number, or theme to find your next build.",
+                    icon: "magnifyingglass"
+                ) {
+                    EmptyView()
                 }
             }
+            .padding(.top, 20)
+        }
+    }
+    
+    private var modernLoadingView: some View {
+        BrixieHeroSection(
+            title: "Searching...",
+            subtitle: "Finding the perfect LEGO sets for you",
+            icon: "magnifyingglass"
+        ) {
+            BrixieLoadingView()
+        }
+    }
+    
+    private var modernNoResultsView: some View {
+        BrixieHeroSection(
+            title: "No Results Found",
+            subtitle: String(format: NSLocalizedString("No sets found for '%@'. Try a different search term.", comment: "No results message"), searchText),
+            icon: "magnifyingglass"
+        ) {
+            Button("Clear Search") {
+                searchText = ""
+                searchResults = []
+                showingNoResults = false
+            }
+            .buttonStyle(BrixieButtonStyle(variant: .secondary))
+        }
+    }
+    
+    private var modernSearchResultsView: some View {
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                HStack {
+                    Text("\(searchResults.count) results")
+                        .font(.brixieSubhead)
+                        .foregroundStyle(.brixieTextSecondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                
+                ForEach(searchResults) { set in
+                    NavigationLink(destination: SetDetailView(set: set)) {
+                        ModernSetRowView(set: set)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding(.horizontal, 20)
         }
     }
     
