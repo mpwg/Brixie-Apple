@@ -46,7 +46,7 @@ struct CategoriesView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 if !apiKeyManager.hasValidAPIKey {
                     apiKeyPromptView
