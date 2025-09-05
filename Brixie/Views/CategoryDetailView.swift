@@ -158,7 +158,9 @@ struct CategoryDetailView: View {
             }
         }
         .task {
-            await initializeService()
+            if apiKeyManager.hasValidAPIKey {
+                await initializeService()
+            }
         }
     }
     

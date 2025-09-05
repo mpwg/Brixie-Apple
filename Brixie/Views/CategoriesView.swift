@@ -15,6 +15,7 @@ struct CategoriesView: View {
     @State private var themes: [LegoTheme] = []
     @State private var searchText = ""
     @State private var sortOrder: SortOrder = .name
+    @State private var showingAPIKeyAlert = false
     
     enum SortOrder: String, CaseIterable {
         case name = "Name"
@@ -47,7 +48,9 @@ struct CategoriesView: View {
     var body: some View {
         NavigationView {
             VStack {
-                if let service = themeService {
+                if !apiKeyManager.hasValidAPIKey {
+                    apiKeyPromptView
+                } else if let service = themeService {
                     if service.isLoading && themes.isEmpty {
                         ProgressView(NSLocalizedString("Loading categories...", comment: "Loading message"))
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -78,21 +81,63 @@ struct CategoriesView: View {
             .navigationTitle(NSLocalizedString("Categories", comment: "Navigation title"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Picker(NSLocalizedString("Sort by", comment: "Sort picker label"), selection: $sortOrder) {
-                            ForEach(SortOrder.allCases, id: \.self) { order in
-                                Text(order.localizedString).tag(order)
-                            }
+                    HStack {
+                        Button("Settings") {
+                            showingAPIKeyAlert = true
                         }
-                    } label: {
-                        Image(systemName: "arrow.up.arrow.down")
+                        
+                        Menu {
+                            Picker(NSLocalizedString("Sort by", comment: "Sort picker label"), selection: $sortOrder) {
+                                ForEach(SortOrder.allCases, id: \.self) { order in
+                                    Text(order.localizedString).tag(order)
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "arrow.up.arrow.down")
+                        }
                     }
                 }
             }
         }
         .task {
-            await initializeService()
+            if apiKeyManager.hasValidAPIKey {
+                await initializeService()
+            }
         }
+        .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
+            TextField("Rebrickable API Key", text: $apiKeyManager.apiKey)
+            Button("Save") {
+                Task {
+                    await initializeService()
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Enter your Rebrickable API key to fetch LEGO categories")
+        }
+    }
+    
+    private var apiKeyPromptView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "key.fill")
+                .font(.system(size: 60))
+                .foregroundStyle(.blue)
+            
+            Text("API Key Required")
+                .font(.title2)
+                .fontWeight(.semibold)
+            
+            Text("To view LEGO categories, you need a Rebrickable API key. Get one for free at rebrickable.com")
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+            
+            Button("Enter API Key") {
+                showingAPIKeyAlert = true
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
     }
     
     @MainActor

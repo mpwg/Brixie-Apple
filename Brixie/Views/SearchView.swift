@@ -17,6 +17,7 @@ struct SearchView: View {
     @State private var legoSetService: LegoSetService?
     @State private var recentSearches: [String] = []
     @State private var showingNoResults = false
+    @State private var showingAPIKeyAlert = false
     
     var body: some View {
         NavigationStack {
@@ -43,6 +44,15 @@ struct SearchView: View {
         .onAppear {
             setupServiceIfNeeded()
         }
+        .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
+            TextField("Rebrickable API Key", text: $apiKeyManager.apiKey)
+            Button("Save") {
+                setupServiceIfNeeded()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Enter your Rebrickable API key to search LEGO sets")
+        }
     }
     
     private var noServiceView: some View {
@@ -55,9 +65,14 @@ struct SearchView: View {
                 .font(.title2)
                 .fontWeight(.semibold)
             
-            Text(NSLocalizedString("Configure your API key in Settings to enable search", comment: "Search not available detail"))
+            Text(NSLocalizedString("Configure your API key to enable search", comment: "Search not available detail"))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+            
+            Button("Enter API Key") {
+                showingAPIKeyAlert = true
+            }
+            .buttonStyle(.borderedProminent)
         }
         .padding()
     }
