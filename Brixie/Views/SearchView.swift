@@ -36,10 +36,10 @@ struct SearchView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
                     Text("Search Sets")
                         .font(.brixieTitle)
-                        .foregroundStyle(.brixieText)
+                        .foregroundStyle(Color.brixieText)
                 }
             }
             .searchable(text: $searchText, prompt: "Search LEGO sets...") {
@@ -53,9 +53,9 @@ struct SearchView: View {
                                 HStack {
                                     Image(systemName: "clock.arrow.circlepath")
                                         .font(.system(size: 12))
-                                        .foregroundStyle(.brixieAccent)
+                                        .foregroundStyle(Color.brixieAccent)
                                     Text(search)
-                                        .foregroundStyle(.brixieText)
+                                        .foregroundStyle(Color.brixieText)
                                     Spacer()
                                 }
                                 .padding(.vertical, 4)
@@ -127,10 +127,10 @@ struct SearchView: View {
             VStack(spacing: 24) {
                 if !recentSearches.isEmpty {
                     VStack(alignment: .leading, spacing: 16) {
-                        HStack {
+                            HStack {
                             Text(NSLocalizedString("Recent Searches", comment: "Recent searches heading"))
                                 .font(.brixieHeadline)
-                                .foregroundStyle(.brixieText)
+                                .foregroundStyle(Color.brixieText)
                             Spacer()
                         }
                         .padding(.horizontal, 20)
@@ -145,19 +145,19 @@ struct SearchView: View {
                                         HStack(spacing: 6) {
                                             Image(systemName: "clock.arrow.circlepath")
                                                 .font(.system(size: 10))
-                                                .foregroundStyle(.brixieAccent)
+                                                .foregroundStyle(Color.brixieAccent)
                                             Text(search)
                                                 .font(.brixieCaption)
-                                                .foregroundStyle(.brixieAccent)
+                                                .foregroundStyle(Color.brixieAccent)
                                         }
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 8)
                                         .background(
                                             Capsule()
-                                                .fill(.brixieAccent.opacity(0.15))
+                                                .fill(Color.brixieAccent.opacity(0.15))
                                                 .overlay(
                                                     Capsule()
-                                                        .stroke(.brixieAccent.opacity(0.3), lineWidth: 1)
+                                                        .stroke(Color.brixieAccent.opacity(0.3), lineWidth: 1)
                                                 )
                                         )
                                     }
@@ -211,7 +211,7 @@ struct SearchView: View {
                 HStack {
                     Text("\(searchResults.count) results")
                         .font(.brixieSubhead)
-                        .foregroundStyle(.brixieTextSecondary)
+                        .foregroundStyle(Color.brixieTextSecondary)
                     Spacer()
                 }
                 .padding(.horizontal, 20)
@@ -219,7 +219,7 @@ struct SearchView: View {
                 
                 ForEach(searchResults) { set in
                     NavigationLink(destination: SetDetailView(set: set)) {
-                        ModernSetRowView(set: set)
+                        SetRowView(set: set)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }

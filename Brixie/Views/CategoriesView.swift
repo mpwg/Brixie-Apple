@@ -72,24 +72,24 @@ struct CategoriesView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
                     Text(NSLocalizedString("Categories", comment: "Navigation title"))
                         .font(.brixieTitle)
-                        .foregroundStyle(.brixieText)
+                        .foregroundStyle(Color.brixieText)
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
+
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
                     HStack(spacing: 12) {
                         Button {
                             showingAPIKeyAlert = true
                         } label: {
                             Image(systemName: "gearshape.fill")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(.brixieAccent)
+                                .foregroundStyle(Color.brixieAccent)
                                 .padding(6)
-                                .background(Circle().fill(.brixieCard))
+                                .background(Circle().fill(Color.brixieCard))
                         }
-                        
+
                         Menu {
                             Picker(NSLocalizedString("Sort by", comment: "Sort picker label"), selection: $sortOrder) {
                                 ForEach(SortOrder.allCases, id: \.self) { order in
@@ -100,9 +100,9 @@ struct CategoriesView: View {
                         } label: {
                             Image(systemName: "line.3.horizontal.decrease.circle.fill")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(.brixieAccent)
+                                .foregroundStyle(Color.brixieAccent)
                                 .padding(6)
-                                .background(Circle().fill(.brixieCard))
+                                .background(Circle().fill(Color.brixieCard))
                         }
                     }
                 }
@@ -172,16 +172,16 @@ struct CategoriesView: View {
             HStack(spacing: 12) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 20))
-                    .foregroundStyle(.brixieWarning)
+                    .foregroundStyle(Color.brixieWarning)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Connection Issue")
                         .font(.brixieSubhead)
-                        .foregroundStyle(.brixieText)
+                        .foregroundStyle(Color.brixieText)
                     
                     Text(message)
                         .font(.brixieBody)
-                        .foregroundStyle(.brixieTextSecondary)
+                        .foregroundStyle(Color.brixieTextSecondary)
                         .lineLimit(3)
                 }
                 
@@ -246,19 +246,19 @@ struct ModernCategoryRowView: View {
             HStack(spacing: 16) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(.brixieAccent.opacity(0.1))
+                        .fill(Color.brixieAccent.opacity(0.1))
                         .frame(width: 60, height: 60)
                     
                     Image(systemName: categoryIcon(for: theme.name))
                         .font(.system(size: 24, weight: .medium))
-                        .foregroundStyle(.brixieAccent)
+                        .foregroundStyle(Color.brixieAccent)
                 }
                 .brixieGlow(color: .brixieAccent.opacity(0.4))
                 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(theme.name)
                         .font(.brixieHeadline)
-                        .foregroundStyle(.brixieText)
+                        .foregroundStyle(Color.brixieText)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                     
@@ -266,22 +266,22 @@ struct ModernCategoryRowView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "building.2")
                                 .font(.system(size: 10))
-                                .foregroundStyle(.brixieSuccess)
+                                .foregroundStyle(Color.brixieSuccess)
                             AnimatedCounter(value: theme.setCount)
                                 .font(.brixieCaption)
-                                .foregroundStyle(.brixieSuccess)
+                                .foregroundStyle(Color.brixieSuccess)
                             Text("sets")
                                 .font(.brixieCaption)
-                                .foregroundStyle(.brixieTextSecondary)
+                                .foregroundStyle(Color.brixieTextSecondary)
                         }
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(
                             Capsule()
-                                .fill(.brixieSuccess.opacity(0.15))
+                                .fill(Color.brixieSuccess.opacity(0.15))
                                 .overlay(
                                     Capsule()
-                                        .stroke(.brixieSuccess.opacity(0.3), lineWidth: 1)
+                                        .stroke(Color.brixieSuccess.opacity(0.3), lineWidth: 1)
                                 )
                         )
                         
@@ -292,9 +292,9 @@ struct ModernCategoryRowView: View {
                 VStack {
                     Spacer()
                     
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.brixieAccent.opacity(0.6))
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(Color.brixieAccent.opacity(0.6))
                         .scaleEffect(isHovered ? 1.2 : 1.0)
                         .animation(.easeInOut(duration: 0.2), value: isHovered)
                 }

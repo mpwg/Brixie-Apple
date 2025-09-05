@@ -37,7 +37,7 @@ struct SettingsView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Text("Settings")
                         .font(.brixieTitle)
-                        .foregroundStyle(.brixieText)
+                        .foregroundStyle(Color.brixieText)
                 }
             }
         }
@@ -65,33 +65,33 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("API Configuration")
                 .font(.brixieHeadline)
-                .foregroundStyle(.brixieText)
+                .foregroundStyle(Color.brixieText)
             
             BrixieCard {
                 VStack(spacing: 16) {
                     HStack(spacing: 16) {
                         ZStack {
                             Circle()
-                                .fill(.brixieAccent.opacity(0.1))
+                                .fill(Color.brixieAccent.opacity(0.1))
                                 .frame(width: 48, height: 48)
                             
                             Image(systemName: apiKeyManager.hasValidAPIKey ? "checkmark.shield.fill" : "key.fill")
                                 .font(.system(size: 20, weight: .medium))
-                                .foregroundStyle(apiKeyManager.hasValidAPIKey ? .brixieSuccess : .brixieAccent)
+                                .foregroundStyle(apiKeyManager.hasValidAPIKey ? .brixieSuccess : Color.brixieAccent)
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Rebrickable API Key")
                                 .font(.brixieSubhead)
-                                .foregroundStyle(.brixieText)
+                                .foregroundStyle(Color.brixieText)
                             
                             HStack(spacing: 6) {
                                 Circle()
-                                    .fill(apiKeyManager.hasValidAPIKey ? .brixieSuccess : .brixieSecondary)
+                                    .fill(apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : .brixieSecondary)
                                     .frame(width: 8, height: 8)
                                 Text(apiKeyManager.hasValidAPIKey ? "Connected" : "Not configured")
                                     .font(.brixieCaption)
-                                    .foregroundStyle(apiKeyManager.hasValidAPIKey ? .brixieSuccess : .brixieTextSecondary)
+                                    .foregroundStyle(apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : Color.brixieTextSecondary)
                             }
                         }
                         
@@ -104,23 +104,23 @@ struct SettingsView: View {
                     }
                     
                     Divider()
-                        .background(.brixieSecondary.opacity(0.3))
+                        .background(Color.brixieSecondary.opacity(0.3))
                     
                     Link(destination: URL(string: "https://rebrickable.com/api/")!) {
                         HStack {
                             Image(systemName: "link")
                                 .font(.system(size: 14))
-                                .foregroundStyle(.brixieAccent)
+                                .foregroundStyle(Color.brixieAccent)
                             
                             Text(NSLocalizedString("Get Free API Key", comment: "Get API Key link"))
                                 .font(.brixieBody)
-                                .foregroundStyle(.brixieAccent)
+                                .foregroundStyle(Color.brixieAccent)
                             
                             Spacer()
                             
                             Image(systemName: "arrow.up.right")
                                 .font(.system(size: 12))
-                                .foregroundStyle(.brixieAccent.opacity(0.6))
+                                .foregroundStyle(Color.brixieAccent.opacity(0.6))
                         }
                     }
                 }
@@ -129,7 +129,7 @@ struct SettingsView: View {
             
             Text("A free Rebrickable API key is required to fetch LEGO set data and unlock all features.")
                 .font(.brixieCaption)
-                .foregroundStyle(.brixieTextSecondary)
+                .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)
         }
     }
@@ -138,29 +138,29 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Storage Management")
                 .font(.brixieHeadline)
-                .foregroundStyle(.brixieText)
+                .foregroundStyle(Color.brixieText)
             
             BrixieCard {
                 VStack(spacing: 16) {
                     HStack(spacing: 16) {
                         ZStack {
                             Circle()
-                                .fill(.brixieWarning.opacity(0.1))
+                                .fill(Color.brixieWarning.opacity(0.1))
                                 .frame(width: 48, height: 48)
                             
                             Image(systemName: "photo.stack")
                                 .font(.system(size: 20, weight: .medium))
-                                .foregroundStyle(.brixieWarning)
+                                .foregroundStyle(Color.brixieWarning)
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Image Cache")
                                 .font(.brixieSubhead)
-                                .foregroundStyle(.brixieText)
+                                .foregroundStyle(Color.brixieText)
                             
                             Text(cacheSize)
                                 .font(.brixieCaption)
-                                .foregroundStyle(.brixieTextSecondary)
+                                .foregroundStyle(Color.brixieTextSecondary)
                         }
                         
                         Spacer()
@@ -172,7 +172,7 @@ struct SettingsView: View {
                     }
                     
                     Divider()
-                        .background(.brixieSecondary.opacity(0.3))
+                        .background(Color.brixieSecondary.opacity(0.3))
                     
                     Button {
                         clearAllData()
@@ -195,7 +195,7 @@ struct SettingsView: View {
             
             Text("Clear cached images and stored set data to free up storage space on your device.")
                 .font(.brixieCaption)
-                .foregroundStyle(.brixieTextSecondary)
+                .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)
         }
     }
@@ -204,29 +204,29 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("About Brixie")
                 .font(.brixieHeadline)
-                .foregroundStyle(.brixieText)
+                .foregroundStyle(Color.brixieText)
             
             BrixieCard {
                 VStack(spacing: 16) {
                     HStack {
                         ZStack {
                             Circle()
-                                .fill(.brixieAccent.opacity(0.1))
+                                .fill(Color.brixieAccent.opacity(0.1))
                                 .frame(width: 48, height: 48)
                             
                             Image(systemName: "building.2.crop.circle.fill")
                                 .font(.system(size: 20, weight: .medium))
-                                .foregroundStyle(.brixieAccent)
+                                .foregroundStyle(Color.brixieAccent)
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Brixie")
                                 .font(.brixieSubhead)
-                                .foregroundStyle(.brixieText)
+                                .foregroundStyle(Color.brixieText)
                             
                             Text("Version 1.0.0")
                                 .font(.brixieCaption)
-                                .foregroundStyle(.brixieTextSecondary)
+                                .foregroundStyle(Color.brixieTextSecondary)
                         }
                         
                         Spacer()
@@ -237,38 +237,37 @@ struct SettingsView: View {
                             HStack {
                                 Image(systemName: "globe")
                                     .font(.system(size: 14))
-                                    .foregroundStyle(.brixieAccent)
+                                    .foregroundStyle(Color.brixieAccent)
                                 
                                 Text(NSLocalizedString("Visit Website", comment: "Visit website"))
                                     .font(.brixieBody)
-                                    .foregroundStyle(.brixieAccent)
+                                    .foregroundStyle(Color.brixieAccent)
                                 
                                 Spacer()
                                 
                                 Image(systemName: "arrow.up.right")
                                     .font(.system(size: 12))
-                                    .foregroundStyle(.brixieAccent.opacity(0.6))
+                                    .foregroundStyle(Color.brixieAccent.opacity(0.6))
                             }
                         }
                         
                         Divider()
-                            .background(.brixieSecondary.opacity(0.3))
+                            .background(Color.brixieSecondary.opacity(0.3))
                         
                         Link(destination: URL(string: "https://rebrickable.com")!) {
                             HStack {
                                 Image(systemName: "building.2")
                                     .font(.system(size: 14))
-                                    .foregroundStyle(.brixieAccent)
+                                    .foregroundStyle(Color.brixieAccent)
                                 
                                 Text(NSLocalizedString("Powered by Rebrickable", comment: "Rebrickable link"))
-                                    .font(.brixieBody)
-                                    .foregroundStyle(.brixieAccent)
+                                    .foregroundStyle(Color.brixieAccent)
                                 
                                 Spacer()
                                 
                                 Image(systemName: "arrow.up.right")
                                     .font(.system(size: 12))
-                                    .foregroundStyle(.brixieAccent.opacity(0.6))
+                                    .foregroundStyle(Color.brixieAccent.opacity(0.6))
                             }
                         }
                     }
@@ -278,7 +277,7 @@ struct SettingsView: View {
             
             Text("Brixie uses the Rebrickable API to provide comprehensive LEGO set information and enhance your building experience.")
                 .font(.brixieCaption)
-                .foregroundStyle(.brixieTextSecondary)
+                .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)
         }
     }

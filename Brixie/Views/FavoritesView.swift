@@ -53,7 +53,7 @@ struct FavoritesView: View {
             LazyVStack(spacing: 16) {
                 ForEach(favoriteSet) { set in
                     NavigationLink(destination: SetDetailView(set: set)) {
-                        ModernSetRowView(set: set)
+                        SetRowView(set: set)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }

@@ -21,40 +21,23 @@ struct SetsListView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack {
-                Color.brixieBackground
-                    .ignoresSafeArea()
-                
-                Group {
-                    if !apiKeyManager.hasValidAPIKey {
-                        apiKeyPromptView
-                    } else if sets.isEmpty && !cachedSets.isEmpty {
-                        cachedSetsView
-                    } else if sets.isEmpty {
-                        emptyStateView
-                    } else {
-                        setsListView
-                    }
+            Group {
+                if !apiKeyManager.hasValidAPIKey {
+                    apiKeyPromptView
+                } else if sets.isEmpty && !cachedSets.isEmpty {
+                    cachedSetsView
+                } else if sets.isEmpty {
+                    emptyStateView
+                } else {
+                    setsListView
                 }
             }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("LEGO Sets")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Text("LEGO Sets")
-                        .font(.brixieTitle)
-                        .foregroundStyle(.brixieText)
-                }
-                
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
+                    Button("Settings") {
                         showingAPIKeyAlert = true
-                    } label: {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(.brixieAccent)
-                            .padding(8)
-                            .background(Circle().fill(.brixieCard))
                     }
                 }
             }
@@ -76,53 +59,35 @@ struct SetsListView: View {
     }
     
     private var apiKeyPromptView: some View {
-        BrixieHeroSection(
-            title: "Welcome to Brixie",
-            subtitle: "Your gateway to the amazing world of LEGO sets. Get started with your free Rebrickable API key.",
-            icon: "building.2.crop.circle.fill"
-        ) {
-            VStack(spacing: 16) {
-                Button("Get Started") {
-                    showingAPIKeyAlert = true
-                }
-                .buttonStyle(BrixieButtonStyle(variant: .primary))
-                
-                Button("Learn More") {
-                    // Open rebrickable.com
-                }
-                .buttonStyle(BrixieButtonStyle(variant: .ghost))
+        VStack(spacing: 20) {
+            Image(systemName: "key.fill")
+                .font(.system(size: 60))
+                .foregroundStyle(.blue)
+            
+            Text("API Key Required")
+                .font(.title2)
+                .fontWeight(.semibold)
+            
+            Text("To fetch LEGO sets, you need a Rebrickable API key. Get one for free at rebrickable.com")
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+            
+            Button("Enter API Key") {
+                showingAPIKeyAlert = true
             }
+            .buttonStyle(.borderedProminent)
         }
+        .padding()
     }
     
     private var cachedSetsView: some View {
-        ScrollView {
-            LazyVStack(spacing: 16) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Offline Collection")
-                            .font(.brixieHeadline)
-                            .foregroundStyle(.brixieText)
-                        Text("Showing cached sets")
-                            .font(.brixieCaption)
-                            .foregroundStyle(.brixieTextSecondary)
-                    }
-                    Spacer()
-                    Image(systemName: "wifi.slash")
-                        .font(.system(size: 16))
-                        .foregroundStyle(.brixieWarning)
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                
-                ForEach(cachedSets) { set in
-                    NavigationLink(destination: SetDetailView(set: set)) {
-                        ModernSetRowView(set: set)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+        List {
+            ForEach(cachedSets) { set in
+                NavigationLink(destination: SetDetailView(set: set)) {
+                    SetRowView(set: set)
                 }
             }
-            .padding(.horizontal, 20)
         }
         .refreshable {
             await loadSets()
@@ -130,39 +95,45 @@ struct SetsListView: View {
     }
     
     private var emptyStateView: some View {
-        BrixieHeroSection(
-            title: "Building Something Amazing",
-            subtitle: "We're loading the latest LEGO sets for you. This might take a moment.",
-            icon: "cube.box.fill"
-        ) {
-            BrixieLoadingView()
+        VStack(spacing: 20) {
+            Image(systemName: "building.2")
+                .font(.system(size: 60))
+                .foregroundStyle(.blue)
+            
+            Text("No Sets Found")
+                .font(.title2)
+                .fontWeight(.semibold)
+            
+            Text("Pull to refresh or check your internet connection")
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
+        .padding()
     }
     
     private var setsListView: some View {
-        ScrollView {
-            LazyVStack(spacing: 16) {
-                ForEach(sets) { set in
-                    NavigationLink(destination: SetDetailView(set: set)) {
-                        ModernSetRowView(set: set)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .onAppear {
-                        if set == sets.last {
-                            Task {
-                                await loadMoreSets()
-                            }
+        List {
+            ForEach(sets) { set in
+                NavigationLink(destination: SetDetailView(set: set)) {
+                    SetRowView(set: set)
+                }
+                .onAppear {
+                    if set == sets.last {
+                        Task {
+                            await loadMoreSets()
                         }
                     }
                 }
-                
-                if isLoadingMore {
-                    BrixieLoadingView()
-                        .padding()
-                }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 8)
+            
+            if isLoadingMore {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                }
+                .padding()
+            }
         }
         .refreshable {
             currentPage = 1
@@ -205,122 +176,59 @@ struct SetsListView: View {
     }
 }
 
-struct ModernSetRowView: View {
+struct SetRowView: View {
     let set: LegoSet
-    @State private var imageLoaded = false
     
     var body: some View {
-        BrixieCard {
-            HStack(spacing: 16) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(.brixieSecondary.opacity(0.3))
-                        .frame(width: 80, height: 80)
-                    
-                    AsyncCachedImage(urlString: set.imageURL)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 72, height: 72)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .opacity(imageLoaded ? 1 : 0)
-                        .animation(.easeInOut(duration: 0.3), value: imageLoaded)
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                imageLoaded = true
-                            }
-                        }
-                    
-                    if !imageLoaded {
-                        Image(systemName: "building.2")
-                            .font(.system(size: 24))
-                            .foregroundStyle(.brixieAccent.opacity(0.6))
-                    }
-                }
-                .brixieGlow(color: .brixieAccent.opacity(0.3))
+        HStack {
+            AsyncCachedImage(urlString: set.imageURL)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 60, height: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.gray.opacity(0.1))
+                )
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(set.name)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .foregroundStyle(.primary)
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(set.name)
-                            .font(.brixieHeadline)
-                            .foregroundStyle(.brixieText)
-                            .lineLimit(2)
-                            .multilineTextAlignment(.leading)
-                        
-                        Text(String(format: NSLocalizedString("Set #%@", comment: "Set number display"), set.setNum))
-                            .font(.brixieCaption)
-                            .foregroundStyle(.brixieTextSecondary)
-                    }
-                    
-                    HStack(spacing: 12) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "calendar")
-                                .font(.system(size: 10))
-                                .foregroundStyle(.brixieAccent)
-                            Text("\(set.year)")
-                                .font(.brixieCaption)
-                                .foregroundStyle(.brixieAccent)
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(.brixieAccent.opacity(0.15))
-                                .overlay(
-                                    Capsule()
-                                        .stroke(.brixieAccent.opacity(0.3), lineWidth: 1)
-                                )
-                        )
-                        
-                        HStack(spacing: 4) {
-                            Image(systemName: "cube.box")
-                                .font(.system(size: 10))
-                                .foregroundStyle(.brixieSuccess)
-                            AnimatedCounter(value: set.numParts)
-                                .font(.brixieCaption)
-                                .foregroundStyle(.brixieSuccess)
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(.brixieSuccess.opacity(0.15))
-                                .overlay(
-                                    Capsule()
-                                        .stroke(.brixieSuccess.opacity(0.3), lineWidth: 1)
-                                )
-                        )
-                        
-                        Spacer()
-                    }
-                }
+                Text(String(format: NSLocalizedString("Set #%@", comment: "Set number display"), set.setNum))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 
-                VStack {
-                    if set.isFavorite {
-                        Image(systemName: "heart.fill")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.red)
-                            .brixieGlow(color: .red)
-                    }
+                HStack {
+                    Text("\(set.year)")
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(.blue.opacity(0.2))
+                        .foregroundStyle(.blue)
+                        .clipShape(Capsule())
                     
-                    Spacer()
-                    
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.brixieAccent.opacity(0.6))
+                    Text(String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
-            .padding(16)
+            
+            Spacer()
+            
+            if set.isFavorite {
+                Image(systemName: "heart.fill")
+                    .foregroundStyle(.red)
+            }
         }
+        .padding(.vertical, 4)
     }
 }
 
 #Preview {
-    ZStack {
-        Color.brixieBackground
-            .ignoresSafeArea()
-        
-        SetsListView()
-            .modelContainer(for: LegoSet.self, inMemory: true)
-    }
+    SetsListView()
+        .modelContainer(for: LegoSet.self, inMemory: true)
 }
 
 #Preview {
@@ -333,11 +241,7 @@ struct ModernSetRowView: View {
         numParts: 9090
     )
 
-    ZStack {
-        Color.brixieBackground
-            .ignoresSafeArea()
-        
-        ModernSetRowView(set: sample)
-            .padding(20)
-    }
+    SetRowView(set: sample)
+        .padding()
+        .previewLayout(.sizeThatFits)
 }
