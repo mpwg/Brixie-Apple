@@ -108,6 +108,7 @@ struct CategoriesView: View {
                 }
             }
             .searchable(text: $searchText, prompt: NSLocalizedString("Search categories", comment: "Search prompt"))
+
         }
         .task {
             if apiKeyManager.hasValidAPIKey {
@@ -351,3 +352,4 @@ struct ModernCategoryRowView: View {
             .modelContainer(for: [LegoTheme.self, LegoSet.self], inMemory: true)
     }
 }
+
