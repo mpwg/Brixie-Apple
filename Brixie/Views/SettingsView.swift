@@ -156,7 +156,7 @@ struct SettingsView: View {
                             
                             Image(systemName: apiKeyManager.hasValidAPIKey ? "checkmark.shield.fill" : "key.fill")
                                 .font(.system(size: 20, weight: .medium))
-                                .foregroundStyle(apiKeyManager.hasValidAPIKey ? .brixieSuccess : Color.brixieAccent)
+                                .foregroundStyle(apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : Color.brixieAccent)
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
