@@ -9,7 +9,8 @@
       "Read(//tmp/Rebrickable-swift/Sources/RebrickableLegoAPIClient/Models/**)",
       "Read(//tmp/Rebrickable-swift/Sources/RebrickableLegoAPIClient/APIs/**)",
       "Read(//tmp/Rebrickable-swift/**)",
-      "Bash(swift build:*)"
+      "Bash(swift build:*)",
+      "Bash(swift:*)"
     ],
     "deny": [],
     "ask": []
