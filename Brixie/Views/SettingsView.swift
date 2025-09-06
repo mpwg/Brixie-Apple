@@ -12,7 +12,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Environment(ThemeManager.self) private var themeManager
-    @StateObject private var apiKeyManager = APIKeyManager.shared
+    @Environment(DIContainer.self) private var diContainer
     @State private var showingAPIKeyAlert = false
     @State private var showingClearCacheAlert = false
     @State private var cacheSize = "Calculating..."
@@ -45,7 +45,10 @@ struct SettingsView: View {
             }
         }
         .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            TextField("Rebrickable API Key", text: $apiKeyManager.apiKey)
+            TextField("Rebrickable API Key", text: Binding(
+                get: { diContainer.apiKeyManager.apiKey },
+                set: { diContainer.apiKeyManager.apiKey = $0 }
+            ))
             Button("Save") { }
             Button("Cancel", role: .cancel) { }
         } message: {
@@ -155,9 +158,9 @@ struct SettingsView: View {
                                 .fill(Color.brixieAccent.opacity(0.1))
                                 .frame(width: 48, height: 48)
                             
-                            Image(systemName: apiKeyManager.hasValidAPIKey ? "checkmark.shield.fill" : "key.fill")
+                            Image(systemName: diContainer.apiKeyManager.hasValidAPIKey ? "checkmark.shield.fill" : "key.fill")
                                 .font(.system(size: 20, weight: .medium))
-                                .foregroundStyle(apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : Color.brixieAccent)
+                                .foregroundStyle(diContainer.apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : Color.brixieAccent)
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
@@ -167,11 +170,11 @@ struct SettingsView: View {
                             
                             HStack(spacing: 6) {
                                 Circle()
-                                    .fill(apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : .brixieSecondary)
+                                    .fill(diContainer.apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : .brixieSecondary)
                                     .frame(width: 8, height: 8)
-                                Text(apiKeyManager.hasValidAPIKey ? "Connected" : "Not configured")
+                                Text(diContainer.apiKeyManager.hasValidAPIKey ? "Connected" : "Not configured")
                                     .font(.brixieCaption)
-                                    .foregroundStyle(apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : Color.brixieTextSecondary)
+                                    .foregroundStyle(diContainer.apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : Color.brixieTextSecondary)
                             }
                         }
                         

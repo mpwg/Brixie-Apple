@@ -9,27 +9,27 @@ import SwiftUI
 import SwiftData
 
 struct SetsListView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.diContainer) private var diContainer
     @Query(sort: \LegoSet.year, order: .reverse) private var cachedSets: [LegoSet]
     
-    @StateObject private var apiKeyManager = APIKeyManager.shared
-    @State private var legoSetService: LegoSetService?
-    @State private var sets: [LegoSet] = []
+    @State private var viewModel: SetsListViewModel?
     @State private var showingAPIKeyAlert = false
-    @State private var currentPage = 1
-    @State private var isLoadingMore = false
     
     var body: some View {
         NavigationStack {
             Group {
-                if !apiKeyManager.hasValidAPIKey {
-                    apiKeyPromptView
-                } else if sets.isEmpty && !cachedSets.isEmpty {
-                    cachedSetsView
-                } else if sets.isEmpty {
-                    emptyStateView
+                if let vm = viewModel {
+                    if !vm.hasAPIKey {
+                        apiKeyPromptView
+                    } else if vm.sets.isEmpty && !cachedSets.isEmpty {
+                        cachedSetsView
+                    } else if vm.sets.isEmpty && !vm.isLoading {
+                        emptyStateView
+                    } else {
+                        setsListView
+                    }
                 } else {
-                    setsListView
+                    ProgressView("Loading...")
                 }
             }
             .navigationTitle("LEGO Sets")
@@ -43,17 +43,27 @@ struct SetsListView: View {
             }
         }
         .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            TextField("Rebrickable API Key", text: $apiKeyManager.apiKey)
-            Button("Save") {
-                setupService()
+            if let vm = viewModel {
+                TextField("Rebrickable API Key", text: Binding(
+                    get: { diContainer.apiKeyManager.apiKey },
+                    set: { diContainer.apiKeyManager.apiKey = $0 }
+                ))
+                Button("Save") {
+                    Task {
+                        await vm.loadSets()
+                    }
+                }
+                Button("Cancel", role: .cancel) { }
             }
-            Button("Cancel", role: .cancel) { }
         } message: {
             Text("Enter your Rebrickable API key to fetch LEGO sets")
         }
         .onAppear {
-            if legoSetService == nil && apiKeyManager.hasValidAPIKey {
-                setupService()
+            if viewModel == nil {
+                viewModel = diContainer.makeSetsListViewModel()
+                Task {
+                    await viewModel?.loadSets()
+                }
             }
         }
     }
@@ -85,12 +95,16 @@ struct SetsListView: View {
         List {
             ForEach(cachedSets) { set in
                 NavigationLink(destination: SetDetailView(set: set)) {
-                    SetRowView(set: set)
+                    SetRowView(set: set, onFavoriteToggle: { set in
+                        Task {
+                            await viewModel?.toggleFavorite(for: set)
+                        }
+                    })
                 }
             }
         }
         .refreshable {
-            await loadSets()
+            await viewModel?.loadSets()
         }
     }
     
@@ -113,71 +127,48 @@ struct SetsListView: View {
     
     private var setsListView: some View {
         List {
-            ForEach(sets) { set in
-                NavigationLink(destination: SetDetailView(set: set)) {
-                    SetRowView(set: set)
-                }
-                .onAppear {
-                    if set == sets.last {
-                        Task {
-                            await loadMoreSets()
+            if let vm = viewModel {
+                ForEach(vm.sets) { set in
+                    NavigationLink(destination: SetDetailView(set: set)) {
+                        SetRowView(set: set, onFavoriteToggle: { set in
+                            Task {
+                                await vm.toggleFavorite(for: set)
+                            }
+                        })
+                    }
+                    .onAppear {
+                        if set == vm.sets.last {
+                            Task {
+                                await vm.loadMoreSets()
+                            }
                         }
                     }
                 }
-            }
-            
-            if isLoadingMore {
-                HStack {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
+                
+                if vm.isLoadingMore {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                    .padding()
                 }
-                .padding()
             }
         }
         .refreshable {
-            currentPage = 1
-            await loadSets()
+            await viewModel?.loadSets()
         }
-    }
-    
-    private func setupService() {
-        legoSetService = LegoSetService(modelContext: modelContext, apiKey: apiKeyManager.apiKey)
-        Task {
-            await loadSets()
-        }
-    }
-    
-    private func loadSets() async {
-        guard let service = legoSetService else { return }
-        
-        do {
-            sets = try await service.fetchSets(page: currentPage)
-        } catch {
-            // Fallback to cached sets
-            sets = service.getCachedSets()
-        }
-    }
-    
-    private func loadMoreSets() async {
-        guard let service = legoSetService, !isLoadingMore else { return }
-        
-        isLoadingMore = true
-        currentPage += 1
-        
-        do {
-            let newSets = try await service.fetchSets(page: currentPage)
-            sets.append(contentsOf: newSets)
-        } catch {
-            currentPage -= 1 // Reset page on error
-        }
-        
-        isLoadingMore = false
     }
 }
 
 struct SetRowView: View {
     let set: LegoSet
+    let onFavoriteToggle: ((LegoSet) -> Void)?
+    
+    init(set: LegoSet, onFavoriteToggle: ((LegoSet) -> Void)? = nil) {
+        self.set = set
+        self.onFavoriteToggle = onFavoriteToggle
+    }
     
     var body: some View {
         HStack {
@@ -217,10 +208,13 @@ struct SetRowView: View {
             
             Spacer()
             
-            if set.isFavorite {
-                Image(systemName: "heart.fill")
-                    .foregroundStyle(.red)
+            Button(action: {
+                onFavoriteToggle?(set)
+            }) {
+                Image(systemName: set.isFavorite ? "heart.fill" : "heart")
+                    .foregroundStyle(set.isFavorite ? .red : .gray)
             }
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
     }

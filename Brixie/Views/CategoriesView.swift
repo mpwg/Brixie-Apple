@@ -9,11 +9,9 @@ import SwiftUI
 import SwiftData
 
 struct CategoriesView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.diContainer) private var diContainer
     @Environment(\.colorScheme) private var colorScheme
-    @StateObject private var apiKeyManager = APIKeyManager.shared
-    @State private var themeService: LegoThemeService?
-    @State private var themes: [LegoTheme] = []
+    @State private var viewModel: CategoriesViewModel?
     @State private var searchText = ""
     @State private var sortOrder: SortOrder = .name
     @State private var showingAPIKeyAlert = false
@@ -28,7 +26,9 @@ struct CategoriesView: View {
     }
     
     var filteredAndSortedThemes: [LegoTheme] {
-        var filtered = themes
+        guard let vm = viewModel else { return [] }
+        
+        var filtered = vm.themes
         
         if !searchText.isEmpty {
             filtered = filtered.filter { theme in
@@ -53,17 +53,17 @@ struct CategoriesView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    if !apiKeyManager.hasValidAPIKey {
-                        apiKeyPromptView
-                    } else if let service = themeService {
-                        if service.isLoading && themes.isEmpty {
+                    if let vm = viewModel {
+                        if !vm.hasAPIKey {
+                            apiKeyPromptView
+                        } else if vm.isLoading && vm.themes.isEmpty {
                             loadingView
                         } else {
                             modernCategoriesView
                         }
                         
-                        if let errorMessage = service.errorMessage {
-                            errorView(errorMessage)
+                        if let error = vm.error {
+                            errorView(error.localizedDescription)
                         }
                     } else {
                         initializingView
@@ -112,15 +112,19 @@ struct CategoriesView: View {
 
         }
         .task {
-            if apiKeyManager.hasValidAPIKey {
-                await initializeService()
+            if viewModel == nil {
+                viewModel = diContainer.makeCategoriesViewModel()
+                await viewModel?.loadThemes()
             }
         }
         .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            TextField("Rebrickable API Key", text: $apiKeyManager.apiKey)
+            TextField("Rebrickable API Key", text: Binding(
+                get: { diContainer.apiKeyManager.apiKey },
+                set: { diContainer.apiKeyManager.apiKey = $0 }
+            ))
             Button("Save") {
                 Task {
-                    await initializeService()
+                    await viewModel?.loadThemes()
                 }
             }
             Button("Cancel", role: .cancel) { }
@@ -208,33 +212,6 @@ struct CategoriesView: View {
             .padding(.top, 8)
         }
         .refreshable {
-            await loadThemes()
-        }
-    }
-    
-    @MainActor
-    private func initializeService() async {
-        guard themeService == nil else { return }
-        
-        themeService = LegoThemeService(modelContext: modelContext, apiKey: apiKeyManager.apiKey)
-        
-        let cachedThemes = themeService?.getCachedThemes() ?? []
-        if !cachedThemes.isEmpty {
-            themes = cachedThemes
-        }
-        
-        await loadThemes()
-    }
-    
-    @MainActor
-    private func loadThemes() async {
-        guard let service = themeService else { return }
-        
-        do {
-            let fetchedThemes = try await service.fetchThemes()
-            themes = fetchedThemes
-        } catch {
-            themes = service.getCachedThemes()
         }
     }
 }

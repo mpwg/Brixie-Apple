@@ -12,7 +12,7 @@ struct CategoryDetailView: View {
     let theme: LegoTheme
     
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var apiKeyManager = APIKeyManager.shared
+    @Environment(DIContainer.self) private var diContainer
     @State private var themeService: LegoThemeService?
     @State private var sets: [LegoSet] = []
     @State private var searchText = ""
@@ -158,7 +158,7 @@ struct CategoryDetailView: View {
             }
         }
         .task {
-            if apiKeyManager.hasValidAPIKey {
+            if diContainer.apiKeyManager.hasValidAPIKey {
                 await initializeService()
             }
         }
@@ -168,7 +168,7 @@ struct CategoryDetailView: View {
     private func initializeService() async {
         guard themeService == nil else { return }
         
-        themeService = LegoThemeService(modelContext: modelContext, apiKey: apiKeyManager.apiKey)
+        themeService = LegoThemeService(modelContext: modelContext, apiKey: diContainer.apiKeyManager.apiKey)
         
         await loadSets(reset: true)
     }
