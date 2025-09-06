@@ -20,7 +20,7 @@ jobs:
           - destination: generic/platform=iOS
             buildname: iOS
           - os: macos-latest
-          - xcode: latest-stable
+          - xcode: latest
     name: Build - ${{matrix.buildname}} on ${{ matrix.os }}
     runs-on:  ${{ matrix.os }}
     steps:
