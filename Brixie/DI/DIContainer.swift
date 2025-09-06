@@ -10,8 +10,9 @@ import SwiftData
 import SwiftUI
 
 @Observable
+@MainActor
 final class DIContainer: @unchecked Sendable {
-    nonisolated static let shared = DIContainer()
+    static let shared = DIContainer()
     
     let modelContainer: ModelContainer
     
@@ -107,7 +108,12 @@ final class DIContainer: @unchecked Sendable {
 // MARK: - Environment Key
 
 struct DIContainerKey: EnvironmentKey {
-    static let defaultValue = DIContainer.shared
+    // Provide a lazily-evaluated container; EnvironmentKey requires nonisolated static.
+    // We capture the MainActor instance indirectly to avoid isolation diagnostics.
+    static let defaultValue: DIContainer = {
+        // Access on MainActor explicitly.
+        MainActor.assumeIsolated { DIContainer.shared }
+    }()
 }
 
 extension EnvironmentValues {
