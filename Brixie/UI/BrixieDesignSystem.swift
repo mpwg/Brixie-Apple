@@ -59,12 +59,6 @@ extension Color {
     }
     
     // Convenience static properties that work with @Environment
-    static var brixieBackground: Color { .brixieBackgroundDark } // Default fallback
-    static var brixieCard: Color { .brixieCardDark }
-    static var brixieText: Color { .brixieTextDark }
-    static var brixieTextSecondary: Color { .brixieTextSecondaryDark }
-    static var brixieSecondary: Color { .brixieSecondaryDark }
-
 }
 
 // MARK: - Gradients
