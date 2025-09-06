@@ -268,7 +268,7 @@ struct ModernCategoryRowView: View {
                             Image(systemName: "building.2")
                                 .font(.system(size: 10))
                                 .foregroundStyle(Color.brixieSuccess)
-                            AnimatedCounter(value: theme.setCount)
+                            Text("\(theme.setCount)")
                                 .font(.brixieCaption)
                                 .foregroundStyle(Color.brixieSuccess)
                             Text("sets")
