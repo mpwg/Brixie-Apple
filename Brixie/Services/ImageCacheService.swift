@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 // Wrapper class for Data to use with NSCache
-class CachedImageData {
+final class CachedImageData: Sendable {
     let data: Data
     
     init(data: Data) {
@@ -18,7 +18,7 @@ class CachedImageData {
 }
 
 @Observable
-class ImageCacheService {
+final class ImageCacheService: @unchecked Sendable {
     static let shared = ImageCacheService()
     
     private let cache = NSCache<NSString, CachedImageData>()

@@ -10,7 +10,8 @@ import RebrickableLegoAPIClient
 import SwiftData
 
 @Observable
-class LegoSetService {
+@MainActor
+final class LegoSetService {
     private let modelContext: ModelContext
     
     var isLoading = false

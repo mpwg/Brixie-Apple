@@ -68,17 +68,23 @@ extension Color {
 
 // MARK: - Gradients
 extension LinearGradient {
-    static let brixiePrimary = LinearGradient(
-        colors: [.brixieGradientStart, .brixieGradientEnd],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    @MainActor
+    static var brixiePrimary: LinearGradient {
+        LinearGradient(
+            colors: [.brixieGradientStart, .brixieGradientEnd],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
     
-    static let brixieCard = LinearGradient(
-        colors: [Color.brixieCardDark, Color.brixieCardDark.opacity(0.8)],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    @MainActor
+    static var brixieCard: LinearGradient {
+        LinearGradient(
+            colors: [Color.brixieCardDark, Color.brixieCardDark.opacity(0.8)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
 }
 
 // MARK: - Typography
@@ -160,7 +166,7 @@ struct BrixieButtonStyle: ButtonStyle {
     let variant: Variant
     @Environment(\.colorScheme) private var colorScheme
     
-    enum Variant {
+    enum Variant: Sendable {
         case primary, secondary, ghost
     }
     

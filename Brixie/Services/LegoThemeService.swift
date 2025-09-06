@@ -10,7 +10,8 @@ import RebrickableLegoAPIClient
 import SwiftData
 
 @Observable
-class LegoThemeService {
+@MainActor
+final class LegoThemeService {
     private let modelContext: ModelContext
     
     var isLoading = false
