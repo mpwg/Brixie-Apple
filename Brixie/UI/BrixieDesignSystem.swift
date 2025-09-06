@@ -9,16 +9,42 @@ import SwiftUI
 
 // MARK: - Colors
 extension Color {
-    static let brixieBackground = Color(red: 0.02, green: 0.02, blue: 0.06)
-    static let brixieCard = Color(red: 0.08, green: 0.08, blue: 0.12)
+    // Light Theme Colors
+    static let brixieBackgroundLight = Color(red: 0.97, green: 0.97, blue: 0.99)
+    static let brixieCardLight = Color(red: 1.0, green: 1.0, blue: 1.0)
+    static let brixieTextLight = Color(red: 0.1, green: 0.1, blue: 0.15)
+    static let brixieTextSecondaryLight = Color(red: 0.4, green: 0.4, blue: 0.5)
+    static let brixieSecondaryLight = Color(red: 0.85, green: 0.85, blue: 0.9)
+    
+    // Dark Theme Colors
+    static let brixieBackgroundDark = Color(red: 0.02, green: 0.02, blue: 0.06)
+    static let brixieCardDark = Color(red: 0.08, green: 0.08, blue: 0.12)
+    static let brixieTextDark = Color.white
+    static let brixieTextSecondaryDark = Color(red: 0.7, green: 0.7, blue: 0.8)
+    static let brixieSecondaryDark = Color(red: 0.25, green: 0.25, blue: 0.35)
+    
+    // Shared Colors (same in both themes)
     static let brixieAccent = Color(red: 0.0, green: 0.48, blue: 1.0)
-    static let brixieSecondary = Color(red: 0.25, green: 0.25, blue: 0.35)
     static let brixieSuccess = Color(red: 0.2, green: 0.8, blue: 0.4)
     static let brixieWarning = Color(red: 1.0, green: 0.6, blue: 0.0)
-    static let brixieText = Color.white
-    static let brixieTextSecondary = Color(red: 0.7, green: 0.7, blue: 0.8)
     static let brixieGradientStart = Color(red: 0.0, green: 0.35, blue: 0.8)
     static let brixieGradientEnd = Color(red: 0.2, green: 0.6, blue: 1.0)
+    
+    // Adaptive Colors
+    static let brixieBackground = Color(light: .brixieBackgroundLight, dark: .brixieBackgroundDark)
+    static let brixieCard = Color(light: .brixieCardLight, dark: .brixieCardDark)
+    static let brixieText = Color(light: .brixieTextLight, dark: .brixieTextDark)
+    static let brixieTextSecondary = Color(light: .brixieTextSecondaryLight, dark: .brixieTextSecondaryDark)
+    static let brixieSecondary = Color(light: .brixieSecondaryLight, dark: .brixieSecondaryDark)
+}
+
+// Helper extension for adaptive colors
+extension Color {
+    init(light: Color, dark: Color) {
+        self.init(UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+    }
 }
 
 // MARK: - Gradients
@@ -48,7 +74,7 @@ extension Font {
 // MARK: - Shadows
 extension View {
     func brixieCardShadow() -> some View {
-        self.shadow(color: .black.opacity(0.3), radius: 12, x: 0, y: 6)
+        self.shadow(color: Color(light: .black.opacity(0.1), dark: .black.opacity(0.3)), radius: 12, x: 0, y: 6)
     }
     
     func brixieGlow(color: Color = .brixieAccent) -> some View {

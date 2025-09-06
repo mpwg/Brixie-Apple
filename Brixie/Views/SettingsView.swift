@@ -10,6 +10,7 @@ import SwiftData
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(ThemeManager.self) private var themeManager
     @StateObject private var apiKeyManager = APIKeyManager.shared
     @State private var showingAPIKeyAlert = false
     @State private var showingClearCacheAlert = false
@@ -23,6 +24,7 @@ struct SettingsView: View {
                 
                 ScrollView {
                     VStack(spacing: 24) {
+                        themeSection
                         apiSection
                         cacheSection
                         aboutSection
@@ -58,6 +60,83 @@ struct SettingsView: View {
         }
         .onAppear {
             updateCacheSize()
+        }
+    }
+    
+    private var themeSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Appearance")
+                .font(.brixieHeadline)
+                .foregroundStyle(Color.brixieText)
+            
+            BrixieCard {
+                VStack(spacing: 16) {
+                    HStack(spacing: 16) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.brixieAccent.opacity(0.1))
+                                .frame(width: 48, height: 48)
+                            
+                            Image(systemName: themeManager.selectedTheme.iconName)
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundStyle(Color.brixieAccent)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Theme")
+                                .font(.brixieSubhead)
+                                .foregroundStyle(Color.brixieText)
+                            
+                            Text(themeManager.selectedTheme.displayName)
+                                .font(.brixieCaption)
+                                .foregroundStyle(Color.brixieTextSecondary)
+                        }
+                        
+                        Spacer()
+                    }
+                    
+                    Divider()
+                        .background(Color.brixieSecondary.opacity(0.3))
+                    
+                    VStack(spacing: 12) {
+                        ForEach(AppTheme.allCases) { theme in
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    themeManager.selectedTheme = theme
+                                }
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: theme.iconName)
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundStyle(themeManager.selectedTheme == theme ? Color.brixieAccent : Color.brixieTextSecondary)
+                                        .frame(width: 20)
+                                    
+                                    Text(theme.displayName)
+                                        .font(.brixieBody)
+                                        .foregroundStyle(themeManager.selectedTheme == theme ? Color.brixieAccent : Color.brixieText)
+                                    
+                                    Spacer()
+                                    
+                                    if themeManager.selectedTheme == theme {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundStyle(Color.brixieAccent)
+                                    }
+                                }
+                                .padding(.vertical, 8)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                }
+                .padding(20)
+            }
+            
+            Text("Choose how Brixie looks. System follows your device's appearance settings.")
+                .font(.brixieCaption)
+                .foregroundStyle(Color.brixieTextSecondary)
+                .padding(.leading, 4)
         }
     }
     
