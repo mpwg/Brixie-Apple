@@ -8,12 +8,6 @@
 import Foundation
 import SwiftUI
 
-// Minimal imports only for image data conversion
-#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
 // Wrapper class for Data to use with NSCache
 class CachedImageData {
