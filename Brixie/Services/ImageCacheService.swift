@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+
 // Wrapper class for Data to use with NSCache
 class CachedImageData {
     let data: Data
@@ -17,13 +18,12 @@ class CachedImageData {
 }
 
 @Observable
-final class ImageCacheService: @unchecked Sendable {
+class ImageCacheService {
     static let shared = ImageCacheService()
     
     private let cache = NSCache<NSString, CachedImageData>()
     private let fileManager = FileManager.default
     private let cacheDirectory: URL
-    private let queue = DispatchQueue(label: "com.brixie.imagecache", qos: .utility)
     
     private init() {
         // Set up cache directory
@@ -40,8 +40,7 @@ final class ImageCacheService: @unchecked Sendable {
     
     func loadImageData(from urlString: String) async -> Data? {
         // Check memory cache first
-
-      if let cachedData = cache.object(forKey: NSString(string: urlString)) {
+        if let cachedData = cache.object(forKey: NSString(string: urlString)) {
             return cachedData.data
         }
         
@@ -71,7 +70,7 @@ final class ImageCacheService: @unchecked Sendable {
             
             // Store in memory cache
             cache.setObject(CachedImageData(data: data), forKey: NSString(string: urlString))
-          
+            
             // Store in disk cache
             let cacheKey = urlString.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? urlString
             let fileURL = cacheDirectory.appendingPathComponent("\(cacheKey).jpg")
@@ -117,9 +116,7 @@ final class ImageCacheService: @unchecked Sendable {
     
     
     func clearCache() {
-        queue.sync {
-            cache.removeAllObjects()
-        }
+        cache.removeAllObjects()
         
         // Clear disk cache
         do {
