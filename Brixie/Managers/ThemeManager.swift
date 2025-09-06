@@ -8,7 +8,7 @@
 import SwiftUI
 import Foundation
 
-enum AppTheme: String, CaseIterable, Identifiable {
+enum AppTheme: String, CaseIterable, Identifiable, Sendable {
     case light = "light"
     case dark = "dark"
     case system = "system"
@@ -39,6 +39,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 }
 
 @Observable
+@MainActor
 class ThemeManager {
     static let shared = ThemeManager()
     

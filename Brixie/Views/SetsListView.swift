@@ -243,5 +243,4 @@ struct SetRowView: View {
 
     SetRowView(set: sample)
         .padding()
-        .previewLayout(.sizeThatFits)
 }

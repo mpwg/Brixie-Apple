@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 // Wrapper class for Data to use with NSCache
-class CachedImageData {
+final class CachedImageData: Sendable {
     let data: Data
     
     init(data: Data) {
@@ -18,7 +18,7 @@ class CachedImageData {
 }
 
 @Observable
-class ImageCacheService {
+final class ImageCacheService: @unchecked Sendable {
     static let shared = ImageCacheService()
     
     private let cache = NSCache<NSString, CachedImageData>()
@@ -144,16 +144,14 @@ class ImageCacheService {
     }
 }
 
-#Preview {
-    Group {
-        AsyncCachedImage(urlString: nil)
-            .previewDisplayName("Placeholder")
-            .frame(width: 100, height: 100)
+#Preview("Placeholder") {
+    AsyncCachedImage(urlString: nil)
+        .frame(width: 100, height: 100)
+}
 
-        AsyncCachedImage(urlString: "https://via.placeholder.com/150")
-            .previewDisplayName("Remote Image")
-            .frame(width: 150, height: 150)
-    }
+#Preview("Remote Image") {
+    AsyncCachedImage(urlString: "https://via.placeholder.com/150")
+        .frame(width: 150, height: 150)
 }
 
 // Pure SwiftUI AsyncCachedImage component using Data
