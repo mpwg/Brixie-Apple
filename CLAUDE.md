@@ -64,3 +64,4 @@ xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=
 - It has a modern, cool, easy to use and elegant user interface
 - please ensure that the project compiles
 - do not create a macOS Target, only use mac (Mac Catalyst)
+- always test both the ios and macos build
