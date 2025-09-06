@@ -277,7 +277,6 @@ struct FullScreenImageView: View {
         InfoRow(label: "Year", value: "2021")
     }
     .padding()
-    .previewLayout(.sizeThatFits)
 }
 
 #Preview {
@@ -287,16 +286,12 @@ struct FullScreenImageView: View {
         StatCard(title: "Year", value: "2021", icon: "calendar", color: .green)
     }
     .padding()
-    .previewLayout(.sizeThatFits)
 }
 
-#Preview {
-    // Preview for FullScreenImageView with a nil and a sample URL
-    Group {
-        FullScreenImageView(imageURL: nil)
-            .previewDisplayName("No Image")
+#Preview("No Image") {
+    FullScreenImageView(imageURL: nil)
+}
 
-        FullScreenImageView(imageURL: "https://example.com/image.jpg")
-            .previewDisplayName("With Image")
-    }
+#Preview("With Image") {
+    FullScreenImageView(imageURL: "https://example.com/image.jpg")
 }
