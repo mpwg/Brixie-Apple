@@ -108,7 +108,7 @@ final class DIContainer: @unchecked Sendable {
 // MARK: - Environment Key
 
 struct DIContainerKey: EnvironmentKey {
-    static let defaultValue = DIContainer.shared
+    @MainActor static let defaultValue = DIContainer.shared
 }
 
 extension EnvironmentValues {

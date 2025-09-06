@@ -7,10 +7,10 @@
 
 import Foundation
 
-final class LegoSetRepositoryImpl: LegoSetRepository {
+final class LegoSetRepositoryImpl: LegoSetRepository, @unchecked Sendable {
     private let remoteDataSource: LegoSetRemoteDataSource
     private let localDataSource: LocalDataSource
-    
+
     init(remoteDataSource: LegoSetRemoteDataSource, localDataSource: LocalDataSource) {
         self.remoteDataSource = remoteDataSource
         self.localDataSource = localDataSource
