@@ -8,19 +8,38 @@
 import Foundation
 import SwiftUI
 
-#if canImport(UIKit)
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
 import UIKit
+typealias PlatformImage = UIImage
+#elseif os(macOS)
+import AppKit
+typealias PlatformImage = NSImage
 #endif
 
-#if canImport(AppKit)
-import AppKit
+// Cross-platform image extensions
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+extension UIImage {
+    func imageData() -> Data? {
+        return self.jpegData(compressionQuality: 0.8)
+    }
+}
+#elseif os(macOS)
+extension NSImage {
+    func imageData() -> Data? {
+        guard let tiffData = self.tiffRepresentation,
+              let bitmapImageRep = NSBitmapImageRep(data: tiffData) else {
+            return nil
+        }
+        return bitmapImageRep.representation(using: .jpeg, properties: [.compressionFactor: 0.8])
+    }
+}
 #endif
 
 @Observable
 class ImageCacheService {
     static let shared = ImageCacheService()
     
-    private let cache = NSCache<NSString, UIImage>()
+    private let cache = NSCache<NSString, PlatformImage>()
     private let fileManager = FileManager.default
     private let cacheDirectory: URL
     
@@ -37,7 +56,7 @@ class ImageCacheService {
         cache.totalCostLimit = 50 * 1024 * 1024 // 50MB
     }
     
-    func loadImage(from urlString: String) async -> UIImage? {
+    func loadImage(from urlString: String) async -> PlatformImage? {
         // Check memory cache first
         if let cachedImage = cache.object(forKey: NSString(string: urlString)) {
             return cachedImage
@@ -48,7 +67,7 @@ class ImageCacheService {
         let fileURL = cacheDirectory.appendingPathComponent("\(cacheKey).jpg")
         
         if let imageData = try? Data(contentsOf: fileURL),
-           let image = UIImage(data: imageData) {
+           let image = PlatformImage(data: imageData) {
             // Store in memory cache
             cache.setObject(image, forKey: NSString(string: urlString))
             return image
@@ -58,12 +77,12 @@ class ImageCacheService {
         return await downloadAndCacheImage(from: urlString)
     }
     
-    private func downloadAndCacheImage(from urlString: String) async -> UIImage? {
+    private func downloadAndCacheImage(from urlString: String) async -> PlatformImage? {
         guard let url = URL(string: urlString) else { return nil }
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            guard let image = UIImage(data: data) else { return nil }
+            guard let image = PlatformImage(data: data) else { return nil }
             
             // Store in memory cache
             cache.setObject(image, forKey: NSString(string: urlString))
@@ -72,8 +91,9 @@ class ImageCacheService {
             let cacheKey = urlString.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? urlString
             let fileURL = cacheDirectory.appendingPathComponent("\(cacheKey).jpg")
             
-            if let jpegData = image.jpegData(compressionQuality: 0.8) {
-                try jpegData.write(to: fileURL)
+            // Cross-platform image data conversion
+            if let imageData = image.imageData() {
+                try imageData.write(to: fileURL)
             }
             
             return image
@@ -130,7 +150,7 @@ struct AsyncCachedImage: View {
     let urlString: String?
     let placeholder: Image
     
-    @State private var image: UIImage?
+    @State private var image: PlatformImage?
     @State private var isLoading = true
     
     init(urlString: String?, placeholder: Image = Image(systemName: "photo")) {
@@ -141,8 +161,13 @@ struct AsyncCachedImage: View {
     var body: some View {
         Group {
             if let image = image {
+                #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
                 Image(uiImage: image)
                     .resizable()
+                #elseif os(macOS)
+                Image(nsImage: image)
+                    .resizable()
+                #endif
             } else if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)

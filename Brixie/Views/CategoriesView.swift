@@ -10,6 +10,7 @@ import SwiftData
 
 struct CategoriesView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var apiKeyManager = APIKeyManager.shared
     @State private var themeService: LegoThemeService?
     @State private var themes: [LegoTheme] = []
@@ -48,7 +49,7 @@ struct CategoriesView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.brixieBackground
+                Color.brixieBackground(for: colorScheme)
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -254,7 +255,7 @@ struct ModernCategoryRowView: View {
                         .font(.system(size: 24, weight: .medium))
                         .foregroundStyle(Color.brixieAccent)
                 }
-                .brixieGlow(color: .brixieAccent.opacity(0.4))
+                .brixieGlow(color: Color.brixieAccent.opacity(0.4))
                 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(theme.name)

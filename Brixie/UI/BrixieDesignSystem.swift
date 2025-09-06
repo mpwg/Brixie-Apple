@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-// MARK: - Colors
+// MARK: - Pure SwiftUI Colors (No UIKit/AppKit Dependencies)
 extension Color {
     // Light Theme Colors
     static let brixieBackgroundLight = Color(red: 0.97, green: 0.97, blue: 0.99)
@@ -30,21 +30,41 @@ extension Color {
     static let brixieGradientStart = Color(red: 0.0, green: 0.35, blue: 0.8)
     static let brixieGradientEnd = Color(red: 0.2, green: 0.6, blue: 1.0)
     
-    // Adaptive Colors
-    static let brixieBackground = Color(light: .brixieBackgroundLight, dark: .brixieBackgroundDark)
-    static let brixieCard = Color(light: .brixieCardLight, dark: .brixieCardDark)
-    static let brixieText = Color(light: .brixieTextLight, dark: .brixieTextDark)
-    static let brixieTextSecondary = Color(light: .brixieTextSecondaryLight, dark: .brixieTextSecondaryDark)
-    static let brixieSecondary = Color(light: .brixieSecondaryLight, dark: .brixieSecondaryDark)
 }
 
-// Helper extension for adaptive colors
+// Helper functions to get adaptive colors based on ColorScheme
 extension Color {
-    init(light: Color, dark: Color) {
-        self.init(UIColor { traitCollection in
-            traitCollection.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
-        })
+    static func brixieBackground(for colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? .brixieBackgroundDark : .brixieBackgroundLight
     }
+    
+    static func brixieCard(for colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? .brixieCardDark : .brixieCardLight
+    }
+    
+    static func brixieText(for colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? .brixieTextDark : .brixieTextLight
+    }
+    
+    static func brixieTextSecondary(for colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? .brixieTextSecondaryDark : .brixieTextSecondaryLight
+    }
+    
+    static func brixieSecondary(for colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? .brixieSecondaryDark : .brixieSecondaryLight
+    }
+    
+    static func brixieShadow(for colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? .black.opacity(0.3) : .black.opacity(0.1)
+    }
+    
+    // Convenience static properties that work with @Environment
+    static var brixieBackground: Color { .brixieBackgroundDark } // Default fallback
+    static var brixieCard: Color { .brixieCardDark }
+    static var brixieText: Color { .brixieTextDark }
+    static var brixieTextSecondary: Color { .brixieTextSecondaryDark }
+    static var brixieSecondary: Color { .brixieSecondaryDark }
+
 }
 
 // MARK: - Gradients
@@ -74,11 +94,32 @@ extension Font {
 // MARK: - Shadows
 extension View {
     func brixieCardShadow() -> some View {
-        self.shadow(color: Color(light: .black.opacity(0.1), dark: .black.opacity(0.3)), radius: 12, x: 0, y: 6)
+        self.modifier(BrixieCardShadowModifier())
     }
+}
+
+// ViewModifier for adaptive card shadow
+struct BrixieCardShadowModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
     
+    func body(content: Content) -> some View {
+        content.shadow(color: Color.brixieShadow(for: colorScheme), radius: 12, x: 0, y: 6)
+    }
+}
+
+// ViewModifier for glow effect
+struct BrixieGlowModifier: ViewModifier {
+    let color: Color
+    
+    func body(content: Content) -> some View {
+        content.shadow(color: color.opacity(0.6), radius: 8, x: 0, y: 0)
+    }
+}
+
+// Extension to add glow effect
+extension View {
     func brixieGlow(color: Color = .brixieAccent) -> some View {
-        self.shadow(color: color.opacity(0.6), radius: 8, x: 0, y: 0)
+        self.modifier(BrixieGlowModifier(color: color))
     }
 }
 
@@ -86,6 +127,7 @@ extension View {
 struct BrixieCard<Content: View>: View {
     let content: Content
     let gradient: Bool
+    @Environment(\.colorScheme) private var colorScheme
     
     init(gradient: Bool = false, @ViewBuilder content: () -> Content) {
         self.gradient = gradient
@@ -96,13 +138,21 @@ struct BrixieCard<Content: View>: View {
         content
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(gradient ? LinearGradient.brixieCard : LinearGradient(colors: [.brixieCard], startPoint: .top, endPoint: .bottom))
+                    .fill(cardGradient)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
                             .stroke(.white.opacity(0.1), lineWidth: 1)
                     )
             )
             .brixieCardShadow()
+    }
+    
+    private var cardGradient: LinearGradient {
+        if gradient {
+            return LinearGradient.brixieCard
+        } else {
+            return LinearGradient(colors: [Color.brixieCard(for: colorScheme)], startPoint: .top, endPoint: .bottom)
+        }
     }
 }
 
@@ -130,7 +180,7 @@ struct BrixieButtonStyle: ButtonStyle {
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-            .brixieGlow(color: variant == .primary ? .brixieAccent : .clear)
+            .brixieGlow(color: variant == .primary ? Color.brixieAccent : .clear)
     }
     
     private var backgroundColor: LinearGradient {
