@@ -10,6 +10,7 @@ import SwiftData
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(ThemeManager.self) private var themeManager
     @StateObject private var apiKeyManager = APIKeyManager.shared
     @State private var showingAPIKeyAlert = false
@@ -19,7 +20,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.brixieBackground
+                Color.brixieBackground(for: colorScheme)
                     .ignoresSafeArea()
                 
                 ScrollView {

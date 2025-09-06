@@ -10,12 +10,13 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(ThemeManager.self) private var themeManager
     @State private var selectedTab = 0
     
     var body: some View {
         ZStack {
-            Color.brixieBackground
+            Color.brixieBackground(for: colorScheme)
                 .ignoresSafeArea()
             
             TabView(selection: $selectedTab) {
