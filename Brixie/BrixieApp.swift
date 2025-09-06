@@ -7,12 +7,16 @@
 
 import SwiftUI
 import SwiftData
+import Observation
 
 @main
 struct BrixieApp: App {
+    @State private var themeManager = ThemeManager.shared
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             LegoSet.self,
+            LegoTheme.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -26,6 +30,8 @@ struct BrixieApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(themeManager)
+                .preferredColorScheme(themeManager.colorScheme)
         }
         .modelContainer(sharedModelContainer)
     }
