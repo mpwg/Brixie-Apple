@@ -28,7 +28,7 @@ final class LegoThemeRepositoryImpl: LegoThemeRepository {
             return remoteThemes
         } catch {
             if case BrixieError.networkError = error {
-                let cachedThemes = getCachedThemes()
+                let cachedThemes = await getCachedThemes()
                 if !cachedThemes.isEmpty {
                     return cachedThemes
                 }
@@ -41,7 +41,7 @@ final class LegoThemeRepositoryImpl: LegoThemeRepository {
         do {
             return try await remoteDataSource.searchThemes(query: query, page: page, pageSize: pageSize)
         } catch {
-            let cachedThemes = getCachedThemes()
+            let cachedThemes = await getCachedThemes()
             return cachedThemes.filter { theme in
                 theme.name.localizedCaseInsensitiveContains(query)
             }
@@ -56,12 +56,12 @@ final class LegoThemeRepositoryImpl: LegoThemeRepository {
             }
             return nil
         } catch {
-            let cachedThemes = getCachedThemes()
+            let cachedThemes = await getCachedThemes()
             return cachedThemes.first { $0.id == id }
         }
     }
     
-    func getCachedThemes() -> [LegoTheme] {
+    func getCachedThemes() async -> [LegoTheme] {
         do {
             return try localDataSource.fetch(LegoTheme.self)
         } catch {

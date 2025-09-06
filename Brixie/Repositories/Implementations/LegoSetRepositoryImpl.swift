@@ -28,7 +28,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             return remoteSets
         } catch {
             if case BrixieError.networkError = error {
-                let cachedSets = getCachedSets()
+                let cachedSets = await getCachedSets()
                 if !cachedSets.isEmpty {
                     return cachedSets
                 }
@@ -41,7 +41,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
         do {
             return try await remoteDataSource.searchSets(query: query, page: page, pageSize: pageSize)
         } catch {
-            let cachedSets = getCachedSets()
+            let cachedSets = await getCachedSets()
             return cachedSets.filter { set in
                 set.name.localizedCaseInsensitiveContains(query) ||
                 set.setNum.localizedCaseInsensitiveContains(query)
@@ -57,12 +57,12 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             }
             return nil
         } catch {
-            let cachedSets = getCachedSets()
+            let cachedSets = await getCachedSets()
             return cachedSets.first { $0.setNum == setNum }
         }
     }
     
-    func getCachedSets() -> [LegoSet] {
+    func getCachedSets() async -> [LegoSet] {
         do {
             return try localDataSource.fetch(LegoSet.self)
         } catch {
