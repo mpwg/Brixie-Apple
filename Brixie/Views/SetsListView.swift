@@ -194,6 +194,7 @@ struct SetRowView: View {
                 Text(set.name)
                     .font(.headline)
                     .lineLimit(2)
+                    .foregroundStyle(.primary)
                 
                 Text(String(format: NSLocalizedString("Set #%@", comment: "Set number display"), set.setNum))
                     .font(.subheadline)
