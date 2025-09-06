@@ -58,7 +58,12 @@ extension Color {
         colorScheme == .dark ? .black.opacity(0.3) : .black.opacity(0.1)
     }
     
-    // Convenience static properties that work with @Environment
+    // Convenience static properties that work with @Environment - fallback to dark theme
+    static let brixieBackground = brixieBackgroundDark
+    static let brixieCard = brixieCardDark  
+    static let brixieText = brixieTextDark
+    static let brixieTextSecondary = brixieTextSecondaryDark
+    static let brixieSecondary = brixieSecondaryDark
 }
 
 // MARK: - Gradients
@@ -70,7 +75,7 @@ extension LinearGradient {
     )
     
     static let brixieCard = LinearGradient(
-        colors: [.brixieCard, Color.brixieCard.opacity(0.8)],
+        colors: [Color.brixieCardDark, Color.brixieCardDark.opacity(0.8)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -153,6 +158,7 @@ struct BrixieCard<Content: View>: View {
 // MARK: - Button Styles
 struct BrixieButtonStyle: ButtonStyle {
     let variant: Variant
+    @Environment(\.colorScheme) private var colorScheme
     
     enum Variant {
         case primary, secondary, ghost
@@ -182,7 +188,7 @@ struct BrixieButtonStyle: ButtonStyle {
         case .primary:
             return .brixiePrimary
         case .secondary:
-            return LinearGradient(colors: [.brixieCard], startPoint: .top, endPoint: .bottom)
+            return LinearGradient(colors: [Color.brixieCard(for: colorScheme)], startPoint: .top, endPoint: .bottom)
         case .ghost:
             return LinearGradient(colors: [.clear], startPoint: .top, endPoint: .bottom)
         }
@@ -191,7 +197,7 @@ struct BrixieButtonStyle: ButtonStyle {
     private var foregroundColor: Color {
         switch variant {
         case .primary, .secondary:
-            return .brixieText
+            return Color.brixieText(for: colorScheme)
         case .ghost:
             return .brixieAccent
         }
