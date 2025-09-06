@@ -340,6 +340,7 @@ struct SettingsView: View {
                                     .foregroundStyle(Color.brixieAccent)
                                 
                                 Text(NSLocalizedString("Powered by Rebrickable", comment: "Rebrickable link"))
+                                    .font(.brixieBody)
                                     .foregroundStyle(Color.brixieAccent)
                                 
                                 Spacer()
