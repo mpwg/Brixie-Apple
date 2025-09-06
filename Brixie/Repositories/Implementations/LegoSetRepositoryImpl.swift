@@ -21,14 +21,14 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             let remoteSets = try await remoteDataSource.fetchSets(page: page, pageSize: pageSize)
             
             if page == 1 {
-                try await localDataSource.deleteAll(LegoSet.self)
+                try localDataSource.deleteAll(LegoSet.self)
             }
             
-            try await localDataSource.save(remoteSets)
+            try localDataSource.save(remoteSets)
             return remoteSets
         } catch {
             if case BrixieError.networkError = error {
-                let cachedSets = await getCachedSets()
+                let cachedSets = getCachedSets()
                 if !cachedSets.isEmpty {
                     return cachedSets
                 }
@@ -41,7 +41,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
         do {
             return try await remoteDataSource.searchSets(query: query, page: page, pageSize: pageSize)
         } catch {
-            let cachedSets = await getCachedSets()
+            let cachedSets = getCachedSets()
             return cachedSets.filter { set in
                 set.name.localizedCaseInsensitiveContains(query) ||
                 set.setNum.localizedCaseInsensitiveContains(query)
@@ -52,39 +52,37 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
     func getSetDetails(setNum: String) async throws -> LegoSet? {
         do {
             if let remoteSet = try await remoteDataSource.getSetDetails(setNum: setNum) {
-                try await localDataSource.save([remoteSet])
+                try localDataSource.save([remoteSet])
                 return remoteSet
             }
             return nil
         } catch {
-            let cachedSets = await getCachedSets()
+            let cachedSets = getCachedSets()
             return cachedSets.first { $0.setNum == setNum }
         }
     }
     
-    func getCachedSets() async -> [LegoSet] {
+    func getCachedSets() -> [LegoSet] {
         do {
-            return try await localDataSource.fetch(LegoSet.self)
+            return try localDataSource.fetch(LegoSet.self)
         } catch {
             return []
         }
     }
     
     func markAsFavorite(_ set: LegoSet) async throws {
-        var updatedSet = set
-        updatedSet.isFavorite = true
-        try await localDataSource.save([updatedSet])
+        set.isFavorite = true
+        try localDataSource.save([set])
     }
     
     func removeFromFavorites(_ set: LegoSet) async throws {
-        var updatedSet = set
-        updatedSet.isFavorite = false
-        try await localDataSource.save([updatedSet])
+        set.isFavorite = false
+        try localDataSource.save([set])
     }
     
     func getFavoriteSets() async -> [LegoSet] {
         do {
-            return try await localDataSource.fetch(
+            return try localDataSource.fetch(
                 LegoSet.self,
                 predicate: #Predicate<LegoSet> { $0.isFavorite }
             )

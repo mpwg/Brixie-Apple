@@ -21,14 +21,14 @@ final class LegoThemeRepositoryImpl: LegoThemeRepository {
             let remoteThemes = try await remoteDataSource.fetchThemes(page: page, pageSize: pageSize)
             
             if page == 1 {
-                try await localDataSource.deleteAll(LegoTheme.self)
+                try localDataSource.deleteAll(LegoTheme.self)
             }
             
-            try await localDataSource.save(remoteThemes)
+            try localDataSource.save(remoteThemes)
             return remoteThemes
         } catch {
             if case BrixieError.networkError = error {
-                let cachedThemes = await getCachedThemes()
+                let cachedThemes = getCachedThemes()
                 if !cachedThemes.isEmpty {
                     return cachedThemes
                 }
@@ -41,7 +41,7 @@ final class LegoThemeRepositoryImpl: LegoThemeRepository {
         do {
             return try await remoteDataSource.searchThemes(query: query, page: page, pageSize: pageSize)
         } catch {
-            let cachedThemes = await getCachedThemes()
+            let cachedThemes = getCachedThemes()
             return cachedThemes.filter { theme in
                 theme.name.localizedCaseInsensitiveContains(query)
             }
@@ -51,19 +51,19 @@ final class LegoThemeRepositoryImpl: LegoThemeRepository {
     func getThemeDetails(id: Int) async throws -> LegoTheme? {
         do {
             if let remoteTheme = try await remoteDataSource.getThemeDetails(id: id) {
-                try await localDataSource.save([remoteTheme])
+                try localDataSource.save([remoteTheme])
                 return remoteTheme
             }
             return nil
         } catch {
-            let cachedThemes = await getCachedThemes()
+            let cachedThemes = getCachedThemes()
             return cachedThemes.first { $0.id == id }
         }
     }
     
-    func getCachedThemes() async -> [LegoTheme] {
+    func getCachedThemes() -> [LegoTheme] {
         do {
-            return try await localDataSource.fetch(LegoTheme.self)
+            return try localDataSource.fetch(LegoTheme.self)
         } catch {
             return []
         }

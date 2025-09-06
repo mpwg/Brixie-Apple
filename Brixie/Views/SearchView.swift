@@ -9,14 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct SearchView: View {
-    @Environment(\.modelContext) private var modelContext
-    @StateObject private var apiKeyManager = APIKeyManager.shared
-    @State private var searchText = ""
-    @State private var searchResults: [LegoSet] = []
-    @State private var isSearching = false
-    @State private var legoSetService: LegoSetService?
-    @State private var recentSearches: [String] = []
-    @State private var showingNoResults = false
+    @Environment(\.diContainer) private var diContainer
+    @State private var viewModel: SearchViewModel?
     @State private var showingAPIKeyAlert = false
     
     var body: some View {
@@ -26,10 +20,14 @@ struct SearchView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    if !apiKeyManager.hasValidAPIKey {
-                        noServiceView
+                    if let vm = viewModel {
+                        if !vm.hasAPIKey {
+                            noServiceView
+                        } else {
+                            searchContentView
+                        }
                     } else {
-                        searchContentView
+                        ProgressView("Loading...")
                     }
                 }
             }
@@ -42,13 +40,18 @@ struct SearchView: View {
                         .foregroundStyle(Color.brixieText)
                 }
             }
-            .searchable(text: $searchText, prompt: "Search LEGO sets...") {
-                if !recentSearches.isEmpty {
+            .searchable(text: Binding(
+                get: { viewModel?.searchText ?? "" },
+                set: { viewModel?.searchText = $0 }
+            ), prompt: "Search LEGO sets...") {
+                if let vm = viewModel, !vm.recentSearches.isEmpty {
                     Section("Recent Searches") {
-                        ForEach(recentSearches, id: \.self) { search in
+                        ForEach(vm.recentSearches, id: \.self) { search in
                             Button {
-                                searchText = search
-                                performSearch()
+                                vm.searchText = search
+                                Task {
+                                    await vm.performSearch()
+                                }
                             } label: {
                                 HStack {
                                     Image(systemName: "clock.arrow.circlepath")
@@ -65,22 +68,28 @@ struct SearchView: View {
                 }
             }
             .onSubmit(of: .search) {
-                performSearch()
+                Task {
+                    await viewModel?.performSearch()
+                }
             }
-            .onChange(of: searchText) { _, newValue in
+            .onChange(of: viewModel?.searchText ?? "") { _, newValue in
                 if newValue.isEmpty {
-                    searchResults = []
-                    showingNoResults = false
+                    viewModel?.clearResults()
                 }
             }
         }
         .onAppear {
-            setupServiceIfNeeded()
+            if viewModel == nil {
+                viewModel = diContainer.makeSearchViewModel()
+            }
         }
         .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            TextField("Rebrickable API Key", text: $apiKeyManager.apiKey)
+            TextField("Rebrickable API Key", text: Binding(
+                get: { diContainer.apiKeyManager.apiKey },
+                set: { diContainer.apiKeyManager.apiKey = $0 }
+            ))
             Button("Save") {
-                setupServiceIfNeeded()
+                // Key is automatically saved via binding
             }
             Button("Cancel", role: .cancel) { }
         } message: {
@@ -110,14 +119,16 @@ struct SearchView: View {
     
     private var searchContentView: some View {
         Group {
-            if searchText.isEmpty {
-                recentSearchesView
-            } else if isSearching {
-                modernLoadingView
-            } else if searchResults.isEmpty && showingNoResults {
-                modernNoResultsView
-            } else {
-                modernSearchResultsView
+            if let vm = viewModel {
+                if vm.searchText.isEmpty {
+                    recentSearchesView
+                } else if vm.isSearching {
+                    modernLoadingView
+                } else if vm.searchResults.isEmpty && vm.showingNoResults {
+                    modernNoResultsView
+                } else {
+                    modernSearchResultsView
+                }
             }
         }
     }
@@ -125,7 +136,7 @@ struct SearchView: View {
     private var recentSearchesView: some View {
         ScrollView {
             VStack(spacing: 24) {
-                if !recentSearches.isEmpty {
+                if let vm = viewModel, !vm.recentSearches.isEmpty {
                     VStack(alignment: .leading, spacing: 16) {
                             HStack {
                             Text(NSLocalizedString("Recent Searches", comment: "Recent searches heading"))
@@ -137,10 +148,12 @@ struct SearchView: View {
                         
                         ScrollView(.horizontal, showsIndicators: false) {
                             LazyHStack(spacing: 12) {
-                                ForEach(recentSearches, id: \.self) { search in
+                                ForEach(vm.recentSearches, id: \.self) { search in
                                     Button {
-                                        searchText = search
-                                        performSearch()
+                                        vm.searchText = search
+                                        Task {
+                                            await vm.performSearch()
+                                        }
                                     } label: {
                                         HStack(spacing: 6) {
                                             Image(systemName: "clock.arrow.circlepath")
@@ -193,13 +206,11 @@ struct SearchView: View {
     private var modernNoResultsView: some View {
         BrixieHeroSection(
             title: "No Results Found",
-            subtitle: String(format: NSLocalizedString("No sets found for '%@'. Try a different search term.", comment: "No results message"), searchText),
+            subtitle: String(format: NSLocalizedString("No sets found for '%@'. Try a different search term.", comment: "No results message"), viewModel?.searchText ?? ""),
             icon: "magnifyingglass"
         ) {
             Button("Clear Search") {
-                searchText = ""
-                searchResults = []
-                showingNoResults = false
+                viewModel?.clearSearch()
             }
             .buttonStyle(BrixieButtonStyle(variant: .secondary))
         }
@@ -208,63 +219,29 @@ struct SearchView: View {
     private var modernSearchResultsView: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
-                HStack {
-                    Text("\(searchResults.count) results")
-                        .font(.brixieSubhead)
-                        .foregroundStyle(Color.brixieTextSecondary)
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                
-                ForEach(searchResults) { set in
-                    NavigationLink(destination: SetDetailView(set: set)) {
-                        SetRowView(set: set)
+                if let vm = viewModel {
+                    HStack {
+                        Text("\(vm.searchResults.count) results")
+                            .font(.brixieSubhead)
+                            .foregroundStyle(Color.brixieTextSecondary)
+                        Spacer()
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    
+                    ForEach(vm.searchResults) { set in
+                        NavigationLink(destination: SetDetailView(set: set)) {
+                            SetRowView(set: set, onFavoriteToggle: { set in
+                                Task {
+                                    await vm.toggleFavorite(for: set)
+                                }
+                            })
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
                 }
             }
             .padding(.horizontal, 20)
-        }
-    }
-    
-    private func setupServiceIfNeeded() {
-        if apiKeyManager.hasValidAPIKey && legoSetService == nil {
-            legoSetService = LegoSetService(modelContext: modelContext, apiKey: apiKeyManager.apiKey)
-        }
-    }
-    
-    private func performSearch() {
-        guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-              let service = legoSetService else { return }
-        
-        // Add to recent searches
-        let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !recentSearches.contains(trimmedSearch) {
-            recentSearches.insert(trimmedSearch, at: 0)
-            if recentSearches.count > 5 {
-                recentSearches = Array(recentSearches.prefix(5))
-            }
-        }
-        
-        isSearching = true
-        showingNoResults = false
-        
-        Task {
-            do {
-                let results = try await service.searchSets(query: trimmedSearch)
-                await MainActor.run {
-                    searchResults = results
-                    isSearching = false
-                    showingNoResults = results.isEmpty
-                }
-            } catch {
-                await MainActor.run {
-                    searchResults = []
-                    isSearching = false
-                    showingNoResults = true
-                }
-            }
         }
     }
 }

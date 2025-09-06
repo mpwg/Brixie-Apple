@@ -16,11 +16,9 @@ protocol LegoThemeRemoteDataSource: Sendable {
 
 final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
     private let apiKeyManager: APIKeyManager
-    private let apiClient: ThemesAPI
     
     init(apiKeyManager: APIKeyManager) {
         self.apiKeyManager = apiKeyManager
-        self.apiClient = ThemesAPI()
     }
     
     func fetchThemes(page: Int, pageSize: Int) async throws -> [LegoTheme] {
@@ -29,20 +27,23 @@ final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
         }
         
         do {
-            let result = try await apiClient.themesList(
-                key: apiKeyManager.apiKey,
+            // Set API key globally
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            
+            let response = try await LegoAPI.legoThemesList(
                 page: page,
                 pageSize: pageSize,
                 ordering: "name"
             )
             
-            return result.results?.compactMap { apiTheme in
+            return response.results.map { apiTheme in
                 LegoTheme(
-                    id: apiTheme.id ?? 0,
-                    name: apiTheme.name ?? "",
-                    parentId: apiTheme.parentID
+                    id: apiTheme.id,
+                    name: apiTheme.name,
+                    parentId: apiTheme.parentId,
+                    setCount: 0 // TODO: Get actual set count
                 )
-            } ?? []
+            }
         } catch {
             throw BrixieError.networkError(underlying: error)
         }
@@ -54,21 +55,23 @@ final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
         }
         
         do {
-            let result = try await apiClient.themesList(
-                key: apiKeyManager.apiKey,
+            // Set API key globally
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            
+            let response = try await LegoAPI.legoThemesList(
                 page: page,
                 pageSize: pageSize,
-                search: query,
                 ordering: "name"
             )
             
-            return result.results?.compactMap { apiTheme in
+            return response.results.map { apiTheme in
                 LegoTheme(
-                    id: apiTheme.id ?? 0,
-                    name: apiTheme.name ?? "",
-                    parentId: apiTheme.parentID
+                    id: apiTheme.id,
+                    name: apiTheme.name,
+                    parentId: apiTheme.parentId,
+                    setCount: 0 // TODO: Get actual set count
                 )
-            } ?? []
+            }
         } catch {
             throw BrixieError.networkError(underlying: error)
         }
@@ -80,15 +83,16 @@ final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
         }
         
         do {
-            let apiTheme = try await apiClient.themesRead(
-                id: id,
-                key: apiKeyManager.apiKey
-            )
+            // Set API key globally
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            
+            let apiTheme = try await LegoAPI.legoThemesRead(id: id)
             
             return LegoTheme(
-                id: apiTheme.id ?? 0,
-                name: apiTheme.name ?? "",
-                parentId: apiTheme.parentID
+                id: apiTheme.id,
+                name: apiTheme.name,
+                parentId: apiTheme.parentId,
+                setCount: 0 // TODO: Get actual set count
             )
         } catch {
             throw BrixieError.networkError(underlying: error)

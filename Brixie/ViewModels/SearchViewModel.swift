@@ -19,6 +19,8 @@ final class SearchViewModel {
     var isSearching = false
     var error: BrixieError?
     var selectedFilter: SearchFilter = .all
+    var recentSearches: [String] = []
+    var showingNoResults = false
     
     init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository, apiKeyManager: APIKeyManager) {
         self.legoSetRepository = legoSetRepository
@@ -26,42 +28,56 @@ final class SearchViewModel {
         self.apiKeyManager = apiKeyManager
     }
     
-    func search(_ query: String) async {
-        guard !query.isEmpty else {
-            searchResults = []
+    func performSearch() async {
+        guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            clearResults()
             return
         }
         
-        searchText = query
+        let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Add to recent searches
+        if !recentSearches.contains(trimmedSearch) {
+            recentSearches.insert(trimmedSearch, at: 0)
+            if recentSearches.count > 5 {
+                recentSearches = Array(recentSearches.prefix(5))
+            }
+        }
+        
         isSearching = true
+        showingNoResults = false
         error = nil
         
         defer { isSearching = false }
         
         do {
-            switch selectedFilter {
-            case .all, .sets:
-                let results = try await legoSetRepository.searchSets(
-                    query: query,
-                    page: 1,
-                    pageSize: 50
-                )
-                searchResults = results
-            case .themes:
-                let themes = try await legoThemeRepository.searchThemes(
-                    query: query,
-                    page: 1,
-                    pageSize: 50
-                )
-                searchResults = []
-            }
+            let results = try await legoSetRepository.searchSets(
+                query: trimmedSearch,
+                page: 1,
+                pageSize: 50
+            )
+            searchResults = results
+            showingNoResults = results.isEmpty
         } catch let brixieError as BrixieError {
             error = brixieError
             searchResults = []
+            showingNoResults = true
         } catch {
             self.error = BrixieError.networkError(underlying: error)
             searchResults = []
+            showingNoResults = true
         }
+    }
+    
+    func search(_ query: String) async {
+        searchText = query
+        await performSearch()
+    }
+    
+    func clearResults() {
+        searchResults = []
+        showingNoResults = false
+        error = nil
     }
     
     func clearSearch() {

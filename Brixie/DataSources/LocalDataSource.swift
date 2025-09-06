@@ -8,17 +8,22 @@
 import Foundation
 import SwiftData
 
-protocol LocalDataSource: Sendable {
-    func save<T: PersistentModel>(_ items: [T]) async throws
-    func fetch<T: PersistentModel>(_ type: T.Type) async throws -> [T]
-    func fetch<T: PersistentModel>(_ type: T.Type, predicate: Predicate<T>?) async throws -> [T]
-    func delete<T: PersistentModel>(_ item: T) async throws
-    func deleteAll<T: PersistentModel>(_ type: T.Type) async throws
+protocol LocalDataSource {
+    func save<T: PersistentModel>(_ items: [T]) throws
+    func fetch<T: PersistentModel>(_ type: T.Type) throws -> [T]
+    func fetch<T: PersistentModel>(_ type: T.Type, predicate: Predicate<T>?) throws -> [T]
+    func delete<T: PersistentModel>(_ item: T) throws
+    func deleteAll<T: PersistentModel>(_ type: T.Type) throws
 }
 
-@ModelActor
-final actor SwiftDataSource: LocalDataSource {
-    func save<T: PersistentModel>(_ items: [T]) async throws {
+final class SwiftDataSource: LocalDataSource {
+    private let modelContext: ModelContext
+    
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+    }
+    
+    func save<T: PersistentModel>(_ items: [T]) throws {
         for item in items {
             modelContext.insert(item)
         }
@@ -30,7 +35,7 @@ final actor SwiftDataSource: LocalDataSource {
         }
     }
     
-    func fetch<T: PersistentModel>(_ type: T.Type) async throws -> [T] {
+    func fetch<T: PersistentModel>(_ type: T.Type) throws -> [T] {
         do {
             let descriptor = FetchDescriptor<T>()
             return try modelContext.fetch(descriptor)
@@ -39,7 +44,7 @@ final actor SwiftDataSource: LocalDataSource {
         }
     }
     
-    func fetch<T: PersistentModel>(_ type: T.Type, predicate: Predicate<T>?) async throws -> [T] {
+    func fetch<T: PersistentModel>(_ type: T.Type, predicate: Predicate<T>?) throws -> [T] {
         do {
             var descriptor = FetchDescriptor<T>()
             if let predicate = predicate {
@@ -51,7 +56,7 @@ final actor SwiftDataSource: LocalDataSource {
         }
     }
     
-    func delete<T: PersistentModel>(_ item: T) async throws {
+    func delete<T: PersistentModel>(_ item: T) throws {
         modelContext.delete(item)
         
         do {
@@ -61,7 +66,7 @@ final actor SwiftDataSource: LocalDataSource {
         }
     }
     
-    func deleteAll<T: PersistentModel>(_ type: T.Type) async throws {
+    func deleteAll<T: PersistentModel>(_ type: T.Type) throws {
         do {
             try modelContext.delete(model: type)
             try modelContext.save()

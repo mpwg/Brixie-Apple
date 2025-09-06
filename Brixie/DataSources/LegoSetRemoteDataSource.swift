@@ -16,11 +16,9 @@ protocol LegoSetRemoteDataSource: Sendable {
 
 final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
     private let apiKeyManager: APIKeyManager
-    private let apiClient: SetsAPI
     
     init(apiKeyManager: APIKeyManager) {
         self.apiKeyManager = apiKeyManager
-        self.apiClient = SetsAPI()
     }
     
     func fetchSets(page: Int, pageSize: Int) async throws -> [LegoSet] {
@@ -29,36 +27,27 @@ final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
         }
         
         do {
-            let result = try await apiClient.setsList(
-                key: apiKeyManager.apiKey,
+            // Set API key globally
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            
+            let response = try await LegoAPI.legoSetsList(
                 page: page,
                 pageSize: pageSize,
                 ordering: "-year"
             )
             
-            return result.results?.compactMap { apiSet in
+            return response.results.map { apiSet in
                 LegoSet(
                     setNum: apiSet.setNum ?? "",
                     name: apiSet.name ?? "",
                     year: apiSet.year ?? 0,
-                    themeId: apiSet.themeID ?? 0,
+                    themeId: apiSet.themeId ?? 0,
                     numParts: apiSet.numParts ?? 0,
-                    imageURL: apiSet.setImgURL
+                    imageURL: apiSet.setImgUrl
                 )
-            } ?? []
-        } catch {
-            if let urlError = error as? URLError {
-                switch urlError.code {
-                case .notConnectedToInternet, .networkConnectionLost:
-                    throw BrixieError.networkError(underlying: error)
-                case .badServerResponse:
-                    throw BrixieError.serverError(statusCode: 500)
-                default:
-                    throw BrixieError.networkError(underlying: error)
-                }
-            } else {
-                throw BrixieError.networkError(underlying: error)
             }
+        } catch {
+            throw BrixieError.networkError(underlying: error)
         }
     }
     
@@ -68,24 +57,25 @@ final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
         }
         
         do {
-            let result = try await apiClient.setsList(
-                key: apiKeyManager.apiKey,
+            // Set API key globally
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            
+            let response = try await LegoAPI.legoSetsList(
                 page: page,
                 pageSize: pageSize,
-                search: query,
                 ordering: "-year"
             )
             
-            return result.results?.compactMap { apiSet in
+            return response.results.map { apiSet in
                 LegoSet(
                     setNum: apiSet.setNum ?? "",
                     name: apiSet.name ?? "",
                     year: apiSet.year ?? 0,
-                    themeId: apiSet.themeID ?? 0,
+                    themeId: apiSet.themeId ?? 0,
                     numParts: apiSet.numParts ?? 0,
-                    imageURL: apiSet.setImgURL
+                    imageURL: apiSet.setImgUrl
                 )
-            } ?? []
+            }
         } catch {
             throw BrixieError.networkError(underlying: error)
         }
@@ -97,18 +87,18 @@ final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
         }
         
         do {
-            let apiSet = try await apiClient.setsRead(
-                setNum: setNum,
-                key: apiKeyManager.apiKey
-            )
+            // Set API key globally
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            
+            let apiSet = try await LegoAPI.legoSetsRead(setNum: setNum)
             
             return LegoSet(
                 setNum: apiSet.setNum ?? "",
                 name: apiSet.name ?? "",
                 year: apiSet.year ?? 0,
-                themeId: apiSet.themeID ?? 0,
+                themeId: apiSet.themeId ?? 0,
                 numParts: apiSet.numParts ?? 0,
-                imageURL: apiSet.setImgURL
+                imageURL: apiSet.setImgUrl
             )
         } catch {
             throw BrixieError.networkError(underlying: error)

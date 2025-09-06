@@ -10,6 +10,7 @@ import SwiftData
 import SwiftUI
 
 @MainActor
+@Observable
 final class DIContainer: @unchecked Sendable {
     static let shared = DIContainer()
     
@@ -34,18 +35,18 @@ final class DIContainer: @unchecked Sendable {
     
     // MARK: - Managers
     
-    lazy var apiKeyManager: APIKeyManager = APIKeyManager()
-    lazy var themeManager: ThemeManager = ThemeManager.shared
+    var apiKeyManager: APIKeyManager = APIKeyManager.shared
+    var themeManager: ThemeManager = ThemeManager.shared
     
     // MARK: - Services
     
-    lazy var imageCacheService: ImageCacheService = ImageCacheService.shared
-    lazy var keychainManager: KeychainManager = KeychainManager.shared
+    var imageCacheService: ImageCacheService = ImageCacheService.shared
+    var keychainManager: KeychainManager = KeychainManager.shared
     
     // MARK: - Data Sources
     
     func makeLocalDataSource() -> LocalDataSource {
-        SwiftDataSource(modelContainer: modelContainer)
+        SwiftDataSource(modelContext: modelContainer.mainContext)
     }
     
     func makeLegoSetRemoteDataSource() -> LegoSetRemoteDataSource {
