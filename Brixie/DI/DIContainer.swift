@@ -9,14 +9,13 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-@MainActor
 @Observable
 final class DIContainer: @unchecked Sendable {
-    static let shared = DIContainer()
+    nonisolated static let shared = DIContainer()
     
     let modelContainer: ModelContainer
     
-    init(modelContainer: ModelContainer? = nil) {
+    nonisolated init(modelContainer: ModelContainer? = nil) {
         if let modelContainer = modelContainer {
             self.modelContainer = modelContainer
         } else {
@@ -108,7 +107,7 @@ final class DIContainer: @unchecked Sendable {
 // MARK: - Environment Key
 
 struct DIContainerKey: EnvironmentKey {
-    @MainActor static let defaultValue = DIContainer.shared
+    static let defaultValue = DIContainer.shared
 }
 
 extension EnvironmentValues {
