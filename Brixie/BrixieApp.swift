@@ -11,9 +11,9 @@ import Observation
 
 @main
 struct BrixieApp: App {
-    @State private var themeManager = ThemeManager.shared
+    private let diContainer: DIContainer
     
-    var sharedModelContainer: ModelContainer = {
+    init() {
         let schema = Schema([
             LegoSet.self,
             LegoTheme.self,
@@ -21,18 +21,20 @@ struct BrixieApp: App {
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            self.diContainer = DIContainer(modelContainer: modelContainer)
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
-    }()
+    }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(themeManager)
-                .preferredColorScheme(themeManager.colorScheme)
+                .environment(diContainer)
+                .environment(diContainer.themeManager)
+                .preferredColorScheme(diContainer.themeManager.colorScheme)
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(diContainer.modelContainer)
     }
 }

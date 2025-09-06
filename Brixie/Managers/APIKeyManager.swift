@@ -6,41 +6,34 @@
 //
 
 import SwiftUI
-import Combine
 import Foundation
 
+@Observable
 @MainActor
-final class APIKeyManager: ObservableObject {
+final class APIKeyManager {
     static let shared = APIKeyManager()
     
     private static let apiKeyStorageKey = "rebrickableAPIKey"
     
-    @Published var apiKey: String = ""
-    @Published var hasValidAPIKey: Bool = false
+    var apiKey: String = "" {
+        didSet {
+            hasValidAPIKey = !apiKey.isEmpty
+            if isInitialized {
+                storeAPIKey(apiKey)
+            }
+        }
+    }
+    
+    var hasValidAPIKey: Bool = false
     
     private var isInitialized = false
     
     private init() {
-        // Load the API key from secure Keychain storage
         let loadedKey = KeychainManager.shared.retrieve(for: Self.apiKeyStorageKey) ?? ""
         self.apiKey = loadedKey
         self.hasValidAPIKey = !loadedKey.isEmpty
         self.isInitialized = true
-        
-        $apiKey
-            .map { !$0.isEmpty }
-            .assign(to: &$hasValidAPIKey)
-        
-        // Set up the observer for future changes
-        $apiKey
-            .dropFirst() // Skip the initial value
-            .sink { [weak self] newValue in
-                self?.storeAPIKey(newValue)
-            }
-            .store(in: &cancellables)
     }
-    
-    private var cancellables = Set<AnyCancellable>()
     
     private func storeAPIKey(_ key: String) {
         guard isInitialized else { return }
