@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Brixie is a modern multi-platform SwiftUI application for browsing and searching LEGO sets using the Rebrickable API. The app targets iOS 26.0+, macOS 26.0+ (via Mac Catalyst), and visionOS 26.0+ with a focus on modern Swift concurrency and SwiftUI/SwiftData architecture.
+Brixie is a modern multi-platform SwiftUI application for browsing and searching LEGO sets using the Rebrickable API. The app targets iOS 17.0+, macOS 14.0+ (via Mac Catalyst), and visionOS 1.0+ with a focus on modern Swift concurrency and SwiftUI/SwiftData architecture.
 
 **Key Technologies:**
 - SwiftUI for user interface
@@ -14,7 +14,7 @@ Brixie is a modern multi-platform SwiftUI application for browsing and searching
 ## Build Instructions
 
 ### Prerequisites
-- Xcode 15.0+ with iOS 26.0+ SDK
+- Xcode 15.0+ with iOS 17.0+ SDK
 - macOS 15.0+ for development
 - Valid Rebrickable API key for runtime functionality
 
@@ -38,13 +38,13 @@ xcodebuild -project Brixie.xcodeproj -scheme Brixie clean build
 
 ```bash
 # Run unit tests (Swift Testing framework)
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26'
+xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15'
 
 # Run UI tests (XCTest framework)  
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26' -only-testing:BrixieUITests
+xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:BrixieUITests
 
 # Run specific unit test
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26' -only-testing:BrixieTests/BrixieTests/example
+xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:BrixieTests/BrixieTests/example
 ```
 
 **Test Framework Notes:**
@@ -93,7 +93,7 @@ xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=
   - Configured in Xcode project, not Package.swift
 
 ### Platform Frameworks
-- SwiftUI (iOS 26.0+, macOS 26.0+, visionOS 26.0+)
+- SwiftUI (iOS 17.0+, macOS 14.0+, visionOS 1.0+)
 - SwiftData for persistence
 - Foundation for networking and data handling
 
@@ -148,7 +148,7 @@ xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=
 ## Troubleshooting
 
 ### Build Failures
-- Ensure Xcode 15.0+ with iOS 26.0+ SDK
+- Ensure Xcode 15.0+ with iOS 17.0+ SDK
 - Clean build folder if dependency resolution fails
 - Check Swift Package Manager integration in Xcode
 
