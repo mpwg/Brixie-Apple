@@ -7,7 +7,8 @@
 
 import Foundation
 
-final class LegoSetRepositoryImpl: LegoSetRepository, @unchecked Sendable {
+@MainActor
+final class LegoSetRepositoryImpl: LegoSetRepository {
     private let remoteDataSource: LegoSetRemoteDataSource
     private let localDataSource: LocalDataSource
 

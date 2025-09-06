@@ -7,7 +7,8 @@
 
 import Foundation
 
-protocol LegoThemeRepository: Sendable {
+@MainActor
+protocol LegoThemeRepository {
     func fetchThemes(page: Int, pageSize: Int) async throws -> [LegoTheme]
     func searchThemes(query: String, page: Int, pageSize: Int) async throws -> [LegoTheme]
     func getThemeDetails(id: Int) async throws -> LegoTheme?

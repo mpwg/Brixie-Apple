@@ -7,7 +7,8 @@
 
 import Foundation
 
-protocol LegoSetRepository: Sendable {
+@MainActor
+protocol LegoSetRepository {
     func fetchSets(page: Int, pageSize: Int) async throws -> [LegoSet]
     func searchSets(query: String, page: Int, pageSize: Int) async throws -> [LegoSet]
     func getSetDetails(setNum: String) async throws -> LegoSet?
