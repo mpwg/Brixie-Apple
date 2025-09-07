@@ -96,7 +96,6 @@ final class SearchViewModel: ViewModelErrorHandling {
     func toggleFavorite(for set: LegoSet) async {
         do {
             try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
-
             if let index = searchResults.firstIndex(where: { $0.id == set.id }) {
                 searchResults[index].isFavorite.toggle()
             }
