@@ -12,6 +12,7 @@ import Foundation
 final class SearchViewModel {
     private let legoSetRepository: LegoSetRepository
     private let legoThemeRepository: LegoThemeRepository
+    private let recentSearchesStorage: RecentSearchesStorage
     
     var searchText = ""
     var searchResults: [LegoSet] = []
@@ -21,9 +22,13 @@ final class SearchViewModel {
     var recentSearches: [String] = []
     var showingNoResults = false
     
-    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository) {
+    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository, recentSearchesStorage: RecentSearchesStorage = .shared) {
         self.legoSetRepository = legoSetRepository
         self.legoThemeRepository = legoThemeRepository
+        self.recentSearchesStorage = recentSearchesStorage
+        
+        // Load recent searches from storage
+        self.recentSearches = recentSearchesStorage.loadRecentSearches()
     }
     
     func performSearch() async {
@@ -34,13 +39,9 @@ final class SearchViewModel {
         
         let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Add to recent searches
-        if !recentSearches.contains(trimmedSearch) {
-            recentSearches.insert(trimmedSearch, at: 0)
-            if recentSearches.count > 5 {
-                recentSearches = Array(recentSearches.prefix(5))
-            }
-        }
+        // Add to recent searches and persist
+        recentSearchesStorage.addSearch(trimmedSearch)
+        recentSearches = recentSearchesStorage.loadRecentSearches()
         
         isSearching = true
         showingNoResults = false
