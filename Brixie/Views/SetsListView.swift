@@ -146,6 +146,16 @@ struct SetRowView: View {
                         .foregroundStyle(.blue)
                         .clipShape(Capsule())
                     
+                    if let themeName = set.themeName {
+                        Text(themeName)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(.green.opacity(0.2))
+                            .foregroundStyle(.green)
+                            .clipShape(Capsule())
+                    }
+                    
                     Text(String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -172,7 +182,8 @@ struct SetRowView: View {
         name: "Titanic",
         year: 2021,
         themeId: 1,
-        numParts: 9090
+        numParts: 9090,
+        themeName: "Creator Expert"
     )
 
     SetRowView(set: sample)

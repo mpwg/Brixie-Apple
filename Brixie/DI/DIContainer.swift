@@ -55,7 +55,8 @@ final class DIContainer: @unchecked Sendable {
     func makeLegoSetRepository() -> LegoSetRepository {
         LegoSetRepositoryImpl(
             remoteDataSource: makeLegoSetRemoteDataSource(),
-            localDataSource: makeLocalDataSource()
+            localDataSource: makeLocalDataSource(),
+            themeRepository: makeLegoThemeRepository()
         )
     }
     

@@ -72,4 +72,17 @@ final class SetsListViewModel: ViewModelErrorHandling {
     var cachedSetsAvailable: Bool {
         !sets.isEmpty
     }
+    
+    /// Backfill theme names for existing sets
+    func backfillThemeNames() async {
+        do {
+            try await legoSetRepository.backfillThemeNames()
+            // Refresh the current sets list to show updated theme names
+            sets = await legoSetRepository.getCachedSets()
+        } catch let brixieError as BrixieError {
+            error = brixieError
+        } catch {
+            self.error = BrixieError.networkError(underlying: error)
+        }
+    }
 }
