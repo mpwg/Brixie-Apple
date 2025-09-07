@@ -146,8 +146,8 @@ struct SearchView: View {
                 }
                 
                 BrixieHeroSection(
-                    title: "Discover LEGO Sets",
-                    subtitle: "Search through thousands of LEGO sets by name, number, or theme to find your next build.",
+                    title: NSLocalizedString("Discover LEGO Sets", comment: "Search empty state title"),
+                    subtitle: NSLocalizedString("Search through thousands of LEGO sets by name, number, or theme to find your next build.", comment: "Search empty state subtitle"),
                     icon: "magnifyingglass"
                 ) {
                     EmptyView()
@@ -159,8 +159,8 @@ struct SearchView: View {
     
     private var modernLoadingView: some View {
         BrixieHeroSection(
-            title: "Searching...",
-            subtitle: "Finding the perfect LEGO sets for you",
+            title: NSLocalizedString("Searching...", comment: "Search loading state title"),
+            subtitle: NSLocalizedString("Finding the perfect LEGO sets for you", comment: "Search loading state subtitle"),
             icon: "magnifyingglass"
         ) {
             BrixieLoadingView()
@@ -169,7 +169,7 @@ struct SearchView: View {
     
     private var modernNoResultsView: some View {
         BrixieHeroSection(
-            title: "No Results Found",
+            title: NSLocalizedString("No Results Found", comment: "Search no results title"),
             subtitle: String(format: NSLocalizedString("No sets found for '%@'. Try a different search term.", comment: "No results message"), viewModel?.searchText ?? ""),
             icon: "magnifyingglass"
         ) {

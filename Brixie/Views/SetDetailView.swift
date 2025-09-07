@@ -109,14 +109,14 @@ struct SetDetailView: View {
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
                 StatCard(
-                    title: "Pieces",
+                    title: NSLocalizedString("Pieces", comment: "Pieces stat card title"),
                     value: String(set.numParts),
                     icon: "cube.box",
                     color: .blue
                 )
                 
                 StatCard(
-                    title: "Year",
+                    title: NSLocalizedString("Year", comment: "Year stat card title"),
                     value: String(set.year),
                     icon: "calendar",
                     color: .green
@@ -124,7 +124,7 @@ struct SetDetailView: View {
 
                 if let lastViewed = set.lastViewed {
                     StatCard(
-                        title: "Last Viewed",
+                        title: NSLocalizedString("Last Viewed", comment: "Last viewed stat card title"),
                         value: RelativeDateTimeFormatter().localizedString(for: lastViewed, relativeTo: Date()),
                         icon: "eye",
                         color: .purple
@@ -132,8 +132,8 @@ struct SetDetailView: View {
                 }
                 
                 StatCard(
-                    title: "Favorite",
-                    value: isFavorite ? "Yes" : "No",
+                    title: NSLocalizedString("Favorite", comment: "Favorite stat card title"),
+                    value: isFavorite ? NSLocalizedString("Yes", comment: "Yes value") : NSLocalizedString("No", comment: "No value"),
                     icon: isFavorite ? "heart.fill" : "heart",
                     color: .red
                 )

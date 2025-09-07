@@ -18,6 +18,8 @@
 "Searching..." = "Searching...";
 "No Results" = "No Results";
 "No sets found for '%@'" = "No sets found for '%@'";
+"Discover LEGO Sets" = "Discover LEGO Sets";
+"Search through thousands of LEGO sets by name, number, or theme to find your next build." = "Search through thousands of LEGO sets by name, number, or theme to find your next build.";
 
 /* Set Details */
 "Set #%@" = "Set #%@";
