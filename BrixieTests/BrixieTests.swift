@@ -233,6 +233,7 @@ struct SearchViewModelTests {
 }
 
 // Mock implementations for testing
+@MainActor
 final class MockLegoSetRepository: LegoSetRepository {
     func fetchSets(page: Int, pageSize: Int) async throws -> [LegoSet] {
         return [] // Return empty for tests
@@ -246,6 +247,10 @@ final class MockLegoSetRepository: LegoSetRepository {
         return nil
     }
     
+    func getCachedSets() async -> [LegoSet] {
+        return []
+    }
+    
     func markAsFavorite(_ set: LegoSet) async throws {
         // No-op for tests
     }
@@ -254,13 +259,26 @@ final class MockLegoSetRepository: LegoSetRepository {
         // No-op for tests
     }
     
-    func getFavorites() async throws -> [LegoSet] {
+    func getFavoriteSets() async -> [LegoSet] {
         return []
     }
 }
 
+@MainActor
 final class MockLegoThemeRepository: LegoThemeRepository {
-    func fetchThemes() async throws -> [LegoTheme] {
+    func fetchThemes(page: Int, pageSize: Int) async throws -> [LegoTheme] {
+        return []
+    }
+    
+    func searchThemes(query: String, page: Int, pageSize: Int) async throws -> [LegoTheme] {
+        return []
+    }
+    
+    func getThemeDetails(id: Int) async throws -> LegoTheme? {
+        return nil
+    }
+    
+    func getCachedThemes() async -> [LegoTheme] {
         return []
     }
 }

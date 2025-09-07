@@ -85,6 +85,18 @@ final class SearchViewModel {
         error = nil
     }
     
+    // Method for manually testing persistence
+    func addManualSearch(_ search: String) {
+        recentSearchesStorage.addSearch(search)
+        recentSearches = recentSearchesStorage.loadRecentSearches()
+    }
+    
+    // Method to clear recent searches for testing
+    func clearRecentSearches() {
+        recentSearchesStorage.clearRecentSearches()
+        recentSearches = []
+    }
+    
     func toggleFavorite(for set: LegoSet) async {
         do {
             if set.isFavorite {
