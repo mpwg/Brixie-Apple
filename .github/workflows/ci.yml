@@ -38,9 +38,17 @@ jobs:
         continue-on-error: true
         run: |
           echo "🔁 Attempting best-effort install of iOS 26.0 simulator/runtime"
-          echo "📥 Running: xcversion simulators --install 'iOS 26.0' (may prompt for Apple ID or fail)";
+          # Install xcode-install gem if available (used to fetch simulator runtimes)
+          if ! command -v xcversion >/dev/null 2>&1; then
+            echo "📦 Installing xcode-install gem (may require sudo)...";
+            sudo gem install xcode-install -N || true;
+          else
+            echo "✅ xcversion already available"
+          fi
+          # Try to install iOS 26.0 simulator runtime (requires Apple ID credentials in xcversion)
           xcversion simulators --install='iOS 26.0' || true;
-
+          # List installed runtimes afterward (non-fatal)
+          echo "🔎 Available runtimes:"; xcrun simctl runtimes || true
       - name: List
         run: |
           xcrun simctl list || true
