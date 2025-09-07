@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class SearchViewModel {
+final class SearchViewModel: ViewModelErrorHandling {
     private let legoSetRepository: LegoSetRepository
     private let legoThemeRepository: LegoThemeRepository
     
@@ -56,12 +56,8 @@ final class SearchViewModel {
             )
             searchResults = results
             showingNoResults = results.isEmpty
-        } catch let brixieError as BrixieError {
-            error = brixieError
-            searchResults = []
-            showingNoResults = true
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
             searchResults = []
             showingNoResults = true
         }
