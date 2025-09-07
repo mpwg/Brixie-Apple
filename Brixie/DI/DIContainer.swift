@@ -35,6 +35,7 @@ final class DIContainer: @unchecked Sendable {
     // MARK: - Services
     
     var imageCacheService: ImageCacheService = ImageCacheService.shared
+    var apiConfigurationService: APIConfigurationService = APIConfigurationService()
     
     // MARK: - Data Sources
     
@@ -43,11 +44,11 @@ final class DIContainer: @unchecked Sendable {
     }
     
     func makeLegoSetRemoteDataSource() -> LegoSetRemoteDataSource {
-        LegoSetRemoteDataSourceImpl()
+        LegoSetRemoteDataSourceImpl(apiConfiguration: apiConfigurationService)
     }
     
     func makeLegoThemeRemoteDataSource() -> LegoThemeRemoteDataSource {
-        LegoThemeRemoteDataSourceImpl()
+        LegoThemeRemoteDataSourceImpl(apiConfiguration: apiConfigurationService)
     }
     
     // MARK: - Repositories
