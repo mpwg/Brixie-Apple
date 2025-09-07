@@ -45,7 +45,7 @@ struct SearchView: View {
                             Button {
                                 vm.searchText = search
                                 Task {
-                                    await vm.performSearch()
+                                    await vm.performImmediateSearch()
                                 }
                             } label: {
                                 HStack {
@@ -64,12 +64,14 @@ struct SearchView: View {
             }
             .onSubmit(of: .search) {
                 Task {
-                    await viewModel?.performSearch()
+                    await viewModel?.performImmediateSearch()
                 }
             }
             .onChange(of: viewModel?.searchText ?? "") { _, newValue in
                 if newValue.isEmpty {
                     viewModel?.clearResults()
+                } else {
+                    viewModel?.performDebouncedSearch()
                 }
             }
         }
@@ -116,7 +118,7 @@ struct SearchView: View {
                                     Button {
                                         vm.searchText = search
                                         Task {
-                                            await vm.performSearch()
+                                            await vm.performImmediateSearch()
                                         }
                                     } label: {
                                         HStack(spacing: 6) {

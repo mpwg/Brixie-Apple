@@ -13,6 +13,10 @@ final class SearchViewModel {
     private let legoSetRepository: LegoSetRepository
     private let legoThemeRepository: LegoThemeRepository
     
+    // Debounce configuration
+    private var searchTask: Task<Void, Never>?
+    private let debounceDelay: TimeInterval
+    
     var searchText = ""
     var searchResults: [LegoSet] = []
     var isSearching = false
@@ -21,12 +25,50 @@ final class SearchViewModel {
     var recentSearches: [String] = []
     var showingNoResults = false
     
-    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository) {
+    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository, debounceDelay: TimeInterval = 0.4) {
         self.legoSetRepository = legoSetRepository
         self.legoThemeRepository = legoThemeRepository
+        self.debounceDelay = debounceDelay
     }
     
-    func performSearch() async {
+    // MARK: - Search Methods
+    
+    /// Performs an immediate search without debouncing (for manual submit)
+    func performImmediateSearch() async {
+        // Cancel any pending debounced search
+        searchTask?.cancel()
+        searchTask = nil
+        
+        await performSearch()
+    }
+    
+    /// Performs a debounced search - cancels previous searches and waits for delay
+    func performDebouncedSearch() {
+        // Cancel previous search task
+        searchTask?.cancel()
+        
+        // Don't start new search if text is empty
+        let trimmedText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else {
+            clearResults()
+            return
+        }
+        
+        // Create new search task with debounce delay
+        searchTask = Task { [weak self] in
+            // Wait for debounce delay
+            try? await Task.sleep(nanoseconds: UInt64(self?.debounceDelay ?? 0.4 * 1_000_000_000))
+            
+            // Check if task was cancelled during delay
+            guard !Task.isCancelled else { return }
+            
+            // Perform the actual search
+            await self?.performSearch()
+        }
+    }
+    
+    /// Core search implementation - performs the actual API call
+    private func performSearch() async {
         guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             clearResults()
             return
@@ -69,19 +111,27 @@ final class SearchViewModel {
     
     func search(_ query: String) async {
         searchText = query
-        await performSearch()
+        await performImmediateSearch()
     }
     
     func clearResults() {
         searchResults = []
         showingNoResults = false
         error = nil
+        
+        // Cancel any pending search
+        searchTask?.cancel()
+        searchTask = nil
     }
     
     func clearSearch() {
         searchText = ""
         searchResults = []
         error = nil
+        
+        // Cancel any pending search
+        searchTask?.cancel()
+        searchTask = nil
     }
     
     func toggleFavorite(for set: LegoSet) async {
