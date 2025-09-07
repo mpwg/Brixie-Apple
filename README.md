@@ -89,6 +89,11 @@ The CI pipeline includes:
 - SwiftData
 - [RebrickableLegoAPIClient](https://github.com/mpwg/Rebrickable-swift) (v2.0.0+)
 
+## Documentation
+
+- [Data Migration Strategy](MIGRATION.md) - Guidelines for SwiftData schema evolution
+- [Build Configuration](BUILD_CONFIGURATION.md) - API key management and build setup
+
 ## License
 
 See LICENSE file for details.
