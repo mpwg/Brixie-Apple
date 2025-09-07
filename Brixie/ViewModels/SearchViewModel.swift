@@ -104,6 +104,9 @@ final class SearchViewModel: ViewModelErrorHandling {
         }
     }
     
+    func retrySearch() async {
+        await performSearch()
+    }
     
     var hasResults: Bool {
         !searchResults.isEmpty

@@ -16,17 +16,26 @@ struct SetsListView: View {
     
     var body: some View {
         NavigationStack {
-            Group {
-                if let vm = viewModel {
-                    if vm.sets.isEmpty && !cachedSets.isEmpty {
-                        cachedSetsView
-                    } else if vm.sets.isEmpty && !vm.isLoading {
-                        emptyStateView
+            VStack(spacing: 0) {
+                // Error banner for initial load failures
+                if let vm = viewModel, let error = vm.error, vm.sets.isEmpty && cachedSets.isEmpty {
+                    errorBannerView(for: error)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                }
+                
+                Group {
+                    if let vm = viewModel {
+                        if vm.sets.isEmpty && !cachedSets.isEmpty {
+                            cachedSetsView
+                        } else if vm.sets.isEmpty && !vm.isLoading {
+                            emptyStateView
+                        } else {
+                            setsListView
+                        }
                     } else {
-                        setsListView
+                        ProgressView("Loading...")
                     }
-                } else {
-                    ProgressView("Loading...")
                 }
             }
             .navigationTitle("LEGO Sets")
@@ -109,6 +118,37 @@ struct SetsListView: View {
         }
         .refreshable {
             await viewModel?.loadSets()
+        }
+    }
+    
+    @ViewBuilder
+    private func errorBannerView(for error: BrixieError) -> some View {
+        switch error {
+        case .networkError:
+            BrixieBannerView.networkError(onRetry: {
+                Task {
+                    await viewModel?.retryLoad()
+                }
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        case .apiKeyMissing, .unauthorized:
+            BrixieBannerView.apiKeyError(onRetry: {
+                // Navigate to settings - for now just clear error
+                viewModel?.error = nil
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        default:
+            BrixieBannerView.generalError(error, onRetry: {
+                Task {
+                    await viewModel?.retryLoad()
+                }
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
         }
     }
 }
