@@ -79,9 +79,6 @@ final class SetsListViewModel {
         }
     }
     
-    var hasAPIKey: Bool {
-        apiKeyManager.hasValidAPIKey
-    }
     
     var cachedSetsAvailable: Bool {
         !sets.isEmpty

@@ -34,7 +34,7 @@ if [ -n "$API_KEY" ]; then
 import Foundation
 
 struct GeneratedConfiguration {
-    static let rebrickableAPIKey = "$API_KEY"
+    static let rebrickableAPIKey: String? = "$API_KEY"
     static let hasEmbeddedAPIKey = true
     static let buildDate = "$( date -u +"%Y-%m-%d %H:%M:%S UTC" )"
 }

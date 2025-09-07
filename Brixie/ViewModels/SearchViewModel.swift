@@ -104,9 +104,6 @@ final class SearchViewModel {
         }
     }
     
-    var hasAPIKey: Bool {
-        apiKeyManager.hasValidAPIKey
-    }
     
     var hasResults: Bool {
         !searchResults.isEmpty

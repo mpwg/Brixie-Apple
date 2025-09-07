@@ -81,9 +81,6 @@ final class CategoriesViewModel {
         }
     }
     
-    var hasAPIKey: Bool {
-        apiKeyManager.hasValidAPIKey
-    }
     
     var cachedThemesAvailable: Bool {
         !themes.isEmpty
