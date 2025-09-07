@@ -310,3 +310,76 @@ struct AnimatedCounter: View {
             }
     }
 }
+
+// MARK: - Skeleton Components
+struct SkeletonView: View {
+    @State private var isAnimating = false
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.brixieSecondary(for: colorScheme).opacity(0.3),
+                        Color.brixieSecondary(for: colorScheme).opacity(0.6),
+                        Color.brixieSecondary(for: colorScheme).opacity(0.3)
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .mask(
+                LinearGradient(
+                    colors: [
+                        .clear,
+                        .black.opacity(0.6),
+                        .black,
+                        .black.opacity(0.6),
+                        .clear
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .offset(x: isAnimating ? 200 : -200)
+            )
+            .onAppear {
+                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                    isAnimating = true
+                }
+            }
+    }
+}
+
+struct SkeletonTextLine: View {
+    let width: CGFloat?
+    let height: CGFloat
+    
+    init(width: CGFloat? = nil, height: CGFloat = 16) {
+        self.width = width
+        self.height = height
+    }
+    
+    var body: some View {
+        SkeletonView()
+            .frame(width: width, height: height)
+    }
+}
+
+struct SkeletonImage: View {
+    let width: CGFloat
+    let height: CGFloat
+    let cornerRadius: CGFloat
+    
+    init(width: CGFloat, height: CGFloat, cornerRadius: CGFloat = 8) {
+        self.width = width
+        self.height = height
+        self.cornerRadius = cornerRadius
+    }
+    
+    var body: some View {
+        SkeletonView()
+            .frame(width: width, height: height)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+    }
+}

@@ -87,7 +87,7 @@ struct SearchView: View {
                 if vm.searchText.isEmpty {
                     recentSearchesView
                 } else if vm.isSearching {
-                    modernLoadingView
+                    searchSkeletonView
                 } else if vm.searchResults.isEmpty && vm.showingNoResults {
                     modernNoResultsView
                 } else {
@@ -154,6 +154,24 @@ struct SearchView: View {
                 }
             }
             .padding(.top, 20)
+        }
+    }
+    
+    private var searchSkeletonView: some View {
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                HStack {
+                    SkeletonTextLine(width: 100, height: 16)
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                
+                ForEach(0..<6, id: \.self) { _ in
+                    SetRowSkeleton()
+                }
+            }
+            .padding(.horizontal, 20)
         }
     }
     

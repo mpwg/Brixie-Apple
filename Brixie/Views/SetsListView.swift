@@ -22,11 +22,13 @@ struct SetsListView: View {
                         cachedSetsView
                     } else if vm.sets.isEmpty && !vm.isLoading {
                         emptyStateView
+                    } else if vm.isLoading && vm.sets.isEmpty {
+                        SkeletonListView()
                     } else {
                         setsListView
                     }
                 } else {
-                    ProgressView("Loading...")
+                    SkeletonListView()
                 }
             }
             .navigationTitle("LEGO Sets")
@@ -172,9 +174,75 @@ struct SetRowView: View {
     }
 }
 
+struct SetRowSkeleton: View {
+    var body: some View {
+        HStack {
+            // Image skeleton
+            SkeletonImage(width: 60, height: 60, cornerRadius: 8)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                // Title skeleton - two lines
+                SkeletonTextLine(width: 200, height: 18)
+                SkeletonTextLine(width: 150, height: 18)
+                
+                // Set number skeleton
+                SkeletonTextLine(width: 100, height: 14)
+                
+                HStack {
+                    // Year badge skeleton
+                    SkeletonTextLine(width: 40, height: 20)
+                        .clipShape(Capsule())
+                    
+                    // Pieces text skeleton
+                    SkeletonTextLine(width: 80, height: 12)
+                }
+            }
+            
+            Spacer()
+            
+            // Heart button skeleton
+            SkeletonTextLine(width: 24, height: 24)
+                .clipShape(Circle())
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+struct SkeletonListView: View {
+    let itemCount: Int
+    
+    init(itemCount: Int = 8) {
+        self.itemCount = itemCount
+    }
+    
+    var body: some View {
+        List {
+            ForEach(0..<itemCount, id: \.self) { _ in
+                SetRowSkeleton()
+                    .listRowSeparator(.hidden)
+            }
+        }
+        .listStyle(PlainListStyle())
+    }
+}
+
 #Preview {
     SetsListView()
         .modelContainer(for: LegoSet.self, inMemory: true)
+}
+
+#Preview("SetRowSkeleton") {
+    VStack {
+        SetRowSkeleton()
+            .padding()
+        Divider()
+        SetRowSkeleton()
+            .padding()
+    }
+}
+
+#Preview("SkeletonListView") {
+    SkeletonListView(itemCount: 5)
 }
 
 #Preview {
