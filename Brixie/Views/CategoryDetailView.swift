@@ -299,6 +299,11 @@ struct RangeSlider: View {
                     .overlay(Circle().stroke(Color.blue, lineWidth: 2))
                     .frame(width: handleDiameter, height: handleDiameter)
                     .offset(x: geometry.size.width * CGFloat(lowerPercent) - handleDiameter / 2)
+                    .brixieAccessibility(
+                        label: String(format: NSLocalizedString("Minimum year %d", comment: "Range slider minimum"), range.lowerBound),
+                        hint: NSLocalizedString("Drag to adjust minimum year", comment: "Range slider minimum hint"),
+                        traits: .adjustable
+                    )
                     .gesture(
                         DragGesture()
                             .onChanged { value in
@@ -319,6 +324,11 @@ struct RangeSlider: View {
                     .overlay(Circle().stroke(Color.blue, lineWidth: 2))
                     .frame(width: handleDiameter, height: handleDiameter)
                     .offset(x: geometry.size.width * CGFloat(upperPercent) - handleDiameter / 2)
+                    .brixieAccessibility(
+                        label: String(format: NSLocalizedString("Maximum year %d", comment: "Range slider maximum"), range.upperBound),
+                        hint: NSLocalizedString("Drag to adjust maximum year", comment: "Range slider maximum hint"),
+                        traits: .adjustable
+                    )
                     .gesture(
                         DragGesture()
                             .onChanged { value in
@@ -335,6 +345,11 @@ struct RangeSlider: View {
             }
         }
         .frame(height: 32)
+        .brixieAccessibility(
+            label: String(format: NSLocalizedString("Year range slider, from %d to %d", comment: "Range slider accessibility"), range.lowerBound, range.upperBound),
+            hint: NSLocalizedString("Use the handles to adjust the year range for filtering", comment: "Range slider hint"),
+            traits: .adjustable
+        )
     }
 }
 

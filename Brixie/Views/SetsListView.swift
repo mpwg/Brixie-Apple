@@ -132,6 +132,7 @@ struct SetRowView: View {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(.gray.opacity(0.1))
                 )
+                .brixieImageAccessibility(label: String(format: NSLocalizedString("Image of %@ LEGO set", comment: "Set image accessibility"), set.name))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(set.name)
@@ -151,6 +152,7 @@ struct SetRowView: View {
                         .background(.blue.opacity(0.2))
                         .foregroundStyle(.blue)
                         .clipShape(Capsule())
+                        .brixieAccessibility(label: String(format: NSLocalizedString("Released in %d", comment: "Year accessibility"), set.year))
                     
                     Text(String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts))
                         .font(.caption)
@@ -160,15 +162,17 @@ struct SetRowView: View {
             
             Spacer()
             
-            Button(action: {
+            FavoriteButton(isFavorite: set.isFavorite) {
                 onFavoriteToggle?(set)
-            }) {
-                Image(systemName: set.isFavorite ? "heart.fill" : "heart")
-                    .foregroundStyle(set.isFavorite ? .red : .gray)
             }
-            .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .brixieAccessibility(
+            label: String(format: NSLocalizedString("%@, Set number %@, %d pieces, released in %d", comment: "Set row accessibility"), set.name, set.setNum, set.numParts, set.year),
+            hint: NSLocalizedString("Double tap to view set details", comment: "Set row hint"),
+            traits: .isButton
+        )
     }
 }
 
