@@ -81,22 +81,33 @@ The app uses build-time embedded keys exclusively:
 
 ## CI/CD Integration
 
-### GitHub Actions
+### GitHub Actions (Configured)
+The repository includes a comprehensive GitHub Actions workflow that:
+- Builds iOS and macOS platforms in parallel
+- Runs tests on both platforms
+- Uses Makefile targets for consistency
+- Requires `REBRICKABLE_API_KEY` repository secret
+
 ```yaml
-- name: Build with API Key
+# Example job configuration
+build:
   env:
     REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
-  run: make build-all
+  steps:
+    - name: Build iOS
+      run: make build-ios
+    - name: Build macOS  
+      run: make build-macos
 ```
+
+**Setup**: Add `REBRICKABLE_API_KEY` to repository secrets in GitHub Settings.
 
 ### Xcode Cloud
 ```yaml
-- name: Generate Configuration
+- name: Build with Makefile
   env:
     REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
-  run: make generate-config
-- name: Build
-  run: xcodebuild -project Brixie.xcodeproj -scheme Brixie build
+  run: make build-all
 ```
 
 ## Security Notes
