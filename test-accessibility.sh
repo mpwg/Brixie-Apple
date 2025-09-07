@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# Accessibility Testing Script for Brixie
+# This script outlines how to test accessibility features
+
+echo "🔍 Brixie Accessibility Testing Guide"
+echo "======================================"
+echo ""
+
+echo "📱 Device Testing Steps:"
+echo "1. Enable VoiceOver: Settings > Accessibility > VoiceOver"
+echo "2. Enable Large Text: Settings > Display & Brightness > Text Size"
+echo "3. Test with largest accessibility size"
+echo ""
+
+echo "🎯 Key Areas to Test:"
+echo ""
+
+echo "Tab Navigation:"
+echo "  - Swipe through all 5 tabs"
+echo "  - Verify each tab announces its name and purpose"
+echo "  - Expected: 'Categories, Browse LEGO themes and categories, Button'"
+echo ""
+
+echo "Set Browsing:"
+echo "  - Navigate to Sets tab"
+echo "  - Swipe through set rows"
+echo "  - Verify complete set information is announced"
+echo "  - Test favorite button accessibility"
+echo "  - Expected: 'Titanic, Set number 10294-1, 9090 pieces, released in 2021, Button'"
+echo ""
+
+echo "Search Functionality:"
+echo "  - Navigate to Search tab"
+echo "  - Test recent search buttons"
+echo "  - Verify search suggestions are properly labeled"
+echo "  - Expected: 'Recent search: [term], Double tap to search for this term again, Button'"
+echo ""
+
+echo "Categories:"
+echo "  - Navigate to Categories tab"
+echo "  - Test category rows"
+echo "  - Test sort menu"
+echo "  - Expected: '[Category] category, [X] sets, Double tap to view sets in this category, Button'"
+echo ""
+
+echo "Settings:"
+echo "  - Navigate to Settings tab"
+echo "  - Test theme selection"
+echo "  - Test cache management buttons"
+echo "  - Verify warning messages for destructive actions"
+echo ""
+
+echo "Range Slider (in filters):"
+echo "  - Go to Categories > Any Category > Filter button"
+echo "  - Test year range slider handles"
+echo "  - Verify adjustable trait and value announcements"
+echo "  - Expected: 'Minimum year [value], Drag to adjust minimum year, Adjustable'"
+echo ""
+
+echo "🔄 Dynamic Type Testing:"
+echo "1. Go to Settings > Display & Brightness > Text Size"
+echo "2. Move slider to largest size"
+echo "3. Go to Settings > Accessibility > Display & Text Size > Larger Text"
+echo "4. Enable 'Larger Accessibility Sizes' and test largest size"
+echo "5. Verify all text scales appropriately"
+echo "6. Ensure no text is cut off or overlapping"
+echo "7. Verify buttons remain tappable"
+echo ""
+
+echo "✅ Success Criteria:"
+echo "- All interactive elements have descriptive labels"
+echo "- Button purposes are clearly communicated"
+echo "- Current states are announced (selected theme, favorite status)"
+echo "- Loading states are properly announced"
+echo "- Text scales smoothly without breaking layout"
+echo "- Important content remains accessible at all text sizes"
+echo ""
+
+echo "🐛 Common Issues to Watch For:"
+echo "- Missing accessibility labels on buttons"
+echo "- Images without proper descriptions"
+echo "- Text that gets cut off at large sizes"
+echo "- Buttons that become too small to tap"
+echo "- Loading states that aren't announced"
+echo "- Complex rows that don't combine accessibility properly"
+echo ""
+
+echo "Testing complete! ✨"
+echo "For detailed implementation guide, see ACCESSIBILITY.md"
