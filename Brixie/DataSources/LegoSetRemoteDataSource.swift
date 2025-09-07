@@ -17,7 +17,7 @@ protocol LegoSetRemoteDataSource: Sendable {
 final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
     
     func fetchSets(page: Int, pageSize: Int) async throws -> [LegoSet] {
-        guard !GeneratedConfiguration.hasEmbeddedAPIKey else {
+        guard GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
@@ -47,7 +47,7 @@ final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
     }
     
     func searchSets(query: String, page: Int, pageSize: Int) async throws -> [LegoSet] {
-        guard !GeneratedConfiguration.hasEmbeddedAPIKey else {
+        guard GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
@@ -77,7 +77,7 @@ final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
     }
     
     func getSetDetails(setNum: String) async throws -> LegoSet? {
-        guard !GeneratedConfiguration.hasEmbeddedAPIKey else {
+        guard GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         

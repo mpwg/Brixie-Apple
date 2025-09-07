@@ -17,7 +17,7 @@ protocol LegoThemeRemoteDataSource: Sendable {
 final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
     
     func fetchThemes(page: Int, pageSize: Int) async throws -> [LegoTheme] {
-        guard !GeneratedConfiguration.hasEmbeddedAPIKey else {
+        guard GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
@@ -45,7 +45,7 @@ final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
     }
     
     func searchThemes(query: String, page: Int, pageSize: Int) async throws -> [LegoTheme] {
-        guard !GeneratedConfiguration.hasEmbeddedAPIKey else {
+        guard GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
@@ -73,7 +73,7 @@ final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
     }
     
     func getThemeDetails(id: Int) async throws -> LegoTheme? {
-        guard !GeneratedConfiguration.hasEmbeddedAPIKey else {
+        guard GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
