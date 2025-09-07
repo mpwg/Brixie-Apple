@@ -24,6 +24,10 @@ struct CategoryDetailView: View {
     @State private var currentPage = 1
     @State private var hasMorePages = true
     
+    private var apiConfigurationService: APIConfigurationService {
+        diContainer.apiConfigurationService
+    }
+    
     enum SetSortOrder: String, CaseIterable {
         case year = "-year"
         case yearAsc = "year"
@@ -150,8 +154,7 @@ struct CategoryDetailView: View {
 
         }
         .task {
-            if (GeneratedConfiguration.hasEmbeddedAPIKey)
-            {
+            if apiConfigurationService.hasValidAPIKey {
                 await initializeService()
             }
         }
@@ -161,7 +164,7 @@ struct CategoryDetailView: View {
     private func initializeService() async {
         guard themeService == nil else { return }
         
-        themeService = LegoThemeService(modelContext: modelContext, apiKey: GeneratedConfiguration.rebrickableAPIKey ?? "" )
+        themeService = LegoThemeService(modelContext: modelContext, apiKey: apiConfigurationService.currentAPIKey ?? "")
         
         await loadSets(reset: true)
     }
