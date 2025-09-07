@@ -30,9 +30,24 @@ final class APIKeyManager {
     
     private init() {
         let loadedKey = KeychainManager.shared.retrieve(for: Self.apiKeyStorageKey) ?? ""
-        self.apiKey = loadedKey
-        self.hasValidAPIKey = !loadedKey.isEmpty
+        
+        if !loadedKey.isEmpty {
+            self.apiKey = loadedKey
+        } else if let generatedKey = getEmbeddedAPIKey(), !generatedKey.isEmpty {
+            self.apiKey = generatedKey
+        } else {
+            self.apiKey = ""
+        }
+        
+        self.hasValidAPIKey = !self.apiKey.isEmpty
         self.isInitialized = true
+    }
+    
+    private func getEmbeddedAPIKey() -> String? {
+        if GeneratedConfiguration.hasEmbeddedAPIKey {
+            return GeneratedConfiguration.rebrickableAPIKey
+        }
+        return nil
     }
     
     private func storeAPIKey(_ key: String) {
@@ -55,5 +70,9 @@ final class APIKeyManager {
     
     var isConfigured: Bool {
         hasValidAPIKey
+    }
+    
+    var isUsingEmbeddedKey: Bool {
+        getEmbeddedAPIKey() != nil && !apiKey.isEmpty && KeychainManager.shared.retrieve(for: Self.apiKeyStorageKey)?.isEmpty != false
     }
 }

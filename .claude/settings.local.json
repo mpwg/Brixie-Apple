@@ -10,7 +10,10 @@
       "Read(//tmp/Rebrickable-swift/Sources/RebrickableLegoAPIClient/APIs/**)",
       "Read(//tmp/Rebrickable-swift/**)",
       "Bash(swift build:*)",
-      "Bash(swift:*)"
+      "Bash(swift:*)",
+      "Bash(chmod:*)",
+      "Bash(./Scripts/generate-api-config.sh:*)",
+      "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" ./Scripts/generate-api-config.sh)"
     ],
     "deny": [],
     "ask": []
