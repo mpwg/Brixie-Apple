@@ -47,10 +47,32 @@ struct SearchView: View {
                 get: { viewModel?.searchText ?? "" },
                 set: { viewModel?.searchText = $0 }
             ), prompt: "Search LEGO sets...") {
-                if let vm = viewModel {
-                    BrixieSearchSuggestions(recentSearches: vm.recentSearches) { selection in
-                        vm.searchText = selection
-                        Task { await vm.performSearch() }
+                if let vm = viewModel, !vm.recentSearches.isEmpty {
+                    Section("Recent Searches") {
+                        ForEach(vm.recentSearches, id: \.self) { search in
+                            Button {
+                                vm.searchText = search
+                                Task {
+                                    await vm.performSearch()
+                                }
+                            } label: {
+                                HStack {
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(Color.brixieAccent)
+                                        .brixieImageAccessibility(label: NSLocalizedString("Recent search", comment: "Recent search icon accessibility"), isDecorative: true)
+                                    Text(search)
+                                        .foregroundStyle(Color.brixieText)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 4)
+                            }
+                            .brixieAccessibility(
+                                label: String(format: NSLocalizedString("Recent search: %@", comment: "Recent search accessibility"), search),
+                                hint: NSLocalizedString("Double tap to search for this term again", comment: "Recent search hint"),
+                                traits: .isButton
+                            )
+                        }
                     }
                 }
             }
@@ -114,6 +136,7 @@ struct SearchView: View {
                                             Image(systemName: "clock.arrow.circlepath")
                                                 .font(.system(size: 10))
                                                 .foregroundStyle(Color.brixieAccent)
+                                                .brixieImageAccessibility(label: NSLocalizedString("Recent search", comment: "Recent search icon accessibility"), isDecorative: true)
                                             Text(search)
                                                 .font(.brixieCaption)
                                                 .foregroundStyle(Color.brixieAccent)
@@ -129,6 +152,11 @@ struct SearchView: View {
                                                 )
                                         )
                                     }
+                                    .brixieAccessibility(
+                                        label: String(format: NSLocalizedString("Recent search: %@", comment: "Recent search accessibility"), search),
+                                        hint: NSLocalizedString("Double tap to search for this term again", comment: "Recent search hint"),
+                                        traits: .isButton
+                                    )
                                 }
                             }
                             .padding(.horizontal, 20)

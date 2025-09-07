@@ -238,6 +238,10 @@ struct BrixieLoadingView: View {
                     .rotationEffect(Angle(degrees: isAnimating ? 360 : 0))
                     .animation(.linear(duration: 1.0).repeatForever(autoreverses: false), value: isAnimating)
             }
+            .brixieAccessibility(
+                label: NSLocalizedString("Loading", comment: "Loading indicator accessibility"),
+                traits: .updatesFrequently
+            )
             
             Text("Loading...")
                 .font(.brixieBody)
@@ -270,6 +274,7 @@ struct BrixieHeroSection<Content: View>: View {
                     .font(.system(size: 60, weight: .light))
                     .foregroundStyle(Color.brixieAccent)
                     .brixieGlow()
+                    .brixieImageAccessibility(label: NSLocalizedString("Section icon", comment: "Hero section icon accessibility"), isDecorative: true)
                 
                 VStack(spacing: 8) {
                     Text(title)

@@ -291,6 +291,10 @@ struct FilterSheetView: View {
                             format: .number
                         )
                             .keyboardType(.numberPad)
+                            .brixieAccessibility(
+                                label: NSLocalizedString("Minimum parts", comment: "Minimum parts text field accessibility"),
+                                hint: NSLocalizedString("Enter the minimum number of parts for filtering", comment: "Minimum parts hint")
+                            )
                     }
                     
                     HStack {
@@ -301,6 +305,10 @@ struct FilterSheetView: View {
                             format: .number
                         )
                             .keyboardType(.numberPad)
+                            .brixieAccessibility(
+                                label: NSLocalizedString("Maximum parts", comment: "Maximum parts text field accessibility"),
+                                hint: NSLocalizedString("Enter the maximum number of parts for filtering", comment: "Maximum parts hint")
+                            )
                     }
                 }
             }
@@ -313,12 +321,22 @@ struct FilterSheetView: View {
                         minParts = 0
                         maxParts = 10_000
                     }
+                    .brixieAccessibility(
+                        label: NSLocalizedString("Reset filters", comment: "Reset button accessibility"),
+                        hint: NSLocalizedString("Resets all filter values to defaults", comment: "Reset button hint"),
+                        traits: .isButton
+                    )
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(NSLocalizedString("Done", comment: "Done button")) {
                         dismiss()
                     }
+                    .brixieAccessibility(
+                        label: NSLocalizedString("Done", comment: "Done button accessibility"),
+                        hint: NSLocalizedString("Apply filters and close", comment: "Done button hint"),
+                        traits: .isButton
+                    )
                 }
             }
         }

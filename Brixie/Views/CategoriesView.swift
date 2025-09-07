@@ -97,13 +97,18 @@ struct CategoriesView: View {
                                         .tag(order)
                                 }
                             }
-                    } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle.fill")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.brixieAccent)
-                            .padding(6)
-                            .background(Circle().fill(Color.brixieCard))
-                    }
+                        } label: {
+                            Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(Color.brixieAccent)
+                                .padding(6)
+                                .background(Circle().fill(Color.brixieCard))
+                        }
+                        .brixieAccessibility(
+                            label: NSLocalizedString("Sort categories", comment: "Sort menu accessibility"),
+                            hint: String(format: NSLocalizedString("Currently sorted by %@", comment: "Sort menu hint"), sortOrder.localizedString),
+                            traits: .isButton
+                        )
                 }
             }
             .searchable(text: $searchText, prompt: NSLocalizedString("Search categories", comment: "Search prompt"))
@@ -169,6 +174,7 @@ struct ModernCategoryRowView: View {
                     Image(systemName: categoryIcon(for: theme.name))
                         .font(.system(size: 24, weight: .medium))
                         .foregroundStyle(Color.brixieAccent)
+                        .brixieImageAccessibility(label: String(format: NSLocalizedString("%@ category icon", comment: "Category icon accessibility"), theme.name))
                 }
                 .brixieGlow(color: Color.brixieAccent.opacity(0.4))
                 
@@ -184,6 +190,7 @@ struct ModernCategoryRowView: View {
                             Image(systemName: "building.2")
                                 .font(.system(size: 10))
                                 .foregroundStyle(Color.brixieSuccess)
+                                .brixieImageAccessibility(label: NSLocalizedString("Sets count", comment: "Sets count icon accessibility"), isDecorative: true)
                             Text("\(theme.setCount)")
                                 .font(.brixieCaption)
                                 .foregroundStyle(Color.brixieSuccess)
@@ -223,6 +230,11 @@ struct ModernCategoryRowView: View {
         }
         .scaleEffect(isHovered ? 1.02 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isHovered)
+        .brixieAccessibility(
+            label: String(format: NSLocalizedString("%@ category, %d sets", comment: "Category row accessibility"), theme.name, theme.setCount),
+            hint: NSLocalizedString("Double tap to view sets in this category", comment: "Category row hint"),
+            traits: .isButton
+        )
     }
     
     private func categoryIcon(for name: String) -> String {
