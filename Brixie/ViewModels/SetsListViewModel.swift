@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class SetsListViewModel {
+final class SetsListViewModel: ViewModelErrorHandling {
     private let legoSetRepository: LegoSetRepository
     
     var sets: [LegoSet] = []
@@ -34,11 +34,8 @@ final class SetsListViewModel {
         
         do {
             sets = try await legoSetRepository.fetchSets(page: currentPage, pageSize: pageSize)
-        } catch let brixieError as BrixieError {
-            error = brixieError
-            sets = await legoSetRepository.getCachedSets()
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
             sets = await legoSetRepository.getCachedSets()
         }
     }
@@ -83,24 +80,34 @@ final class SetsListViewModel {
     
     func toggleFavorite(for set: LegoSet) async {
         do {
-            if set.isFavorite {
-                try await legoSetRepository.removeFromFavorites(set)
-            } else {
-                try await legoSetRepository.markAsFavorite(set)
-            }
-            
+            try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
+
             if let index = sets.firstIndex(where: { $0.id == set.id }) {
                 sets[index].isFavorite.toggle()
             }
+        } catch {
+            handleError(error)
+        }
+    }
+    
+    func retryLoad() async {
+        await loadSets()
+    }
+    
+    var cachedSetsAvailable: Bool {
+        !sets.isEmpty
+    }
+    
+    /// Backfill theme names for existing sets
+    func backfillThemeNames() async {
+        do {
+            try await legoSetRepository.backfillThemeNames()
+            // Refresh the current sets list to show updated theme names
+            sets = await legoSetRepository.getCachedSets()
         } catch let brixieError as BrixieError {
             error = brixieError
         } catch {
             self.error = BrixieError.networkError(underlying: error)
         }
-    }
-    
-    
-    var cachedSetsAvailable: Bool {
-        !sets.isEmpty
     }
 }

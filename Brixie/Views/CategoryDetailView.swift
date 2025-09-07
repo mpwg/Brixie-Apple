@@ -108,8 +108,8 @@ struct CategoryDetailView: View {
                         }
                     }
                     
-                    if let errorMessage = service.errorMessage {
-                        Text(errorMessage)
+                    if let error = service.error {
+                        Text(error.errorDescription ?? NSLocalizedString("Unknown error occurred", comment: "Generic error message"))
                             .foregroundColor(.red)
                             .padding()
                     }
@@ -376,5 +376,5 @@ struct RangeSlider: View {
 
 #Preview {
     CategoryDetailView(theme: LegoTheme(id: 1, name: "City", setCount: 150))
-        .modelContainer(for: [LegoTheme.self, LegoSet.self], inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
