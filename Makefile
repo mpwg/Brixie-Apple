@@ -86,10 +86,22 @@ build-all: build-ios build-macos
 .PHONY: ci-build
 ci-build: generate-config
 	@echo "🔁 CI build: generic iOS and macOS"
-	# Build for generic iOS device (no simulator)
-	xcodebuild -project $(XCODE_PROJECT) -scheme $(SCHEME) -configuration Debug -destination 'generic/platform=iOS' build
-	# Build for generic macOS (macOS app)
-	xcodebuild -project $(XCODE_PROJECT) -scheme $(SCHEME) -configuration Debug -destination 'generic/platform=macOS' build
+	# Build for generic iOS device (no simulator) if iOS 26.0 SDK is available
+	@sh -c '\
+	if xcodebuild -showsdks 2>/dev/null | grep -q "iOS 26.0"; then \
+		echo "📱 iOS 26.0 SDK found — building iOS target..."; \
+		xcodebuild -project $(XCODE_PROJECT) -scheme $(SCHEME) -configuration Debug -destination "generic/platform=iOS" build || exit $$?; \
+	else \
+		echo "⚠️  iOS 26.0 SDK not installed on runner — skipping iOS build"; \
+	fi'
+	# Build for generic macOS (macOS app) if any macOS SDK is available
+	@sh -c '\
+	if xcodebuild -showsdks 2>/dev/null | grep -qi "macOS"; then \
+		echo "💻 macOS SDK found — building macOS target..."; \
+		xcodebuild -project $(XCODE_PROJECT) -scheme $(SCHEME) -configuration Debug -destination "generic/platform=macOS" build || exit $$?; \
+	else \
+		echo "⚠️  macOS SDK not found on runner — skipping macOS build"; \
+	fi'
 
 # Test iOS app
 .PHONY: test-ios
