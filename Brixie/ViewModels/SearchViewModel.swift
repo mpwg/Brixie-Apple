@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class SearchViewModel {
+final class SearchViewModel: ViewModelErrorHandling {
     private let legoSetRepository: LegoSetRepository
     private let legoThemeRepository: LegoThemeRepository
     
@@ -56,12 +56,8 @@ final class SearchViewModel {
             )
             searchResults = results
             showingNoResults = results.isEmpty
-        } catch let brixieError as BrixieError {
-            error = brixieError
-            searchResults = []
-            showingNoResults = true
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
             searchResults = []
             showingNoResults = true
         }
@@ -86,19 +82,13 @@ final class SearchViewModel {
     
     func toggleFavorite(for set: LegoSet) async {
         do {
-            if set.isFavorite {
-                try await legoSetRepository.removeFromFavorites(set)
-            } else {
-                try await legoSetRepository.markAsFavorite(set)
-            }
+            try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
             
             if let index = searchResults.firstIndex(where: { $0.id == set.id }) {
                 searchResults[index].isFavorite.toggle()
             }
-        } catch let brixieError as BrixieError {
-            error = brixieError
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
         }
     }
     
