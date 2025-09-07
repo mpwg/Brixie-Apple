@@ -22,7 +22,7 @@ jobs:
             make_target: build-macos
             display_name: macOS
           - os: macos-latest
-          - xcode: latest-stable
+          - xcode: latest
     name: Build - ${{ matrix.display_name }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     environment: IntegrationTests
