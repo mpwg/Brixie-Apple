@@ -38,12 +38,7 @@ final class SetDetailViewModel: ViewModelErrorHandling {
     
     func toggleFavorite() async {
         do {
-            if set.isFavorite {
-                try await legoSetRepository.removeFromFavorites(set)
-            } else {
-                try await legoSetRepository.markAsFavorite(set)
-            }
-            
+            try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
             set.isFavorite.toggle()
         } catch {
             handleError(error)

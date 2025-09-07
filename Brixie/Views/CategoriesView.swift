@@ -260,7 +260,7 @@ struct ModernCategoryRowView: View {
             .ignoresSafeArea()
         
         CategoriesView()
-            .modelContainer(for: [LegoTheme.self, LegoSet.self], inMemory: true)
+            .modelContainer(ModelContainerFactory.createPreviewContainer())
     }
 }
 

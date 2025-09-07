@@ -340,5 +340,5 @@ struct RangeSlider: View {
 
 #Preview {
     CategoryDetailView(theme: LegoTheme(id: 1, name: "City", setCount: 150))
-        .modelContainer(for: [LegoTheme.self, LegoSet.self], inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

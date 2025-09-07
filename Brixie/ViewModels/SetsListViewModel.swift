@@ -58,12 +58,8 @@ final class SetsListViewModel: ViewModelErrorHandling {
     
     func toggleFavorite(for set: LegoSet) async {
         do {
-            if set.isFavorite {
-                try await legoSetRepository.removeFromFavorites(set)
-            } else {
-                try await legoSetRepository.markAsFavorite(set)
-            }
-            
+            try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
+
             if let index = sets.firstIndex(where: { $0.id == set.id }) {
                 sets[index].isFavorite.toggle()
             }
