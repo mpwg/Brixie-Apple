@@ -119,6 +119,17 @@ test-macos: generate-config
 .PHONY: test-all
 test-all: test-ios test-macos
 
+# Lint code with SwiftLint
+.PHONY: lint
+lint:
+	@echo "🔍 Running SwiftLint..."
+	@if command -v swiftlint >/dev/null 2>&1; then \
+		swiftlint lint --strict; \
+	else \
+		echo "⚠️  SwiftLint not found. Install with: brew install swiftlint"; \
+		exit 1; \
+	fi
+
 # Clean build artifacts
 .PHONY: clean-build
 clean-build:
@@ -150,6 +161,9 @@ help:
 	@echo "  test-ios         Run iOS tests (REQUIRES API key)"
 	@echo "  test-macos       Run macOS tests (REQUIRES API key)"
 	@echo "  test-all         Run all tests (REQUIRES API key)"
+	@echo ""
+	@echo "Code Quality:"
+	@echo "  lint             Run SwiftLint code quality checks"
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  clean-build      Clean Xcode build artifacts"
