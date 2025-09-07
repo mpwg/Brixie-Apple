@@ -16,17 +16,12 @@ final class DIContainer: @unchecked Sendable {
     
     let modelContainer: ModelContainer
     
-    nonisolated init(modelContainer: ModelContainer? = nil) {
+    init(modelContainer: ModelContainer? = nil) {
         if let modelContainer = modelContainer {
             self.modelContainer = modelContainer
         } else {
             do {
-                let schema = Schema([
-                    LegoSet.self,
-                    LegoTheme.self
-                ])
-                let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-                self.modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
+                self.modelContainer = try ModelContainerFactory.createProductionContainer()
             } catch {
                 fatalError("Could not create ModelContainer: \(error)")
             }

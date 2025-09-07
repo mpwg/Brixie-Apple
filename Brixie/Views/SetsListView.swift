@@ -124,14 +124,8 @@ struct SetRowView: View {
     
     var body: some View {
         HStack {
-            AsyncCachedImage(urlString: set.imageURL)
-                .aspectRatio(contentMode: .fit)
+            CachedImageCard(urlString: set.imageURL, maxHeight: 60)
                 .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(.gray.opacity(0.1))
-                )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(set.name)
@@ -170,13 +164,7 @@ struct SetRowView: View {
             
             Spacer()
             
-            Button(action: {
-                onFavoriteToggle?(set)
-            }) {
-                Image(systemName: set.isFavorite ? "heart.fill" : "heart")
-                    .foregroundStyle(set.isFavorite ? .red : .gray)
-            }
-            .buttonStyle(.plain)
+            FavoriteButton(isFavorite: set.isFavorite, action: { onFavoriteToggle?(set) })
         }
         .padding(.vertical, 4)
     }
@@ -184,7 +172,7 @@ struct SetRowView: View {
 
 #Preview {
     SetsListView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
 
 #Preview {
