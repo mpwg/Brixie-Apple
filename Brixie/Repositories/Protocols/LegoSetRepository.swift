@@ -17,4 +17,5 @@ protocol LegoSetRepository {
     func removeFromFavorites(_ set: LegoSet) async throws
     func getFavoriteSets() async -> [LegoSet]
     func getLastSyncTimestamp(for syncType: SyncType) async -> SyncTimestamp?
+    func backfillThemeNames() async throws
 }

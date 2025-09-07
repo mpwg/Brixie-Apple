@@ -19,6 +19,13 @@ struct SearchView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
+                    // Error banner for search failures  
+                    if let vm = viewModel, let error = vm.error, !vm.searchText.isEmpty {
+                        errorBannerView(for: error)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 8)
+                    }
+                    
                     if viewModel != nil {
                         searchContentView
                     } else {
@@ -48,26 +55,10 @@ struct SearchView: View {
                 get: { viewModel?.searchText ?? "" },
                 set: { viewModel?.searchText = $0 }
             ), prompt: "Search LEGO sets...") {
-                if let vm = viewModel, !vm.recentSearches.isEmpty {
-                    Section("Recent Searches") {
-                        ForEach(vm.recentSearches, id: \.self) { search in
-                            Button {
-                                vm.searchText = search
-                                Task {
-                                    await vm.performSearch()
-                                }
-                            } label: {
-                                HStack {
-                                    Image(systemName: "clock.arrow.circlepath")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(Color.brixieAccent)
-                                    Text(search)
-                                        .foregroundStyle(Color.brixieText)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 4)
-                            }
-                        }
+                if let vm = viewModel {
+                    BrixieSearchSuggestions(recentSearches: vm.recentSearches) { selection in
+                        vm.searchText = selection
+                        Task { await vm.performSearch() }
                     }
                 }
             }
@@ -217,9 +208,40 @@ struct SearchView: View {
             .padding(.horizontal, 20)
         }
     }
+    
+    @ViewBuilder
+    private func errorBannerView(for error: BrixieError) -> some View {
+        switch error {
+        case .networkError:
+            BrixieBannerView.networkError(onRetry: {
+                Task {
+                    await viewModel?.retrySearch()
+                }
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        case .apiKeyMissing, .unauthorized:
+            BrixieBannerView.apiKeyError(onRetry: {
+                // Navigate to settings - for now just clear error
+                viewModel?.error = nil
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        default:
+            BrixieBannerView.generalError(error, onRetry: {
+                Task {
+                    await viewModel?.retrySearch()
+                }
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+        }
+    }
 }
 
 #Preview {
     SearchView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
