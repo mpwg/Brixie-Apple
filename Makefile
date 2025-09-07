@@ -98,7 +98,7 @@ ci-build: generate-config
 	@sh -c '\
 	if xcodebuild -showsdks 2>/dev/null | grep -qi "macOS"; then \
 		echo "💻 macOS SDK found — building macOS target..."; \
-		xcodebuild -project $(XCODE_PROJECT) -scheme $(SCHEME) -configuration Debug -destination "generic/platform=macOS" build || exit $$?; \
+		xcodebuild -project $(XCODE_PROJECT) -scheme $(SCHEME) -configuration Debug -destination "generic/platform=macOS,variant=Mac Catalyst" build || exit $$?; \
 	else \
 		echo "⚠️  macOS SDK not found on runner — skipping macOS build"; \
 	fi'
