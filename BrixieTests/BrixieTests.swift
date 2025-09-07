@@ -48,55 +48,59 @@ final class MockLegoSetRemoteDataSource: LegoSetRemoteDataSource {
 final class MockLocalDataSource: LocalDataSource {
     var shouldThrowError = false
     var errorToThrow: Error = BrixieError.persistenceError(underlying: URLError(.unknown))
-    var savedItems: [Any] = []
-    var fetchResults: [Any] = []
+    var savedLegoSets: [LegoSet] = []
+    var fetchLegoSets: [LegoSet] = []
     
     func save<T: PersistentModel>(_ items: [T]) throws {
         if shouldThrowError {
             throw errorToThrow
         }
-        savedItems.append(contentsOf: items)
+        // For our testing, we primarily care about LegoSet
+        if T.self == LegoSet.self {
+            savedLegoSets.append(contentsOf: items.compactMap { $0 as? LegoSet })
+        }
     }
     
     func fetch<T: PersistentModel>(_ type: T.Type) throws -> [T] {
         if shouldThrowError {
             throw errorToThrow
         }
-        return fetchResults.compactMap { $0 as? T }
+        
+        if T.self == LegoSet.self {
+            return fetchLegoSets as! [T]
+        }
+        
+        return []
     }
     
     func fetch<T: PersistentModel>(_ type: T.Type, predicate: Predicate<T>?) throws -> [T] {
         if shouldThrowError {
             throw errorToThrow
         }
-        let allResults = fetchResults.compactMap { $0 as? T }
         
-        // For testing purposes, simulate predicate filtering for favorites
-        if let predicate = predicate {
-            // Simple mock filtering - in real tests we'd need more sophisticated predicate handling
-            if T.self == LegoSet.self {
-                return allResults.filter { item in
-                    if let set = item as? LegoSet {
-                        return set.isFavorite
-                    }
-                    return false
-                }
+        if T.self == LegoSet.self {
+            var results = fetchLegoSets
+            
+            // For testing favorites - simple simulation of predicate filtering
+            if predicate != nil {
+                // We'll assume any predicate in tests is for filtering favorites
+                results = results.filter { $0.isFavorite }
             }
+            
+            return results as! [T]
         }
         
-        return allResults
+        return []
     }
     
     func delete<T: PersistentModel>(_ item: T) throws {
         if shouldThrowError {
             throw errorToThrow
         }
-        // Mock implementation - remove from saved items
-        savedItems.removeAll { saved in
-            if let savedItem = saved as? T {
-                return ObjectIdentifier(savedItem) == ObjectIdentifier(item)
-            }
-            return false
+        
+        if T.self == LegoSet.self, let set = item as? LegoSet {
+            savedLegoSets.removeAll { $0.setNum == set.setNum }
+            fetchLegoSets.removeAll { $0.setNum == set.setNum }
         }
     }
     
@@ -104,8 +108,11 @@ final class MockLocalDataSource: LocalDataSource {
         if shouldThrowError {
             throw errorToThrow
         }
-        savedItems.removeAll { $0 is T }
-        fetchResults.removeAll { $0 is T }
+        
+        if T.self == LegoSet.self {
+            savedLegoSets.removeAll()
+            fetchLegoSets.removeAll()
+        }
     }
 }
 
@@ -145,8 +152,8 @@ struct RepositoryFallbackTests {
         #expect(result[0].setNum == "123-1")
         #expect(result[1].setNum == "456-1")
         
-        // Verify page 1 clears local data first
-        #expect(mockLocal.savedItems.count == 2)
+        // Verify page 1 saves data locally
+        #expect(mockLocal.savedLegoSets.count == 2)
     }
     
     @Test("fetchSets network error fallback - returns cached data when available")
@@ -163,7 +170,7 @@ struct RepositoryFallbackTests {
             LegoSet.mockSet(setNum: "cached-1", name: "Cached Set 1"),
             LegoSet.mockSet(setNum: "cached-2", name: "Cached Set 2")
         ]
-        mockLocal.fetchResults = cachedSets
+        mockLocal.fetchLegoSets = cachedSets
         
         let repository = LegoSetRepositoryImpl(
             remoteDataSource: mockRemote,
@@ -187,7 +194,7 @@ struct RepositoryFallbackTests {
         mockRemote.errorToThrow = BrixieError.networkError(underlying: URLError(.notConnectedToInternet))
         
         // Setup local to return empty cache
-        mockLocal.fetchResults = []
+        mockLocal.fetchLegoSets = []
         
         let repository = LegoSetRepositoryImpl(
             remoteDataSource: mockRemote,
@@ -217,7 +224,7 @@ struct RepositoryFallbackTests {
         
         // Setup local with cached data (should not be used)
         let cachedSets = [LegoSet.mockSet(setNum: "cached-1", name: "Cached Set")]
-        mockLocal.fetchResults = cachedSets
+        mockLocal.fetchLegoSets = cachedSets
         
         let repository = LegoSetRepositoryImpl(
             remoteDataSource: mockRemote,
@@ -277,7 +284,7 @@ struct RepositoryFallbackTests {
             LegoSet.mockSet(setNum: "789-1", name: "City Police Station"),
             LegoSet.mockSet(setNum: "star-123", name: "Space Ship")
         ]
-        mockLocal.fetchResults = cachedSets
+        mockLocal.fetchLegoSets = cachedSets
         
         let repository = LegoSetRepositoryImpl(
             remoteDataSource: mockRemote,
@@ -307,7 +314,7 @@ struct RepositoryFallbackTests {
         mockRemote.errorToThrow = BrixieError.apiKeyMissing
         
         // Setup empty local cache
-        mockLocal.fetchResults = []
+        mockLocal.fetchLegoSets = []
         
         let repository = LegoSetRepositoryImpl(
             remoteDataSource: mockRemote,
@@ -340,7 +347,7 @@ struct RepositoryFallbackTests {
         #expect(result?.name == "Detailed Remote Set")
         
         // Verify it was saved locally
-        #expect(mockLocal.savedItems.count == 1)
+        #expect(mockLocal.savedLegoSets.count == 1)
     }
     
     @Test("getSetDetails remote returns nil - returns nil")
@@ -373,7 +380,7 @@ struct RepositoryFallbackTests {
             LegoSet.mockSet(setNum: "123-1", name: "Cached Set 1"),
             LegoSet.mockSet(setNum: "456-1", name: "Cached Set 2")
         ]
-        mockLocal.fetchResults = cachedSets
+        mockLocal.fetchLegoSets = cachedSets
         
         let repository = LegoSetRepositoryImpl(
             remoteDataSource: mockRemote,
@@ -400,7 +407,7 @@ struct RepositoryFallbackTests {
         let cachedSets = [
             LegoSet.mockSet(setNum: "123-1", name: "Cached Set 1")
         ]
-        mockLocal.fetchResults = cachedSets
+        mockLocal.fetchLegoSets = cachedSets
         
         let repository = LegoSetRepositoryImpl(
             remoteDataSource: mockRemote,
