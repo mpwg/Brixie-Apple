@@ -310,3 +310,91 @@ struct AnimatedCounter: View {
             }
     }
 }
+
+// MARK: - Skeleton Components
+struct SkeletonView: View {
+    @State private var isAnimating = false
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        Rectangle()
+            .fill(Color.brixieSecondary(for: colorScheme).opacity(0.3))
+            .overlay(
+                LinearGradient(
+                    colors: [
+                        .clear,
+                        Color.white.opacity(colorScheme == .dark ? 0.1 : 0.4),
+                        .clear
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .scaleEffect(x: 3, y: 1)
+                .offset(x: isAnimating ? 300 : -300)
+                .animation(.linear(duration: 1.2).repeatForever(autoreverses: false), value: isAnimating)
+            )
+            .onAppear {
+                isAnimating = true
+            }
+    }
+}
+
+struct SkeletonTextLine: View {
+    let width: CGFloat?
+    let height: CGFloat
+    let cornerRadius: CGFloat
+    
+    init(width: CGFloat? = nil, height: CGFloat = 16, cornerRadius: CGFloat = 4) {
+        self.width = width
+        self.height = height
+        self.cornerRadius = cornerRadius
+    }
+    
+    var body: some View {
+        SkeletonView()
+            .frame(width: width, height: height)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+    }
+}
+
+struct SkeletonImage: View {
+    let width: CGFloat
+    let height: CGFloat
+    let cornerRadius: CGFloat
+    
+    init(width: CGFloat, height: CGFloat, cornerRadius: CGFloat = 8) {
+        self.width = width
+        self.height = height
+        self.cornerRadius = cornerRadius
+    }
+    
+    var body: some View {
+        SkeletonView()
+            .frame(width: width, height: height)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+    }
+}
+
+#Preview("Skeleton Components") {
+    VStack(spacing: 16) {
+        HStack {
+            SkeletonImage(width: 60, height: 60)
+            VStack(alignment: .leading, spacing: 8) {
+                SkeletonTextLine(width: 180, height: 18)
+                SkeletonTextLine(width: 120, height: 14)
+                SkeletonTextLine(width: 80, height: 12)
+            }
+            Spacer()
+        }
+        .padding()
+        
+        Divider()
+        
+        VStack(alignment: .leading, spacing: 8) {
+            SkeletonTextLine(width: 200, height: 24, cornerRadius: 8)
+            SkeletonTextLine(width: 150, height: 16)
+            SkeletonTextLine(width: 100, height: 16)
+        }
+        .padding()
+    }
+}
