@@ -68,6 +68,9 @@ final class SetsListViewModel: ViewModelErrorHandling {
         }
     }
     
+    func retryLoad() async {
+        await loadSets()
+    }
     
     var cachedSetsAvailable: Bool {
         !sets.isEmpty

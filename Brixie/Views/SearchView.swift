@@ -19,6 +19,13 @@ struct SearchView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
+                    // Error banner for search failures  
+                    if let vm = viewModel, let error = vm.error, !vm.searchText.isEmpty {
+                        errorBannerView(for: error)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 8)
+                    }
+                    
                     if viewModel != nil {
                         searchContentView
                     } else {
@@ -190,6 +197,37 @@ struct SearchView: View {
                 }
             }
             .padding(.horizontal, 20)
+        }
+    }
+    
+    @ViewBuilder
+    private func errorBannerView(for error: BrixieError) -> some View {
+        switch error {
+        case .networkError:
+            BrixieBannerView.networkError(onRetry: {
+                Task {
+                    await viewModel?.retrySearch()
+                }
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        case .apiKeyMissing, .unauthorized:
+            BrixieBannerView.apiKeyError(onRetry: {
+                // Navigate to settings - for now just clear error
+                viewModel?.error = nil
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        default:
+            BrixieBannerView.generalError(error, onRetry: {
+                Task {
+                    await viewModel?.retrySearch()
+                }
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
         }
     }
 }
