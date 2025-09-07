@@ -16,7 +16,7 @@ final class DIContainer: @unchecked Sendable {
     
     let modelContainer: ModelContainer
     
-    nonisolated init(modelContainer: ModelContainer? = nil) {
+    init(modelContainer: ModelContainer? = nil) {
         if let modelContainer = modelContainer {
             self.modelContainer = modelContainer
         } else {
