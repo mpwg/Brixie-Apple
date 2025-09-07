@@ -31,6 +31,9 @@ struct ContentView: View {
                         )
                     }
                     .tag(0)
+                    .brixieAccessibility(label: NSLocalizedString("Categories", comment: "Tab label for categories"), 
+                                        hint: NSLocalizedString("Browse LEGO themes and categories", comment: "Categories tab hint"),
+                                        traits: .isButton)
                 
                 SetsListView()
                     .tabItem {
@@ -40,6 +43,9 @@ struct ContentView: View {
                         )
                     }
                     .tag(1)
+                    .brixieAccessibility(label: NSLocalizedString("Sets", comment: "Tab label for sets"),
+                                        hint: NSLocalizedString("Browse all LEGO sets", comment: "Sets tab hint"),
+                                        traits: .isButton)
                 
                 SearchView()
                     .tabItem {
@@ -49,18 +55,27 @@ struct ContentView: View {
                         )
                     }
                     .tag(2)
+                    .brixieAccessibility(label: NSLocalizedString("Search", comment: "Tab label for search"),
+                                        hint: NSLocalizedString("Search for specific LEGO sets", comment: "Search tab hint"),
+                                        traits: .isButton)
                 
                 FavoritesView()
                     .tabItem {
                         Label(NSLocalizedString("Favorites", comment: "Tab label for favorites"), systemImage: "heart")
                     }
                     .tag(3)
+                    .brixieAccessibility(label: NSLocalizedString("Favorites", comment: "Tab label for favorites"),
+                                        hint: NSLocalizedString("View your favorite LEGO sets", comment: "Favorites tab hint"),
+                                        traits: .isButton)
                 
                 SettingsView()
                     .tabItem {
                         Label(NSLocalizedString("Settings", comment: "Tab label for settings"), systemImage: "gear")
                     }
                     .tag(4)
+                    .brixieAccessibility(label: NSLocalizedString("Settings", comment: "Tab label for settings"),
+                                        hint: NSLocalizedString("Configure app settings", comment: "Settings tab hint"),
+                                        traits: .isButton)
             }
             .tint(Color.brixieAccent)
         }

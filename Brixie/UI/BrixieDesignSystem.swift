@@ -86,11 +86,12 @@ extension LinearGradient {
 
 // MARK: Typography
 extension Font {
-    static let brixieTitle = Font.system(size: 28, weight: .bold, design: .rounded)
-    static let brixieHeadline = Font.system(size: 20, weight: .semibold, design: .rounded)
-    static let brixieSubhead = Font.system(size: 16, weight: .medium, design: .rounded)
-    static let brixieBody = Font.system(size: 14, weight: .regular, design: .default)
-    static let brixieCaption = Font.system(size: 12, weight: .medium, design: .default)
+    // Dynamic Type fonts that scale with user's accessibility settings
+    static let brixieTitle = Font.system(.largeTitle, design: .rounded, weight: .bold)
+    static let brixieHeadline = Font.system(.title2, design: .rounded, weight: .semibold)
+    static let brixieSubhead = Font.system(.headline, design: .rounded, weight: .medium)
+    static let brixieBody = Font.system(.body, design: .default, weight: .regular)
+    static let brixieCaption = Font.system(.caption, design: .default, weight: .medium)
 }
 
 // MARK: Shadows
@@ -106,7 +107,7 @@ struct BrixieCardShadowModifier: ViewModifier {
     private var colorScheme
     
     func body(content: Content) -> some View {
-        content.shadow(color: Color.brixieShadow(for: colorScheme), radius: 12, x: 0, y: 6)
+        content.shadow(color: Color.brixieShadow(for: colorScheme), radius: BrixieScaledMetrics.shadowRadius, x: 0, y: 6)
     }
 }
 
@@ -141,10 +142,10 @@ struct BrixieCard<Content: View>: View {
     var body: some View {
         content
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: BrixieScaledMetrics.cornerRadius)
                     .fill(cardGradient)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: BrixieScaledMetrics.cornerRadius)
                             .stroke(.white.opacity(0.1), lineWidth: 1)
                     )
             )
@@ -174,13 +175,13 @@ struct BrixieButtonStyle: ButtonStyle {
         configuration.label
             .font(.brixieSubhead)
             .foregroundStyle(foregroundColor)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 12)
+            .padding(.horizontal, BrixieScaledMetrics.buttonPadding)
+            .padding(.vertical, BrixieScaledMetrics.buttonPadding / 2)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: BrixieScaledMetrics.cornerRadius * 0.75)
                     .fill(backgroundColor)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: BrixieScaledMetrics.cornerRadius * 0.75)
                             .stroke(strokeColor, lineWidth: variant == .ghost ? 1 : 0)
                     )
             )
@@ -309,4 +310,35 @@ struct AnimatedCounter: View {
                 }
             }
     }
+}
+
+// MARK: - Accessibility & Dynamic Type Support
+extension View {
+    /// Adds consistent accessibility support to interactive elements
+    func brixieAccessibility(label: String, hint: String? = nil, traits: AccessibilityTraits = []) -> some View {
+        self
+            .accessibilityLabel(label)
+            .accessibilityHint(hint ?? "")
+            .accessibilityAddTraits(traits)
+    }
+
+    /// Adds image accessibility support
+    func brixieImageAccessibility(label: String, isDecorative: Bool = false) -> some View {
+        if isDecorative {
+            return self.accessibilityHidden(true)
+        } else {
+            return self
+                .accessibilityLabel(label)
+                .accessibilityAddTraits(.isImage)
+        }
+    }
+}
+
+// MARK: - Scaled Metrics for Dynamic Type
+struct BrixieScaledMetrics {
+    @ScaledMetric static var cardPadding: CGFloat = 20
+    @ScaledMetric static var buttonPadding: CGFloat = 24
+    @ScaledMetric static var iconSize: CGFloat = 20
+    @ScaledMetric static var cornerRadius: CGFloat = 16
+    @ScaledMetric static var shadowRadius: CGFloat = 12
 }

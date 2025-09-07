@@ -197,6 +197,11 @@ struct SettingsView: View {
                                 .contentShape(Rectangle())
                             }
                             .buttonStyle(PlainButtonStyle())
+                            .brixieAccessibility(
+                                label: String(format: NSLocalizedString("%@ theme", comment: "Theme selection accessibility"), theme.displayName),
+                                hint: themeManager.selectedTheme == theme ? NSLocalizedString("Currently selected theme", comment: "Selected theme hint") : NSLocalizedString("Double tap to select this theme", comment: "Theme selection hint"),
+                                traits: themeManager.selectedTheme == theme ? [.isButton, .isSelected] : .isButton
+                            )
                         }
                     }
                 }
@@ -245,6 +250,11 @@ struct SettingsView: View {
                             showingClearCacheAlert = true
                         }
                         .buttonStyle(BrixieButtonStyle(variant: .ghost))
+                        .brixieAccessibility(
+                            label: NSLocalizedString("Clear image cache", comment: "Clear cache button accessibility"),
+                            hint: String(format: NSLocalizedString("Clears %@ of cached images", comment: "Clear cache hint"), cacheSize),
+                            traits: .isButton
+                        )
                     }
                     
                     Divider()
@@ -265,6 +275,11 @@ struct SettingsView: View {
                             Spacer()
                         }
                     }
+                    .brixieAccessibility(
+                        label: NSLocalizedString("Clear all data", comment: "Clear all data button accessibility"),
+                        hint: NSLocalizedString("Warning: This will permanently delete all cached images and stored set data", comment: "Clear all data hint"),
+                        traits: .isButton
+                    )
                 }
                 .padding(20)
             }

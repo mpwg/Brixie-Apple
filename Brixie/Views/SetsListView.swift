@@ -171,6 +171,12 @@ struct SetRowView: View {
         HStack {
             CachedImageCard(urlString: set.imageURL, maxHeight: 60)
                 .frame(width: 60, height: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.gray.opacity(0.1))
+                )
+                .brixieImageAccessibility(label: String(format: NSLocalizedString("Image of %@ LEGO set", comment: "Set image accessibility"), set.name))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(set.name)
@@ -190,6 +196,7 @@ struct SetRowView: View {
                         .background(.blue.opacity(0.2))
                         .foregroundStyle(.blue)
                         .clipShape(Capsule())
+                        .brixieAccessibility(label: String(format: NSLocalizedString("Released in %d", comment: "Year accessibility"), set.year))
                     
                     if let themeName = set.themeName {
                         Text(themeName)
@@ -208,10 +215,18 @@ struct SetRowView: View {
             }
             
             Spacer()
-            
-            FavoriteButton(isFavorite: set.isFavorite) { onFavoriteToggle?(set) }
+
+            FavoriteButton(isFavorite: set.isFavorite) {
+                onFavoriteToggle?(set)
+            }
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .brixieAccessibility(
+            label: String(format: NSLocalizedString("%@, Set number %@, %d pieces, released in %d", comment: "Set row accessibility"), set.name, set.setNum, set.numParts, set.year),
+            hint: NSLocalizedString("Double tap to view set details", comment: "Set row hint"),
+            traits: .isButton
+        )
     }
 }
 

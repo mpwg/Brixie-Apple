@@ -1,3 +1,9 @@
+//
+//  FavoriteButton.swift
+//  Brixie
+//
+//  Created by Claude on 07.09.25.
+//
 import SwiftUI
 
 struct FavoriteButton: View {
@@ -9,21 +15,26 @@ struct FavoriteButton: View {
         Group {
             if prominent {
                 Button(action: action) {
-                    Label(
-                        isFavorite ?
-                            NSLocalizedString("Remove from Favorites", comment: "") :
-                            NSLocalizedString("Add to Favorites", comment: ""),
-                        systemImage: isFavorite ? "heart.slash" : "heart"
-                    )
+                    Label(isFavorite ? NSLocalizedString("Remove from Favorites", comment: "") : NSLocalizedString("Add to Favorites", comment: ""), systemImage: isFavorite ? "heart.slash" : "heart")
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(isFavorite ? .red : .blue)
+                .brixieAccessibility(
+                    label: isFavorite ? NSLocalizedString("Remove from Favorites", comment: "Favorite button accessibility") : NSLocalizedString("Add to Favorites", comment: "Favorite button accessibility"),
+                    hint: NSLocalizedString("Double tap to toggle favorite status", comment: "Favorite button hint"),
+                    traits: .isButton
+                )
             } else {
                 Button(action: action) {
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
                         .foregroundStyle(isFavorite ? .red : .gray)
                 }
                 .buttonStyle(.plain)
+                .brixieAccessibility(
+                    label: isFavorite ? NSLocalizedString("Remove from favorites", comment: "Favorite button accessibility") : NSLocalizedString("Add to favorites", comment: "Favorite button accessibility"),
+                    hint: NSLocalizedString("Double tap to toggle favorite status", comment: "Favorite button hint"),
+                    traits: .isButton
+                )
             }
         }
     }
