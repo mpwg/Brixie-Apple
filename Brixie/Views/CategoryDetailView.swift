@@ -104,8 +104,8 @@ struct CategoryDetailView: View {
                         }
                     }
                     
-                    if let errorMessage = service.errorMessage {
-                        Text(errorMessage)
+                    if let error = service.error {
+                        Text(error.errorDescription ?? NSLocalizedString("Unknown error occurred", comment: "Generic error message"))
                             .foregroundColor(.red)
                             .padding()
                     }
