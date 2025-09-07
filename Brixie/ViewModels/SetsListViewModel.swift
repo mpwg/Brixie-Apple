@@ -19,6 +19,7 @@ final class SetsListViewModel {
     var currentPage = 1
     
     private let pageSize = 20
+    private var loadMoreTask: Task<Void, Never>?
     
     init(legoSetRepository: LegoSetRepository) {
         self.legoSetRepository = legoSetRepository
@@ -43,20 +44,35 @@ final class SetsListViewModel {
     }
     
     func loadMoreSets() async {
+        // Cancel any existing load more task
+        loadMoreTask?.cancel()
+        
         guard !isLoadingMore else { return }
         
-        isLoadingMore = true
-        defer { isLoadingMore = false }
-        
-        let nextPage = currentPage + 1
-        
-        do {
-            let newSets = try await legoSetRepository.fetchSets(page: nextPage, pageSize: pageSize)
-            sets.append(contentsOf: newSets)
-            currentPage = nextPage
-        } catch {
-            // Don't update error state for pagination failures
+        loadMoreTask = Task { @MainActor in
+            isLoadingMore = true
+            defer { 
+                isLoadingMore = false
+                loadMoreTask = nil
+            }
+            
+            let nextPage = currentPage + 1
+            
+            do {
+                let newSets = try await legoSetRepository.fetchSets(page: nextPage, pageSize: pageSize)
+                // Check if task was cancelled during network request
+                guard !Task.isCancelled else { return }
+                
+                sets.append(contentsOf: newSets)
+                currentPage = nextPage
+            } catch {
+                // Don't update error state for pagination failures
+                // but check if we were cancelled
+                guard !Task.isCancelled else { return }
+            }
         }
+        
+        await loadMoreTask?.value
     }
     
     func toggleFavorite(for set: LegoSet) async {
