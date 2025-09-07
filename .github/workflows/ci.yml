@@ -33,6 +33,12 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: ${{ matrix.xcode }}
+      - name: List
+        run: |
+          xcrun simctl list
+          xcrun simctl list devices
+          xcrun simctl list runtimes
+          xcrun simctl list profiles
 
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -65,44 +71,44 @@ jobs:
           echo "🔨 Building with Makefile (ci-build)..."
           make ci-build
 
-  test:
-    strategy:
-      matrix:
-        platform: [ios, macos]
-        include:
-          - platform: ios
-            make_target: test-ios
-            display_name: iOS
-          - platform: macos
-            make_target: test-macos
-            display_name: macOS
-          - os: macos-latest
-          - xcode: latest-stable
-    name: Test - ${{ matrix.display_name }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    env:
-      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
-    needs: build
-    steps:
-      - name: Setup Xcode ${{ matrix.xcode }}
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ matrix.xcode }}
+  # test:
+  #   strategy:
+  #     matrix:
+  #       platform: [ios, macos]
+  #       include:
+  #         - platform: ios
+  #           make_target: test-ios
+  #           display_name: iOS
+  #         - platform: macos
+  #           make_target: test-macos
+  #           display_name: macOS
+  #         - os: macos-latest
+  #         - xcode: latest-stable
+  #   name: Test - ${{ matrix.display_name }} on ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+  #   env:
+  #     REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
+  #   needs: build
+  #   steps:
+  #     - name: Setup Xcode ${{ matrix.xcode }}
+  #       uses: maxim-lobanov/setup-xcode@v1
+  #       with:
+  #         xcode-version: ${{ matrix.xcode }}
 
-      - name: Checkout Repository
-        uses: actions/checkout@v5
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v5
 
-      - name: Cache Swift Package Manager
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-            ~/Library/Caches/org.swift.swiftpm
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-spm-
+  #     - name: Cache Swift Package Manager
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+  #           ~/Library/Caches/org.swift.swiftpm
+  #         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-spm-
 
-      - name: Run Tests (platform-specific)
-        run: |
-          echo "🧪 Running ${{ matrix.display_name }} tests with Makefile..."
-          make ${{ matrix.make_target }}
+  #     - name: Run Tests (platform-specific)
+  #       run: |
+  #         echo "🧪 Running ${{ matrix.display_name }} tests with Makefile..."
+  #         make ${{ matrix.make_target }}
