@@ -61,7 +61,7 @@ struct BrixieErrorBanner: View {
                     Button("Dismiss") {
                         onDismiss()
                     }
-                    .buttonStyle(BrixieButtonStyle(variant: .tertiary))
+                    .buttonStyle(BrixieButtonStyle(variant: .ghost))
                     .controlSize(.mini)
                 }
             }
@@ -94,7 +94,7 @@ struct BrixieErrorBanner: View {
         case .apiKeyMissing, .unauthorized:
             return Color.brixieAccent
         default:
-            return Color.brixieError
+            return Color.brixieWarning
         }
     }
     
@@ -138,7 +138,7 @@ struct BrixieErrorToast: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "exclamationmark.circle.fill")
-                .foregroundStyle(Color.brixieError)
+                .foregroundStyle(Color.brixieWarning)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(errorTitle)
@@ -166,7 +166,7 @@ struct BrixieErrorToast: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.brixieError.gradient)
+                .fill(Color.brixieWarning.gradient)
         )
         .padding(.horizontal, 20)
     }
