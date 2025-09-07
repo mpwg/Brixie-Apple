@@ -15,6 +15,11 @@ struct SettingsView: View {
     @Environment(DIContainer.self) private var diContainer
     @State private var showingClearCacheAlert = false
     @State private var cacheSize = "Calculating..."
+    @State private var showingAPIKeySheet = false
+    
+    private var apiConfigurationService: APIConfigurationService {
+        diContainer.apiConfigurationService
+    }
     
     var body: some View {
         NavigationStack {
@@ -24,6 +29,7 @@ struct SettingsView: View {
                 
                 ScrollView {
                     VStack(spacing: 24) {
+                        apiSection
                         themeSection
                         cacheSection
                         aboutSection
@@ -50,8 +56,58 @@ struct SettingsView: View {
         } message: {
             Text("This will clear all cached images and set data. You can always re-download them later.")
         }
+        .sheet(isPresented: $showingAPIKeySheet) {
+            APIKeySettingsSheet(apiConfigurationService: apiConfigurationService)
+        }
         .onAppear {
             updateCacheSize()
+        }
+    }
+    
+    private var apiSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("API Configuration")
+                .font(.brixieHeadline)
+                .foregroundStyle(Color.brixieText)
+            
+            BrixieCard {
+                VStack(spacing: 16) {
+                    HStack(spacing: 16) {
+                        ZStack {
+                            Circle()
+                                .fill(apiConfigurationService.hasValidAPIKey ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
+                                .frame(width: 48, height: 48)
+                            
+                            Image(systemName: apiConfigurationService.hasValidAPIKey ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundStyle(apiConfigurationService.hasValidAPIKey ? Color.green : Color.orange)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Rebrickable API Key")
+                                .font(.brixieSubhead)
+                                .foregroundStyle(Color.brixieText)
+                            
+                            Text(apiConfigurationService.configurationStatus)
+                                .font(.brixieCaption)
+                                .foregroundStyle(Color.brixieTextSecondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Button("Configure") {
+                            showingAPIKeySheet = true
+                        }
+                        .buttonStyle(BrixieButtonStyle(variant: .ghost))
+                    }
+                }
+                .padding(20)
+            }
+            
+            Text("Configure your Rebrickable API key to access LEGO set data. Get your free API key from rebrickable.com/api/")
+                .font(.brixieCaption)
+                .foregroundStyle(Color.brixieTextSecondary)
+                .padding(.leading, 4)
         }
     }
     
@@ -192,7 +248,7 @@ struct SettingsView: View {
                 .padding(20)
             }
             
-            Text("Clear cached images and stored set data to free up storage space on your device.")
+            Text("Clear cached images, stored set data, and recent searches to free up storage space on your device.")
                 .font(.brixieCaption)
                 .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)
@@ -311,10 +367,13 @@ struct SettingsView: View {
         
         // Clear image cache
         clearImageCache()
+        
+        // Clear recent searches
+        RecentSearchesStorage.shared.clearRecentSearches()
     }
 }
 
 #Preview {
     SettingsView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
