@@ -23,7 +23,8 @@ final class DIContainer: @unchecked Sendable {
             do {
                 let schema = Schema([
                     LegoSet.self,
-                    LegoTheme.self
+                    LegoTheme.self,
+                    SyncTimestamp.self
                 ])
                 let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
                 self.modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -36,6 +37,7 @@ final class DIContainer: @unchecked Sendable {
     // MARK: - Managers
     
     var themeManager: ThemeManager = ThemeManager.shared
+    var networkMonitorService: NetworkMonitorService = NetworkMonitorService.shared
     
     // MARK: - Services
     

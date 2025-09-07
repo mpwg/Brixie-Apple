@@ -17,6 +17,7 @@ final class SetsListViewModel {
     var isLoadingMore = false
     var error: BrixieError?
     var currentPage = 1
+    var lastSyncTimestamp: SyncTimestamp?
     
     private let pageSize = 20
     
@@ -29,7 +30,10 @@ final class SetsListViewModel {
         isLoading = true
         error = nil
         
-        defer { isLoading = false }
+        defer { 
+            isLoading = false
+            updateLastSyncTimestamp()
+        }
         
         do {
             sets = try await legoSetRepository.fetchSets(page: currentPage, pageSize: pageSize)
@@ -80,5 +84,11 @@ final class SetsListViewModel {
     
     var cachedSetsAvailable: Bool {
         !sets.isEmpty
+    }
+    
+    private func updateLastSyncTimestamp() {
+        Task {
+            lastSyncTimestamp = await legoSetRepository.getLastSyncTimestamp(for: .sets)
+        }
     }
 }

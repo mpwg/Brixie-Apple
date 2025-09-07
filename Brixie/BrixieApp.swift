@@ -17,6 +17,7 @@ struct BrixieApp: App {
         let schema = Schema([
             LegoSet.self,
             LegoTheme.self,
+            SyncTimestamp.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -33,6 +34,7 @@ struct BrixieApp: App {
             ContentView()
                 .environment(diContainer)
                 .environment(diContainer.themeManager)
+                .environment(diContainer.networkMonitorService)
                 .preferredColorScheme(diContainer.themeManager.colorScheme)
         }
         .modelContainer(diContainer.modelContainer)

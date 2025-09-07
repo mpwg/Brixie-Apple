@@ -20,6 +20,7 @@ final class SearchViewModel {
     var selectedFilter: SearchFilter = .all
     var recentSearches: [String] = []
     var showingNoResults = false
+    var lastSyncTimestamp: SyncTimestamp?
     
     init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository) {
         self.legoSetRepository = legoSetRepository
@@ -46,7 +47,10 @@ final class SearchViewModel {
         showingNoResults = false
         error = nil
         
-        defer { isSearching = false }
+        defer { 
+            isSearching = false
+            updateLastSyncTimestamp()
+        }
         
         do {
             let results = try await legoSetRepository.searchSets(
@@ -113,6 +117,12 @@ final class SearchViewModel {
     
     var showNoResults: Bool {
         !isSearching && !searchText.isEmpty && searchResults.isEmpty
+    }
+    
+    private func updateLastSyncTimestamp() {
+        Task {
+            lastSyncTimestamp = await legoSetRepository.getLastSyncTimestamp(for: .search)
+        }
     }
 }
 
