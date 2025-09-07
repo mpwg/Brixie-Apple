@@ -2,38 +2,52 @@
 
 This project supports secure API key injection at build time using environment variables and build scripts.
 
-## Quick Setup
+## Setup Required
 
-1. **Get your Rebrickable API key** from [https://rebrickable.com/api/](https://rebrickable.com/api/)
+**⚠️ IMPORTANT**: You must first add the build script to Xcode before using this system.
 
-2. **Choose one of these methods:**
+### 1. Add Build Script to Xcode (One-time setup)
 
-### Method 1: Environment Variable (Recommended for CI/CD)
+1. Open `Brixie.xcodeproj` in Xcode
+2. Select the "Brixie" project in the navigator
+3. Select the "Brixie" target 
+4. Go to "Build Phases" tab
+5. Click "+" and select "New Run Script Phase"
+6. Drag the new phase to be **first** (before "Sources")
+7. In the script box, enter:
+   ```bash
+   "${SRCROOT}/Scripts/generate-api-config.sh"
+   ```
+8. Set "Shell" to `/bin/bash`
+
+### 2. Build with API Key
+
+**Method 1: Environment Variable (Recommended for CI/CD)**
 ```bash
 export REBRICKABLE_API_KEY="your_api_key_here"
-xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug build
+xcodebuild -project Brixie.xcodeproj -scheme Brixie build
 ```
 
-### Method 2: Local Environment File (Recommended for Development)
+**Method 2: Local Environment File (Recommended for Development)**
 ```bash
 # Copy template and edit with your API key
 cp .env.template .env
 # Edit .env with your actual API key
 
-# Build will automatically use .env file
-xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug build
+# Build in Xcode or command line
+xcodebuild -project Brixie.xcodeproj -scheme Brixie build
 ```
 
-### Method 3: Inline with Build Command
+**Method 3: Inline with Build Command**
 ```bash
 REBRICKABLE_API_KEY="your_api_key_here" xcodebuild -project Brixie.xcodeproj -scheme Brixie build
 ```
 
 ## How It Works
 
-1. **Build Script**: `Scripts/generate-api-config.sh` runs before compilation
+1. **Build Script**: `Scripts/generate-api-config.sh` runs before compilation (via Run Script Phase)
 2. **Generated File**: Creates `Brixie/Configuration/Generated/GeneratedConfiguration.swift`
-3. **Integration**: `APIKeyManager` uses embedded key as fallback when no keychain key exists
+3. **Integration**: `APIKeyManager` uses embedded key exclusively
 4. **Security**: Generated files and .env are in .gitignore
 
 ## Fallback Behavior

@@ -17,7 +17,7 @@ final class APIKeyManager {
     }
     
     private init() {
-        if GeneratedConfiguration.hasEmbeddedAPIKey, let embeddedKey = GeneratedConfiguration.rebrickableAPIKey {
+        if APIConfiguration.hasEmbeddedAPIKey, let embeddedKey = APIConfiguration.rebrickableAPIKey {
             self.apiKey = embeddedKey
         } else {
             self.apiKey = ""
