@@ -248,7 +248,7 @@ struct SettingsView: View {
                 .padding(20)
             }
             
-            Text("Clear cached images and stored set data to free up storage space on your device.")
+            Text("Clear cached images, stored set data, and recent searches to free up storage space on your device.")
                 .font(.brixieCaption)
                 .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)
@@ -367,10 +367,13 @@ struct SettingsView: View {
         
         // Clear image cache
         clearImageCache()
+        
+        // Clear recent searches
+        RecentSearchesStorage.shared.clearRecentSearches()
     }
 }
 
 #Preview {
     SettingsView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
