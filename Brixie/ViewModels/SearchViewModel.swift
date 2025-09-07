@@ -12,6 +12,7 @@ import Foundation
 final class SearchViewModel: ViewModelErrorHandling {
     private let legoSetRepository: LegoSetRepository
     private let legoThemeRepository: LegoThemeRepository
+    private let recentSearchesStorage: RecentSearchesStorage
     
     var searchText = ""
     var searchResults: [LegoSet] = []
@@ -21,9 +22,13 @@ final class SearchViewModel: ViewModelErrorHandling {
     var recentSearches: [String] = []
     var showingNoResults = false
     
-    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository) {
+    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository, recentSearchesStorage: RecentSearchesStorage = .shared) {
         self.legoSetRepository = legoSetRepository
         self.legoThemeRepository = legoThemeRepository
+        self.recentSearchesStorage = recentSearchesStorage
+        
+        // Load recent searches from storage
+        self.recentSearches = recentSearchesStorage.loadRecentSearches()
     }
     
     func performSearch() async {
@@ -34,13 +39,9 @@ final class SearchViewModel: ViewModelErrorHandling {
         
         let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Add to recent searches
-        if !recentSearches.contains(trimmedSearch) {
-            recentSearches.insert(trimmedSearch, at: 0)
-            if recentSearches.count > 5 {
-                recentSearches = Array(recentSearches.prefix(5))
-            }
-        }
+        // Add to recent searches and persist
+        recentSearchesStorage.addSearch(trimmedSearch)
+        recentSearches = recentSearchesStorage.loadRecentSearches()
         
         isSearching = true
         showingNoResults = false
@@ -80,10 +81,21 @@ final class SearchViewModel: ViewModelErrorHandling {
         error = nil
     }
     
+    // Method for manually testing persistence
+    func addManualSearch(_ search: String) {
+        recentSearchesStorage.addSearch(search)
+        recentSearches = recentSearchesStorage.loadRecentSearches()
+    }
+    
+    // Method to clear recent searches for testing
+    func clearRecentSearches() {
+        recentSearchesStorage.clearRecentSearches()
+        recentSearches = []
+    }
+    
     func toggleFavorite(for set: LegoSet) async {
         do {
             try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
-            
             if let index = searchResults.firstIndex(where: { $0.id == set.id }) {
                 searchResults[index].isFavorite.toggle()
             }

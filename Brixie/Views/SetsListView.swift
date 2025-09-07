@@ -124,14 +124,8 @@ struct SetRowView: View {
     
     var body: some View {
         HStack {
-            AsyncCachedImage(urlString: set.imageURL)
-                .aspectRatio(contentMode: .fit)
+            CachedImageCard(urlString: set.imageURL, maxHeight: 60)
                 .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(.gray.opacity(0.1))
-                )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(set.name)
@@ -152,6 +146,16 @@ struct SetRowView: View {
                         .foregroundStyle(.blue)
                         .clipShape(Capsule())
                     
+                    if let themeName = set.themeName {
+                        Text(themeName)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(.green.opacity(0.2))
+                            .foregroundStyle(.green)
+                            .clipShape(Capsule())
+                    }
+                    
                     Text(String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -160,13 +164,7 @@ struct SetRowView: View {
             
             Spacer()
             
-            Button(action: {
-                onFavoriteToggle?(set)
-            }) {
-                Image(systemName: set.isFavorite ? "heart.fill" : "heart")
-                    .foregroundStyle(set.isFavorite ? .red : .gray)
-            }
-            .buttonStyle(.plain)
+            FavoriteButton(isFavorite: set.isFavorite, action: { onFavoriteToggle?(set) })
         }
         .padding(.vertical, 4)
     }
@@ -174,7 +172,7 @@ struct SetRowView: View {
 
 #Preview {
     SetsListView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
 
 #Preview {
@@ -184,7 +182,8 @@ struct SetRowView: View {
         name: "Titanic",
         year: 2021,
         themeId: 1,
-        numParts: 9090
+        numParts: 9090,
+        themeName: "Creator Expert"
     )
 
     SetRowView(set: sample)

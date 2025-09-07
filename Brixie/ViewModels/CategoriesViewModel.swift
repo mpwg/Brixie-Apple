@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class CategoriesViewModel {
+final class CategoriesViewModel: ViewModelErrorHandling {
     private let legoThemeRepository: LegoThemeRepository
     
     var themes: [LegoTheme] = []
@@ -35,12 +35,8 @@ final class CategoriesViewModel {
         do {
             themes = try await legoThemeRepository.fetchThemes(page: 1, pageSize: 100)
             updateFilteredThemes()
-        } catch let brixieError as BrixieError {
-            error = brixieError
-            themes = await legoThemeRepository.getCachedThemes()
-            updateFilteredThemes()
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
             themes = await legoThemeRepository.getCachedThemes()
             updateFilteredThemes()
         }
