@@ -316,5 +316,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
