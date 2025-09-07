@@ -35,10 +35,7 @@ jobs:
           xcode-version: ${{ matrix.xcode }}
       - name: List
         run: |
-          xcrun simctl list
-          xcrun simctl list devices
-          xcrun simctl list runtimes
-          xcrun simctl list profiles
+          xcrun simctl list || true
 
       - name: Checkout Repository
         uses: actions/checkout@v5
