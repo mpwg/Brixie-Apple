@@ -69,4 +69,20 @@ final class LegoThemeRepositoryImpl: LegoThemeRepository {
             return []
         }
     }
+    
+    // MARK: - AsyncSequence Methods
+    
+    func allThemes(pageSize: Int = 20) -> PaginatedAsyncSequence<LegoTheme> {
+        PaginatedAsyncSequence(pageSize: pageSize) { [weak self] page, pageSize in
+            guard let self = self else { throw BrixieError.dataNotFound }
+            return try await self.fetchThemes(page: page, pageSize: pageSize)
+        }
+    }
+    
+    func searchThemes(query: String, pageSize: Int = 20) -> PaginatedAsyncSequence<LegoTheme> {
+        PaginatedAsyncSequence(pageSize: pageSize) { [weak self] page, pageSize in
+            guard let self = self else { throw BrixieError.dataNotFound }
+            return try await self.searchThemes(query: query, page: page, pageSize: pageSize)
+        }
+    }
 }

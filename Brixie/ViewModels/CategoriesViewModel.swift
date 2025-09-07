@@ -33,7 +33,10 @@ final class CategoriesViewModel {
         defer { isLoading = false }
         
         do {
-            themes = try await legoThemeRepository.fetchThemes(page: 1, pageSize: 100)
+            // Use AsyncSequence for more composable pagination
+            themes = try await legoThemeRepository
+                .allThemes(pageSize: 100)
+                .collect(limit: 100) // Limit for UI responsiveness
             updateFilteredThemes()
         } catch let brixieError as BrixieError {
             error = brixieError
@@ -58,11 +61,10 @@ final class CategoriesViewModel {
         defer { isLoading = false }
         
         do {
-            let searchResults = try await legoThemeRepository.searchThemes(
-                query: query,
-                page: 1,
-                pageSize: 50
-            )
+            // Use AsyncSequence for search pagination
+            let searchResults = try await legoThemeRepository
+                .searchThemes(query: query, pageSize: 50)
+                .collect(limit: 50)
             filteredThemes = searchResults
         } catch {
             updateFilteredThemes()

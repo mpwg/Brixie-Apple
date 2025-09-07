@@ -91,4 +91,20 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             return []
         }
     }
+    
+    // MARK: - AsyncSequence Methods
+    
+    func allSets(pageSize: Int = 20) -> PaginatedAsyncSequence<LegoSet> {
+        PaginatedAsyncSequence(pageSize: pageSize) { [weak self] page, pageSize in
+            guard let self = self else { throw BrixieError.dataNotFound }
+            return try await self.fetchSets(page: page, pageSize: pageSize)
+        }
+    }
+    
+    func searchSets(query: String, pageSize: Int = 20) -> PaginatedAsyncSequence<LegoSet> {
+        PaginatedAsyncSequence(pageSize: pageSize) { [weak self] page, pageSize in
+            guard let self = self else { throw BrixieError.dataNotFound }
+            return try await self.searchSets(query: query, page: page, pageSize: pageSize)
+        }
+    }
 }

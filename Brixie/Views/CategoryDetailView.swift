@@ -23,6 +23,7 @@ struct CategoryDetailView: View {
     @State private var maxParts: Int = 10000
     @State private var currentPage = 1
     @State private var hasMorePages = true
+    @State private var isLoadingMore = false
     
     enum SetSortOrder: String, CaseIterable {
         case year = "-year"
@@ -78,7 +79,7 @@ struct CategoryDetailView: View {
                                 }
                             }
                             
-                            if hasMorePages && !service.isLoading {
+                            if hasMorePages && !service.isLoading && !isLoadingMore {
                                 Button(action: loadMoreSets) {
                                     HStack {
                                         Spacer()
@@ -89,7 +90,7 @@ struct CategoryDetailView: View {
                                 }
                             }
                             
-                            if service.isLoading && !sets.isEmpty {
+                            if (service.isLoading && !sets.isEmpty) || isLoadingMore {
                                 HStack {
                                     Spacer()
                                     ProgressView()
@@ -198,7 +199,12 @@ struct CategoryDetailView: View {
     }
     
     private func loadMoreSets() {
+        guard !isLoadingMore && hasMorePages else { return }
+        
         Task {
+            isLoadingMore = true
+            defer { isLoadingMore = false }
+            
             currentPage += 1
             await loadSets()
         }
