@@ -227,11 +227,3 @@ final class MockLegoThemeRepository: LegoThemeRepository {
         return []
     }
 }
-
-// MARK: - Mock LegoTheme Model
-
-// Simple mock LegoTheme for testing
-struct LegoTheme {
-    let id: Int
-    let name: String
-}

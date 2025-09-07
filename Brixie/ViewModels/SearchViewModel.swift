@@ -31,6 +31,10 @@ final class SearchViewModel {
         self.debounceDelay = debounceDelay
     }
     
+    deinit {
+        searchTask?.cancel()
+    }
+    
     // MARK: - Search Methods
     
     /// Performs an immediate search without debouncing (for manual submit)
