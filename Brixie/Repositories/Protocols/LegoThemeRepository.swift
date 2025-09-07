@@ -13,4 +13,5 @@ protocol LegoThemeRepository {
     func searchThemes(query: String, page: Int, pageSize: Int) async throws -> [LegoTheme]
     func getThemeDetails(id: Int) async throws -> LegoTheme?
     func getCachedThemes() async -> [LegoTheme]
+    func getLastSyncTimestamp(for syncType: SyncType) async -> SyncTimestamp?
 }

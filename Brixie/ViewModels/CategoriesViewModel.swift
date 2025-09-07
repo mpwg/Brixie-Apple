@@ -21,6 +21,7 @@ final class CategoriesViewModel {
     }
     var isLoading = false
     var error: BrixieError?
+    var lastSyncTimestamp: SyncTimestamp?
     
     init(legoThemeRepository: LegoThemeRepository) {
         self.legoThemeRepository = legoThemeRepository
@@ -30,7 +31,10 @@ final class CategoriesViewModel {
         isLoading = true
         error = nil
         
-        defer { isLoading = false }
+        defer { 
+            isLoading = false
+            updateLastSyncTimestamp()
+        }
         
         do {
             themes = try await legoThemeRepository.fetchThemes(page: 1, pageSize: 100)
@@ -82,5 +86,11 @@ final class CategoriesViewModel {
     
     var cachedThemesAvailable: Bool {
         !themes.isEmpty
+    }
+    
+    private func updateLastSyncTimestamp() {
+        Task {
+            lastSyncTimestamp = await legoThemeRepository.getLastSyncTimestamp(for: .themes)
+        }
     }
 }
