@@ -16,4 +16,5 @@ protocol LegoSetRepository {
     func markAsFavorite(_ set: LegoSet) async throws
     func removeFromFavorites(_ set: LegoSet) async throws
     func getFavoriteSets() async -> [LegoSet]
+    func backfillThemeNames() async throws
 }
