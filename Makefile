@@ -82,6 +82,15 @@ build-macos: generate-config
 .PHONY: build-all
 build-all: build-ios build-macos
 
+# CI-friendly build: use generic destinations so CI can build without a simulator
+.PHONY: ci-build
+ci-build: generate-config
+	@echo "🔁 CI build: generic iOS and macOS"
+	# Build for generic iOS device (no simulator)
+	xcodebuild -project $(XCODE_PROJECT) -scheme $(SCHEME) -configuration Debug -destination 'generic/platform=iOS' build
+	# Build for generic macOS (macOS app)
+	xcodebuild -project $(XCODE_PROJECT) -scheme $(SCHEME) -configuration Debug -destination 'generic/platform=macOS' build
+
 # Test iOS app
 .PHONY: test-ios
 test-ios: generate-config

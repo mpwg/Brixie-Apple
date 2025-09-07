@@ -60,10 +60,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Build ${{ matrix.display_name }} App
+      - name: Build App (CI unified)
         run: |
-          echo "🔨 Building ${{ matrix.display_name }} with Makefile..."
-          make ${{ matrix.make_target }}
+          echo "🔨 Building with Makefile (ci-build)..."
+          make ci-build
 
   test:
     strategy:
@@ -102,7 +102,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Run ${{ matrix.display_name }} Tests
+      - name: Run Tests (platform-specific)
         run: |
           echo "🧪 Running ${{ matrix.display_name }} tests with Makefile..."
           make ${{ matrix.make_target }}
