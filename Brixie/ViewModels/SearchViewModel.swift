@@ -126,11 +126,11 @@ enum SearchFilter: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .all:
-            return NSLocalizedString("All", comment: "Search filter: All")
+            return Strings.all.localized
         case .sets:
-            return NSLocalizedString("Sets", comment: "Search filter: Sets")
+            return Strings.sets.localized
         case .themes:
-            return NSLocalizedString("Themes", comment: "Search filter: Themes")
+            return Strings.themes.localized
         }
     }
 }

@@ -1,0 +1,118 @@
+/* English (Base) localization for Brixie */
+
+"Set #%@" = "Set #%@";
+"%d pieces" = "%d pieces";
+
+"Search Not Available" = "Search Not Available";
+"Configure your API key in Settings to enable search" = "Configure your API key in Settings to enable search";
+"Recent Searches" = "Recent Searches";
+"Search LEGO Sets" = "Search LEGO Sets";
+"Search by set name, number, or theme" = "Search by set name, number, or theme";
+"Searching..." = "Searching...";
+"No Results" = "No Results";
+"No sets found for '%@'" = "No sets found for '%@'";
+"No sets found for '%@'. Try a different search term." = "No sets found for '%@'. Try a different search term.";
+
+"Tap to view full size" = "Tap to view full size";
+"Set Information" = "Set Information";
+"Statistics" = "Statistics";
+"Remove from Favorites" = "Remove from Favorites";
+"Add to Favorites" = "Add to Favorites";
+"Share Image" = "Share Image";
+
+"Search Sets" = "Search Sets";
+"Sets" = "Sets";
+"Search" = "Search";
+"Favorites" = "Favorites";
+"Settings" = "Settings";
+"Categories" = "Categories";
+
+"API Key Required" = "API Key Required";
+"To fetch LEGO sets, you need a Rebrickable API key. Get one for free at rebrickable.com" = "To fetch LEGO sets, you need a Rebrickable API key. Get one for free at rebrickable.com";
+"Enter API Key" = "Enter API Key";
+"Enter your Rebrickable API key to fetch LEGO sets" = "Enter your Rebrickable API key to fetch LEGO sets";
+"Enter your Rebrickable API key. Get one for free at rebrickable.com" = "Enter your Rebrickable API key. Get one for free at rebrickable.com";
+"No Sets Found" = "No Sets Found";
+"Pull to refresh or check your internet connection" = "Pull to refresh or check your internet connection";
+
+"API Configuration" = "API Configuration";
+"A free Rebrickable API key is required to fetch LEGO set data." = "A free Rebrickable API key is required to fetch LEGO set data.";
+"Image Cache" = "Image Cache";
+"Not configured" = "Not configured";
+"Configured" = "Configured";
+"Configure" = "Configure";
+"Get API Key" = "Get API Key";
+"Storage" = "Storage";
+"Clear cached images and stored set data to free up storage space." = "Clear cached images and stored set data to free up storage space.";
+"This will clear all cached images and set data. You can always re-download them later." = "This will clear all cached images and set data. You can always re-download them later.";
+"Clear Cache" = "Clear Cache";
+"Clear All Data" = "Clear All Data";
+"App Version" = "App Version";
+"Visit Website" = "Visit Website";
+"Rebrickable" = "Rebrickable";
+"About" = "About";
+"Brixie uses the Rebrickable API to provide LEGO set information." = "Brixie uses the Rebrickable API to provide LEGO set information.";
+
+"No Favorites Yet" = "No Favorites Yet";
+"Sets you favorite will appear here" = "Sets you favorite will appear here";
+
+"Done" = "Done";
+"Reset" = "Reset";
+"Load More" = "Load More";
+
+/* Search filters */
+"All" = "All";
+"Themes" = "Themes";
+"Filters" = "Filters";
+
+/* Sorting */
+"Sort by" = "Sort by";
+"Name (A-Z)" = "Name (A-Z)";
+"Name (Z-A)" = "Name (Z-A)";
+"Year (newest first)" = "Year (newest first)";
+"Year (oldest first)" = "Year (oldest first)";
+"Parts (least first)" = "Parts (least first)";
+"Parts (most first)" = "Parts (most first)";
+"Part Count" = "Part Count";
+"Year Range" = "Year Range";
+"Minimum" = "Minimum";
+"Maximum" = "Maximum";
+"Min:" = "Min:";
+"Max:" = "Max:";
+
+/* States */
+"Initializing..." = "Initializing...";
+"Loading sets..." = "Loading sets...";
+"Powered by Rebrickable" = "Powered by Rebrickable";
+
+/* Themes */
+"Light" = "Light";
+"Dark" = "Dark";
+"System" = "System";
+
+/* Error Messages */
+"Network error: %@" = "Network error: %@";
+"API key is required to fetch data" = "API key is required to fetch data";
+"Failed to parse response" = "Failed to parse response";
+"Cache operation failed: %@" = "Cache operation failed: %@";
+"Invalid URL: %@" = "Invalid URL: %@";
+"Requested data not found" = "Requested data not found";
+"Data persistence failed: %@" = "Data persistence failed: %@";
+"API rate limit exceeded. Please try again later" = "API rate limit exceeded. Please try again later";
+"Unauthorized. Please check your API key" = "Unauthorized. Please check your API key";
+"Server error (status: %d)" = "Server error (status: %d)";
+
+/* Error Recovery */
+"Check your internet connection and try again" = "Check your internet connection and try again";
+"Please enter a valid API key in settings" = "Please enter a valid API key in settings";
+"Wait a few minutes before making more requests" = "Wait a few minutes before making more requests";
+"Try clearing the app cache in settings" = "Try clearing the app cache in settings";
+"Please try again later" = "Please try again later";
+
+/* Generic */
+"Yes" = "Yes";
+"No" = "No";
+
+/* Search categories */
+"Search categories" = "Search categories";
+"Search sets" = "Search sets";

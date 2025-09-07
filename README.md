@@ -19,6 +19,8 @@ A modern SwiftUI application for browsing and searching LEGO sets using the Rebr
 - Detailed set views with cached images
 - Multi-platform support (iOS, macOS, visionOS)
 - Integration with Rebrickable LEGO API
+- **Type-safe localization system** with enum-backed localization constants
+- German and English localization support
 
 ## Platform Support
 
@@ -82,6 +84,28 @@ The CI pipeline includes:
 - **Main App**: SwiftUI-based with SwiftData for persistence
 - **External Dependencies**: RebrickableLegoAPIClient for LEGO data
 - **Testing**: Swift Testing framework for unit tests, XCTest for UI tests
+- **Localization**: Type-safe enum-based localization system
+
+## Localization
+
+Brixie uses a modern type-safe localization system instead of traditional string-based keys. See [LOCALIZATION.md](LOCALIZATION.md) for detailed documentation.
+
+### Quick Example
+
+```swift
+// Type-safe localization
+Text(Strings.settings.localized)
+Button(Strings.addToFavorites.localized) { /* action */ }
+
+// Formatted strings
+let pieces = Strings.piecesCount(42).localized // "42 pieces"
+let setNum = Strings.setNumber("10234").localized // "Set #10234"
+```
+
+### Supported Languages
+
+- English (Base)
+- German (de)
 
 ## Dependencies
 

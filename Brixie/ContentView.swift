@@ -22,31 +22,31 @@ struct ContentView: View {
             TabView(selection: $selectedTab) {
                 CategoriesView()
                     .tabItem {
-                        Label(NSLocalizedString("Categories", comment: "Tab label for categories"), systemImage: "folder")
+                        Label(Strings.categories.localized, systemImage: "folder")
                     }
                     .tag(0)
                 
                 SetsListView()
                     .tabItem {
-                        Label(NSLocalizedString("Sets", comment: "Tab label for sets"), systemImage: "building.2")
+                        Label(Strings.sets.localized, systemImage: "building.2")
                     }
                     .tag(1)
                 
                 SearchView()
                     .tabItem {
-                        Label(NSLocalizedString("Search", comment: "Tab label for search"), systemImage: "magnifyingglass")
+                        Label(Strings.search.localized, systemImage: "magnifyingglass")
                     }
                     .tag(2)
                 
                 FavoritesView()
                     .tabItem {
-                        Label(NSLocalizedString("Favorites", comment: "Tab label for favorites"), systemImage: "heart")
+                        Label(Strings.favorites.localized, systemImage: "heart")
                     }
                     .tag(3)
                 
                 SettingsView()
                     .tabItem {
-                        Label(NSLocalizedString("Settings", comment: "Tab label for settings"), systemImage: "gear")
+                        Label(Strings.settings.localized, systemImage: "gear")
                     }
                     .tag(4)
             }

@@ -59,10 +59,10 @@ final class SetDetailViewModel {
     }
     
     var formattedParts: String {
-        String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts)
+        Strings.piecesCount(set.numParts).localized
     }
     
     var setNumber: String {
-        String(format: NSLocalizedString("Set #%@", comment: "Set number display"), set.setNum)
+        Strings.setNumber(set.setNum).localized
     }
 }
