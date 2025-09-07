@@ -39,26 +39,10 @@ struct SearchView: View {
                 get: { viewModel?.searchText ?? "" },
                 set: { viewModel?.searchText = $0 }
             ), prompt: "Search LEGO sets...") {
-                if let vm = viewModel, !vm.recentSearches.isEmpty {
-                    Section("Recent Searches") {
-                        ForEach(vm.recentSearches, id: \.self) { search in
-                            Button {
-                                vm.searchText = search
-                                Task {
-                                    await vm.performSearch()
-                                }
-                            } label: {
-                                HStack {
-                                    Image(systemName: "clock.arrow.circlepath")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(Color.brixieAccent)
-                                    Text(search)
-                                        .foregroundStyle(Color.brixieText)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 4)
-                            }
-                        }
+                if let vm = viewModel {
+                    BrixieSearchSuggestions(recentSearches: vm.recentSearches) { selection in
+                        vm.searchText = selection
+                        Task { await vm.performSearch() }
                     }
                 }
             }
