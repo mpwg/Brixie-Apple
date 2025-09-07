@@ -162,7 +162,7 @@ struct SetRowView: View {
 
 #Preview {
     SetsListView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
 
 #Preview {

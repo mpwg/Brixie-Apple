@@ -196,5 +196,5 @@ struct SearchView: View {
 
 #Preview {
     SearchView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

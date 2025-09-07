@@ -256,7 +256,7 @@ struct FullScreenImageView: View {
     NavigationStack {
         SetDetailView(set: sampleSet)
     }
-    .modelContainer(for: LegoSet.self, inMemory: true)
+    .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
 
 #Preview {
