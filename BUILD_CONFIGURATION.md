@@ -1,61 +1,83 @@
 # Build Configuration for API Keys
 
-This project supports secure API key injection at build time using environment variables and build scripts.
+This project supports secure API key injection at build time using environment variables and a Makefile-based build system.
 
-## Setup Required
+## Quick Start
 
-**⚠️ IMPORTANT**: You must first add the build script to Xcode before using this system.
+**⚠️ IMPORTANT**: API key is now REQUIRED for all builds. Builds will fail without it.
 
-### 1. Add Build Script to Xcode (One-time setup)
+The simplest way to build:
 
-1. Open `Brixie.xcodeproj` in Xcode
-2. Select the "Brixie" project in the navigator
-3. Select the "Brixie" target 
-4. Go to "Build Phases" tab
-5. Click "+" and select "New Run Script Phase"
-6. Drag the new phase to be **first** (before "Sources")
-7. In the script box, enter:
-   ```bash
-   "${SRCROOT}/Scripts/generate-api-config.sh"
-   ```
-8. Set "Shell" to `/bin/bash`
+```bash
+REBRICKABLE_API_KEY="your_api_key_here" make build-ios
+```
 
-### 2. Build with API Key
+Or for development, create a `.env` file:
+```bash
+echo "REBRICKABLE_API_KEY=your_api_key_here" > .env
+make build-all
+```
+
+Get your API key from: https://rebrickable.com/api/
+
+## Available Make Targets
+
+### Building
+- `make build-ios` - Build iOS app with API key injection
+- `make build-macos` - Build macOS app with API key injection  
+- `make build-all` - Build both iOS and macOS platforms
+
+### Testing
+- `make test-ios` - Run iOS tests
+- `make test-macos` - Run macOS tests
+- `make test-all` - Run tests on both platforms
+
+### Configuration Management
+- `make generate-config` - Generate API configuration (REQUIRES API key)
+- `make generate-config-dev` - Generate config without API key (development only)
+- `make clean-config` - Remove generated configuration files
+- `make clean` - Full clean (config + build artifacts)
+
+### Help
+- `make help` - Show all available targets and usage examples
+
+## Build Methods
 
 **Method 1: Environment Variable (Recommended for CI/CD)**
 ```bash
-export REBRICKABLE_API_KEY="your_api_key_here"
-xcodebuild -project Brixie.xcodeproj -scheme Brixie build
+REBRICKABLE_API_KEY="your_api_key_here" make build-ios
 ```
 
 **Method 2: Local Environment File (Recommended for Development)**
 ```bash
-# Copy template and edit with your API key
-cp .env.template .env
-# Edit .env with your actual API key
+# Create .env file with your API key
+echo "REBRICKABLE_API_KEY=your_api_key_here" > .env
 
-# Build in Xcode or command line
-xcodebuild -project Brixie.xcodeproj -scheme Brixie build
+# Build using Makefile
+make build-all
 ```
 
-**Method 3: Inline with Build Command**
+**Method 3: Direct Xcode Integration**
 ```bash
-REBRICKABLE_API_KEY="your_api_key_here" xcodebuild -project Brixie.xcodeproj -scheme Brixie build
+# Generate config first, then use Xcode
+make generate-config
+# Then build in Xcode as normal
 ```
 
 ## How It Works
 
-1. **Build Script**: `Scripts/generate-api-config.sh` runs before compilation (via Run Script Phase)
+1. **Makefile**: `make generate-config` creates configuration before compilation
 2. **Generated File**: Creates `Brixie/Configuration/Generated/GeneratedConfiguration.swift`
-3. **Integration**: `APIKeyManager` uses embedded key exclusively
+3. **Integration**: `APIConfiguration` reads embedded key from build-time generation
 4. **Security**: Generated files and .env are in .gitignore
 
-## Fallback Behavior
+## API Key Behavior
 
-The app uses this priority order for API keys:
-1. **User-provided key** (stored in keychain via Settings)
-2. **Build-time embedded key** (from environment variable)
-3. **No key** (user must provide one in Settings)
+**SECURE BY DEFAULT**: All builds now require an API key at build time.
+
+The app uses build-time embedded keys exclusively:
+1. **Build-time embedded key** (from environment variable) - **REQUIRED**
+2. **No fallback** - builds fail without API key for security
 
 ## CI/CD Integration
 
@@ -64,11 +86,18 @@ The app uses this priority order for API keys:
 - name: Build with API Key
   env:
     REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
-  run: xcodebuild -project Brixie.xcodeproj -scheme Brixie build
+  run: make build-all
 ```
 
 ### Xcode Cloud
-Add `REBRICKABLE_API_KEY` as an environment variable in your Xcode Cloud workflow.
+```yaml
+- name: Generate Configuration
+  env:
+    REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
+  run: make generate-config
+- name: Build
+  run: xcodebuild -project Brixie.xcodeproj -scheme Brixie build
+```
 
 ## Security Notes
 
