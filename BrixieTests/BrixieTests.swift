@@ -417,6 +417,49 @@ struct RepositoryFallbackTests {
         let result = try await repository.getSetDetails(setNum: "nonexistent")
         #expect(result == nil)
     }
+    
+    // MARK: - Additional Repository Tests
+    
+    @Test("getCachedSets fallback - returns empty array on error")
+    func getCachedSetsFallback() async throws {
+        let mockRemote = MockLegoSetRemoteDataSource()
+        let mockLocal = MockLocalDataSource()
+        
+        // Setup local to throw error
+        mockLocal.shouldThrowError = true
+        mockLocal.errorToThrow = BrixieError.persistenceError(underlying: URLError(.unknown))
+        
+        let repository = LegoSetRepositoryImpl(
+            remoteDataSource: mockRemote,
+            localDataSource: mockLocal
+        )
+        
+        let result = await repository.getCachedSets()
+        #expect(result.isEmpty)
+    }
+    
+    @Test("favorites management - mark and retrieve favorites")
+    func favoritesManagement() async throws {
+        let mockRemote = MockLegoSetRemoteDataSource()
+        let mockLocal = MockLocalDataSource()
+        
+        let testSet = LegoSet.mockSet(setNum: "fav-123", name: "Favorite Set")
+        
+        let repository = LegoSetRepositoryImpl(
+            remoteDataSource: mockRemote,
+            localDataSource: mockLocal
+        )
+        
+        // Mark as favorite
+        try await repository.markAsFavorite(testSet)
+        #expect(testSet.isFavorite == true)
+        #expect(mockLocal.savedLegoSets.count == 1)
+        
+        // Remove from favorites
+        try await repository.removeFromFavorites(testSet)
+        #expect(testSet.isFavorite == false)
+        #expect(mockLocal.savedLegoSets.count == 2) // Two save operations
+    }
 }
 
 // MARK: - Legacy Test
