@@ -45,6 +45,7 @@ jobs:
           echo "🔍 Build Environment Info:"
           echo "Platform: ${{ matrix.display_name }}"
           echo "Xcode Version: $(xcodebuild -version)"
+          echo "Available SDKs:"; xcodebuild -showsdks || true
           echo "Make Target: ${{ matrix.make_target }}"
           if [ -n "$REBRICKABLE_API_KEY" ]; then
             echo "✅ API Key: Present"
@@ -67,6 +68,21 @@ jobs:
         run: |
           echo "🔨 Building with Makefile (ci-build)..."
           make ci-build
+
+      - name: Attempt install iOS 26 simulator runtime (best-effort)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: |
+          echo "🔁 Checking for iOS 26.0 SDK..."
+          if xcodebuild -showsdks 2>/dev/null | grep -q "iOS 26.0"; then
+            echo "📱 iOS 26.0 SDK already installed"
+            exit 0
+          fi
+          echo "⚠️  iOS 26.0 SDK missing — attempting best-effort install (may require Apple ID / take long)"
+          # Install xcode-install gem (used to manage Simulators/Xcode components). Best-effort.
+          sudo gem install xcode-install -N || true
+          # Try to install the simulator runtime. This may fail if credentials are required.
+          xcversion simulators --install='iOS 26.0' || true
 
   # test:
   #   strategy:
