@@ -133,7 +133,7 @@ struct CategoriesView: View {
                     .foregroundStyle(Color.brixieWarning)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Connection Issue")
+                    Text(NSLocalizedString("Connection Issue", comment: "Connection error title"))
                         .font(.brixieSubhead)
                         .foregroundStyle(Color.brixieText)
                     
@@ -201,7 +201,7 @@ struct ModernCategoryRowView: View {
                             Text("\(theme.setCount)")
                                 .font(.brixieCaption)
                                 .foregroundStyle(Color.brixieSuccess)
-                            Text("sets")
+                            Text(NSLocalizedString("sets", comment: "Sets count label"))
                                 .font(.brixieCaption)
                                 .foregroundStyle(Color.brixieTextSecondary)
                         }

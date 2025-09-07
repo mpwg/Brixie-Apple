@@ -26,7 +26,7 @@ struct SetsListView: View {
                         setsListView
                     }
                 } else {
-                    ProgressView("Loading...")
+                    ProgressView(NSLocalizedString("Loading...", comment: "Loading indicator text"))
                 }
             }
             .navigationTitle("LEGO Sets")
@@ -66,11 +66,11 @@ struct SetsListView: View {
                 .font(.system(size: 60))
                 .foregroundStyle(.blue)
             
-            Text("No Sets Found")
+            Text(NSLocalizedString("No Sets Found", comment: "Empty sets list title"))
                 .font(.title2)
                 .fontWeight(.semibold)
             
-            Text("Pull to refresh or check your internet connection")
+            Text(NSLocalizedString("Pull to refresh or check your internet connection", comment: "Empty sets list subtitle"))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }

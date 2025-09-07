@@ -1,0 +1,116 @@
+/* English localization for Brixie */
+
+/* Tab Labels */
+"Categories" = "Categories";
+"Sets" = "Sets";
+"Search" = "Search";
+"Favorites" = "Favorites";
+"Settings" = "Settings";
+
+/* Navigation and Headers */
+"Search Sets" = "Search Sets";
+
+/* Search */
+"Search LEGO sets..." = "Search LEGO sets...";
+"Recent Searches" = "Recent Searches";
+"Clear Search" = "Clear Search";
+"%d results" = "%d results";
+"Searching..." = "Searching...";
+"No Results" = "No Results";
+"No sets found for '%@'" = "No sets found for '%@'";
+
+/* Set Details */
+"Set #%@" = "Set #%@";
+"%d pieces" = "%d pieces";
+"Tap to view full size" = "Tap to view full size";
+"Set Information" = "Set Information";
+"Statistics" = "Statistics";
+"Remove from Favorites" = "Remove from Favorites";
+"Add to Favorites" = "Add to Favorites";
+"Share Image" = "Share Image";
+"Done" = "Done";
+
+/* Empty States */
+"No Sets Found" = "No Sets Found";
+"Pull to refresh or check your internet connection" = "Pull to refresh or check your internet connection";
+"No Favorites Yet" = "No Favorites Yet";
+"Sets you favorite will appear here" = "Sets you favorite will appear here";
+"Connection Issue" = "Connection Issue";
+"sets" = "sets";
+
+/* Settings */
+"Appearance" = "Appearance";
+"Theme" = "Theme";
+"Choose how Brixie looks. System follows your device's appearance settings." = "Choose how Brixie looks. System follows your device's appearance settings.";
+"Storage Management" = "Storage Management";
+"Image Cache" = "Image Cache";
+"Clear Cache" = "Clear Cache";
+"Clear All Data" = "Clear All Data";
+"Clear cached images and stored set data to free up storage space on your device." = "Clear cached images and stored set data to free up storage space on your device.";
+"About Brixie" = "About Brixie";
+"Brixie" = "Brixie";
+"Version 1.0.0" = "Version 1.0.0";
+"Brixie uses the Rebrickable API to provide comprehensive LEGO set information and enhance your building experience." = "Brixie uses the Rebrickable API to provide comprehensive LEGO set information and enhance your building experience.";
+
+/* Alerts */
+"This will clear all cached images and set data. You can always re-download them later." = "This will clear all cached images and set data. You can always re-download them later.";
+"Clear" = "Clear";
+"Cancel" = "Cancel";
+
+/* UI Components */
+"Loading..." = "Loading...";
+
+/* Themes */
+"Light" = "Light";
+"Dark" = "Dark";
+"System" = "System";
+
+/* Search Filters */
+"All" = "All";
+"Themes" = "Themes";
+
+/* Error Messages - Network */
+"Network error: %@" = "Network error: %@";
+"API key is required to fetch data" = "API key is required to fetch data";
+"Failed to parse response" = "Failed to parse response";
+"Cache operation failed: %@" = "Cache operation failed: %@";
+"Invalid URL: %@" = "Invalid URL: %@";
+"Requested data not found" = "Requested data not found";
+"Data persistence failed: %@" = "Data persistence failed: %@";
+"API rate limit exceeded. Please try again later" = "API rate limit exceeded. Please try again later";
+"Unauthorized. Please check your API key" = "Unauthorized. Please check your API key";
+"Server error (status: %d)" = "Server error (status: %d)";
+
+/* Recovery Suggestions */
+"Check your internet connection and try again" = "Check your internet connection and try again";
+"Please enter a valid API key in settings" = "Please enter a valid API key in settings";
+"Wait a few minutes before making more requests" = "Wait a few minutes before making more requests";
+"Try clearing the app cache in settings" = "Try clearing the app cache in settings";
+"Please try again later" = "Please try again later";
+
+/* API Configuration */
+"API Key Required" = "API Key Required";
+"To fetch LEGO sets, you need a Rebrickable API key. Get one for free at rebrickable.com" = "To fetch LEGO sets, you need a Rebrickable API key. Get one for free at rebrickable.com";
+"Enter API Key" = "Enter API Key";
+"Enter your Rebrickable API key to fetch LEGO sets" = "Enter your Rebrickable API key to fetch LEGO sets";
+"API Configuration" = "API Configuration";
+"A free Rebrickable API key is required to fetch LEGO set data." = "A free Rebrickable API key is required to fetch LEGO set data.";
+"Not configured" = "Not configured";
+"Configured" = "Configured";
+"Configure" = "Configure";
+"Get API Key" = "Get API Key";
+"Storage" = "Storage";
+"App Version" = "App Version";
+"Visit Website" = "Visit Website";
+"Powered by Rebrickable" = "Powered by Rebrickable";
+"About" = "About";
+"Enter your Rebrickable API key. Get one for free at rebrickable.com" = "Enter your Rebrickable API key. Get one for free at rebrickable.com";
+
+/* Search Not Available */
+"Search Not Available" = "Search Not Available";
+"Configure your API key in Settings to enable search" = "Configure your API key in Settings to enable search";
+
+/* General */
+"Yes" = "Yes";
+"No" = "No";
+"Placeholder" = "Placeholder";

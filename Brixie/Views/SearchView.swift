@@ -22,7 +22,7 @@ struct SearchView: View {
                     if viewModel != nil {
                         searchContentView
                     } else {
-                        ProgressView("Loading...")
+                        ProgressView(NSLocalizedString("Loading...", comment: "Loading indicator text"))
                     }
                 }
             }
@@ -30,7 +30,7 @@ struct SearchView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    Text("Search Sets")
+                    Text(NSLocalizedString("Search Sets", comment: "Navigation title for search"))
                         .font(.brixieTitle)
                         .foregroundStyle(Color.brixieText)
                 }
@@ -38,9 +38,9 @@ struct SearchView: View {
             .searchable(text: Binding(
                 get: { viewModel?.searchText ?? "" },
                 set: { viewModel?.searchText = $0 }
-            ), prompt: "Search LEGO sets...") {
+            ), prompt: NSLocalizedString("Search LEGO sets...", comment: "Search prompt text")) {
                 if let vm = viewModel, !vm.recentSearches.isEmpty {
-                    Section("Recent Searches") {
+                    Section(NSLocalizedString("Recent Searches", comment: "Recent searches section header")) {
                         ForEach(vm.recentSearches, id: \.self) { search in
                             Button {
                                 vm.searchText = search
@@ -173,7 +173,7 @@ struct SearchView: View {
             subtitle: String(format: NSLocalizedString("No sets found for '%@'. Try a different search term.", comment: "No results message"), viewModel?.searchText ?? ""),
             icon: "magnifyingglass"
         ) {
-            Button("Clear Search") {
+            Button(NSLocalizedString("Clear Search", comment: "Clear search button")) {
                 viewModel?.clearSearch()
             }
             .buttonStyle(BrixieButtonStyle(variant: .secondary))
@@ -185,7 +185,7 @@ struct SearchView: View {
             LazyVStack(spacing: 16) {
                 if let vm = viewModel {
                     HStack {
-                        Text("\(vm.searchResults.count) results")
+                        Text(String(format: NSLocalizedString("%d results", comment: "Number of search results"), vm.searchResults.count))
                             .font(.brixieSubhead)
                             .foregroundStyle(Color.brixieTextSecondary)
                         Spacer()

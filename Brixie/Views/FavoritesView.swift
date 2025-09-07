@@ -30,7 +30,7 @@ struct FavoritesView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Text("Favorites")
+                    Text(NSLocalizedString("Favorites", comment: "Navigation title for favorites"))
                         .font(.brixieTitle)
                         .foregroundStyle(Color.brixieText)
                 }
@@ -40,8 +40,8 @@ struct FavoritesView: View {
     
     private var emptyFavoritesView: some View {
         BrixieHeroSection(
-            title: "No Favorites Yet",
-            subtitle: "Sets you favorite will appear here for quick access. Start exploring to find your perfect builds!",
+            title: NSLocalizedString("No Favorites Yet", comment: "Empty favorites title"),
+            subtitle: NSLocalizedString("Sets you favorite will appear here for quick access. Start exploring to find your perfect builds!", comment: "Empty favorites subtitle"),
             icon: "heart.fill"
         ) {
             EmptyView()

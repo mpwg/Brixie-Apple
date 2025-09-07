@@ -238,7 +238,7 @@ struct BrixieLoadingView: View {
                     .animation(.linear(duration: 1.0).repeatForever(autoreverses: false), value: isAnimating)
             }
             
-            Text("Loading...")
+            Text(NSLocalizedString("Loading...", comment: "Loading indicator text"))
                 .font(.brixieBody)
                 .foregroundStyle(Color.brixieTextSecondary)
         }

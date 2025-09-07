@@ -36,19 +36,19 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Text("Settings")
+                    Text(NSLocalizedString("Settings", comment: "Settings navigation title"))
                         .font(.brixieTitle)
                         .foregroundStyle(Color.brixieText)
                 }
             }
         }
-        .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
-            Button("Clear", role: .destructive) {
+        .alert(NSLocalizedString("Clear Cache", comment: "Clear cache alert title"), isPresented: $showingClearCacheAlert) {
+            Button(NSLocalizedString("Clear", comment: "Clear button"), role: .destructive) {
                 clearImageCache()
             }
-            Button("Cancel", role: .cancel) { }
+            Button(NSLocalizedString("Cancel", comment: "Cancel button"), role: .cancel) { }
         } message: {
-            Text("This will clear all cached images and set data. You can always re-download them later.")
+            Text(NSLocalizedString("This will clear all cached images and set data. You can always re-download them later.", comment: "Clear cache alert message"))
         }
         .onAppear {
             updateCacheSize()
@@ -57,7 +57,7 @@ struct SettingsView: View {
     
     private var themeSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Appearance")
+            Text(NSLocalizedString("Appearance", comment: "Appearance section title"))
                 .font(.brixieHeadline)
                 .foregroundStyle(Color.brixieText)
             
@@ -75,7 +75,7 @@ struct SettingsView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Theme")
+                            Text(NSLocalizedString("Theme", comment: "Theme label"))
                                 .font(.brixieSubhead)
                                 .foregroundStyle(Color.brixieText)
                             
@@ -125,7 +125,7 @@ struct SettingsView: View {
                 .padding(20)
             }
             
-            Text("Choose how Brixie looks. System follows your device's appearance settings.")
+            Text(NSLocalizedString("Choose how Brixie looks. System follows your device's appearance settings.", comment: "Theme section description"))
                 .font(.brixieCaption)
                 .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)
@@ -135,7 +135,7 @@ struct SettingsView: View {
     
     private var cacheSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Storage Management")
+            Text(NSLocalizedString("Storage Management", comment: "Storage section title"))
                 .font(.brixieHeadline)
                 .foregroundStyle(Color.brixieText)
             
@@ -153,7 +153,7 @@ struct SettingsView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Image Cache")
+                            Text(NSLocalizedString("Image Cache", comment: "Image cache label"))
                                 .font(.brixieSubhead)
                                 .foregroundStyle(Color.brixieText)
                             
@@ -164,7 +164,7 @@ struct SettingsView: View {
                         
                         Spacer()
                         
-                        Button("Clear Cache") {
+                        Button(NSLocalizedString("Clear Cache", comment: "Clear cache button")) {
                             showingClearCacheAlert = true
                         }
                         .buttonStyle(BrixieButtonStyle(variant: .ghost))
@@ -181,7 +181,7 @@ struct SettingsView: View {
                                 .font(.system(size: 14))
                                 .foregroundStyle(.red)
                             
-                            Text("Clear All Data")
+                            Text(NSLocalizedString("Clear All Data", comment: "Clear all data label"))
                                 .font(.brixieBody)
                                 .foregroundStyle(.red)
                             
@@ -192,7 +192,7 @@ struct SettingsView: View {
                 .padding(20)
             }
             
-            Text("Clear cached images and stored set data to free up storage space on your device.")
+            Text(NSLocalizedString("Clear cached images and stored set data to free up storage space on your device.", comment: "Storage section description"))
                 .font(.brixieCaption)
                 .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)
@@ -201,7 +201,7 @@ struct SettingsView: View {
     
     private var aboutSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("About Brixie")
+            Text(NSLocalizedString("About Brixie", comment: "About section title"))
                 .font(.brixieHeadline)
                 .foregroundStyle(Color.brixieText)
             
@@ -219,11 +219,11 @@ struct SettingsView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Brixie")
+                            Text(NSLocalizedString("Brixie", comment: "App name label"))
                                 .font(.brixieSubhead)
                                 .foregroundStyle(Color.brixieText)
                             
-                            Text("Version 1.0.0")
+                            Text(NSLocalizedString("Version 1.0.0", comment: "App version label"))
                                 .font(.brixieCaption)
                                 .foregroundStyle(Color.brixieTextSecondary)
                         }
@@ -275,7 +275,7 @@ struct SettingsView: View {
                 .padding(20)
             }
             
-            Text("Brixie uses the Rebrickable API to provide comprehensive LEGO set information and enhance your building experience.")
+            Text(NSLocalizedString("Brixie uses the Rebrickable API to provide comprehensive LEGO set information and enhance your building experience.", comment: "About app description"))
                 .font(.brixieCaption)
                 .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)

@@ -243,7 +243,7 @@ struct FullScreenImageView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button(NSLocalizedString("Done", comment: "Done button")) {
                         dismiss()
                     }
                     .foregroundStyle(.white)
