@@ -15,20 +15,15 @@ protocol LegoThemeRemoteDataSource: Sendable {
 }
 
 final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
-    private let apiKeyManager: APIKeyManager
-    
-    init(apiKeyManager: APIKeyManager) {
-        self.apiKeyManager = apiKeyManager
-    }
     
     func fetchThemes(page: Int, pageSize: Int) async throws -> [LegoTheme] {
-        guard !apiKeyManager.apiKey.isEmpty else {
+        guard !GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
         do {
             // Set API key globally
-            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = GeneratedConfiguration.rebrickableAPIKey 
             
             let response = try await LegoAPI.legoThemesList(
                 page: page,
@@ -50,13 +45,13 @@ final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
     }
     
     func searchThemes(query: String, page: Int, pageSize: Int) async throws -> [LegoTheme] {
-        guard !apiKeyManager.apiKey.isEmpty else {
+        guard !GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
         do {
             // Set API key globally
-            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = GeneratedConfiguration.rebrickableAPIKey 
             
             let response = try await LegoAPI.legoThemesList(
                 page: page,
@@ -78,13 +73,13 @@ final class LegoThemeRemoteDataSourceImpl: LegoThemeRemoteDataSource {
     }
     
     func getThemeDetails(id: Int) async throws -> LegoTheme? {
-        guard !apiKeyManager.apiKey.isEmpty else {
+        guard !GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
         do {
             // Set API key globally
-            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = GeneratedConfiguration.rebrickableAPIKey 
             
             let apiTheme = try await LegoAPI.legoThemesRead(id: id)
             

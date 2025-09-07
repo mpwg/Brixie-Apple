@@ -11,7 +11,6 @@ import Foundation
 @MainActor
 final class SetsListViewModel {
     private let legoSetRepository: LegoSetRepository
-    private let apiKeyManager: APIKeyManager
     
     var sets: [LegoSet] = []
     var isLoading = false
@@ -21,9 +20,8 @@ final class SetsListViewModel {
     
     private let pageSize = 20
     
-    init(legoSetRepository: LegoSetRepository, apiKeyManager: APIKeyManager) {
+    init(legoSetRepository: LegoSetRepository) {
         self.legoSetRepository = legoSetRepository
-        self.apiKeyManager = apiKeyManager
     }
     
     func loadSets() async {

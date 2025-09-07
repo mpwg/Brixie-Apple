@@ -12,7 +12,6 @@ import Foundation
 final class SearchViewModel {
     private let legoSetRepository: LegoSetRepository
     private let legoThemeRepository: LegoThemeRepository
-    private let apiKeyManager: APIKeyManager
     
     var searchText = ""
     var searchResults: [LegoSet] = []
@@ -22,10 +21,9 @@ final class SearchViewModel {
     var recentSearches: [String] = []
     var showingNoResults = false
     
-    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository, apiKeyManager: APIKeyManager) {
+    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository) {
         self.legoSetRepository = legoSetRepository
         self.legoThemeRepository = legoThemeRepository
-        self.apiKeyManager = apiKeyManager
     }
     
     func performSearch() async {
