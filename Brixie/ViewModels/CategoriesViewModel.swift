@@ -11,7 +11,6 @@ import Foundation
 @MainActor
 final class CategoriesViewModel {
     private let legoThemeRepository: LegoThemeRepository
-    private let apiKeyManager: APIKeyManager
     
     var themes: [LegoTheme] = []
     var filteredThemes: [LegoTheme] = []
@@ -23,9 +22,8 @@ final class CategoriesViewModel {
     var isLoading = false
     var error: BrixieError?
     
-    init(legoThemeRepository: LegoThemeRepository, apiKeyManager: APIKeyManager) {
+    init(legoThemeRepository: LegoThemeRepository) {
         self.legoThemeRepository = legoThemeRepository
-        self.apiKeyManager = apiKeyManager
     }
     
     func loadThemes() async {
@@ -81,9 +79,6 @@ final class CategoriesViewModel {
         }
     }
     
-    var hasAPIKey: Bool {
-        apiKeyManager.hasValidAPIKey
-    }
     
     var cachedThemesAvailable: Bool {
         !themes.isEmpty

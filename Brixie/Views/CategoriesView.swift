@@ -14,7 +14,6 @@ struct CategoriesView: View {
     @State private var viewModel: CategoriesViewModel?
     @State private var searchText = ""
     @State private var sortOrder: SortOrder = .name
-    @State private var showingAPIKeyAlert = false
     
     enum SortOrder: String, CaseIterable {
         case name = "Name"
@@ -54,9 +53,7 @@ struct CategoriesView: View {
                 
                 VStack(spacing: 0) {
                     if let vm = viewModel {
-                        if !vm.hasAPIKey {
-                            apiKeyPromptView
-                        } else if vm.isLoading && vm.themes.isEmpty {
+                        if vm.isLoading && vm.themes.isEmpty {
                             loadingView
                         } else {
                             modernCategoriesView
@@ -80,18 +77,7 @@ struct CategoriesView: View {
                 }
 
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
-                        Button {
-                            showingAPIKeyAlert = true
-                        } label: {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.brixieAccent)
-                                .padding(6)
-                                .background(Circle().fill(Color.brixieCard))
-                        }
-
-                        Menu {
+                    Menu {
                             Picker(NSLocalizedString("Sort by", comment: "Sort picker label"), selection: $sortOrder) {
                                 ForEach(SortOrder.allCases, id: \.self) { order in
                                     Label(order.localizedString, systemImage: sortOrder == order ? "checkmark" : "")
@@ -105,7 +91,6 @@ struct CategoriesView: View {
                                 .padding(6)
                                 .background(Circle().fill(Color.brixieCard))
                         }
-                    }
                 }
             }
             .searchable(text: $searchText, prompt: NSLocalizedString("Search categories", comment: "Search prompt"))
@@ -117,41 +102,8 @@ struct CategoriesView: View {
                 await viewModel?.loadThemes()
             }
         }
-        .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            TextField("Rebrickable API Key", text: Binding(
-                get: { diContainer.apiKeyManager.apiKey },
-                set: { diContainer.apiKeyManager.apiKey = $0 }
-            ))
-            Button("Save") {
-                Task {
-                    await viewModel?.loadThemes()
-                }
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Enter your Rebrickable API key to fetch LEGO categories")
-        }
     }
     
-    private var apiKeyPromptView: some View {
-        BrixieHeroSection(
-            title: "Explore Categories",
-            subtitle: "Browse LEGO themes and categories. Connect with your Rebrickable API key to get started.",
-            icon: "square.grid.3x3.fill"
-        ) {
-            VStack(spacing: 16) {
-                Button("Connect API Key") {
-                    showingAPIKeyAlert = true
-                }
-                .buttonStyle(BrixieButtonStyle(variant: .primary))
-                
-                Button("Learn More") {
-                    // Open rebrickable.com
-                }
-                .buttonStyle(BrixieButtonStyle(variant: .ghost))
-            }
-        }
-    }
     
     private var loadingView: some View {
         BrixieHeroSection(

@@ -13,15 +13,12 @@ struct SetsListView: View {
     @Query(sort: \LegoSet.year, order: .reverse) private var cachedSets: [LegoSet]
     
     @State private var viewModel: SetsListViewModel?
-    @State private var showingAPIKeyAlert = false
     
     var body: some View {
         NavigationStack {
             Group {
                 if let vm = viewModel {
-                    if !vm.hasAPIKey {
-                        apiKeyPromptView
-                    } else if vm.sets.isEmpty && !cachedSets.isEmpty {
+                    if vm.sets.isEmpty && !cachedSets.isEmpty {
                         cachedSetsView
                     } else if vm.sets.isEmpty && !vm.isLoading {
                         emptyStateView
@@ -34,29 +31,6 @@ struct SetsListView: View {
             }
             .navigationTitle("LEGO Sets")
             .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Settings") {
-                        showingAPIKeyAlert = true
-                    }
-                }
-            }
-        }
-        .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            if let vm = viewModel {
-                TextField("Rebrickable API Key", text: Binding(
-                    get: { diContainer.apiKeyManager.apiKey },
-                    set: { diContainer.apiKeyManager.apiKey = $0 }
-                ))
-                Button("Save") {
-                    Task {
-                        await vm.loadSets()
-                    }
-                }
-                Button("Cancel", role: .cancel) { }
-            }
-        } message: {
-            Text("Enter your Rebrickable API key to fetch LEGO sets")
         }
         .onAppear {
             if viewModel == nil {
@@ -68,28 +42,6 @@ struct SetsListView: View {
         }
     }
     
-    private var apiKeyPromptView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "key.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.blue)
-            
-            Text("API Key Required")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text("To fetch LEGO sets, you need a Rebrickable API key. Get one for free at rebrickable.com")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
-            
-            Button("Enter API Key") {
-                showingAPIKeyAlert = true
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-    }
     
     private var cachedSetsView: some View {
         List {

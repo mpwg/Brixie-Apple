@@ -35,13 +35,11 @@ final class DIContainer: @unchecked Sendable {
     
     // MARK: - Managers
     
-    var apiKeyManager: APIKeyManager = APIKeyManager.shared
     var themeManager: ThemeManager = ThemeManager.shared
     
     // MARK: - Services
     
     var imageCacheService: ImageCacheService = ImageCacheService.shared
-    var keychainManager: KeychainManager = KeychainManager.shared
     
     // MARK: - Data Sources
     
@@ -50,11 +48,11 @@ final class DIContainer: @unchecked Sendable {
     }
     
     func makeLegoSetRemoteDataSource() -> LegoSetRemoteDataSource {
-        LegoSetRemoteDataSourceImpl(apiKeyManager: apiKeyManager)
+        LegoSetRemoteDataSourceImpl()
     }
     
     func makeLegoThemeRemoteDataSource() -> LegoThemeRemoteDataSource {
-        LegoThemeRemoteDataSourceImpl(apiKeyManager: apiKeyManager)
+        LegoThemeRemoteDataSourceImpl()
     }
     
     // MARK: - Repositories
@@ -78,14 +76,12 @@ final class DIContainer: @unchecked Sendable {
     func makeSetsListViewModel() -> SetsListViewModel {
         SetsListViewModel(
             legoSetRepository: makeLegoSetRepository(),
-            apiKeyManager: apiKeyManager
         )
     }
     
     func makeCategoriesViewModel() -> CategoriesViewModel {
         CategoriesViewModel(
             legoThemeRepository: makeLegoThemeRepository(),
-            apiKeyManager: apiKeyManager
         )
     }
     
@@ -100,7 +96,6 @@ final class DIContainer: @unchecked Sendable {
         SearchViewModel(
             legoSetRepository: makeLegoSetRepository(),
             legoThemeRepository: makeLegoThemeRepository(),
-            apiKeyManager: apiKeyManager
         )
     }
 }

@@ -11,7 +11,6 @@ import SwiftData
 struct SearchView: View {
     @Environment(\.diContainer) private var diContainer
     @State private var viewModel: SearchViewModel?
-    @State private var showingAPIKeyAlert = false
     
     var body: some View {
         NavigationStack {
@@ -20,12 +19,8 @@ struct SearchView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    if let vm = viewModel {
-                        if !vm.hasAPIKey {
-                            noServiceView
-                        } else {
-                            searchContentView
-                        }
+                    if viewModel != nil {
+                        searchContentView
                     } else {
                         ProgressView("Loading...")
                     }
@@ -83,39 +78,8 @@ struct SearchView: View {
                 viewModel = diContainer.makeSearchViewModel()
             }
         }
-        .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            TextField("Rebrickable API Key", text: Binding(
-                get: { diContainer.apiKeyManager.apiKey },
-                set: { diContainer.apiKeyManager.apiKey = $0 }
-            ))
-            Button("Save") {
-                // Key is automatically saved via binding
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Enter your Rebrickable API key to search LEGO sets")
-        }
     }
     
-    private var noServiceView: some View {
-        BrixieHeroSection(
-            title: "Search LEGO Sets",
-            subtitle: "Find your favorite LEGO sets by name, number, or theme. Connect your API key to get started.",
-            icon: "magnifyingglass.circle.fill"
-        ) {
-            VStack(spacing: 16) {
-                Button("Connect API Key") {
-                    showingAPIKeyAlert = true
-                }
-                .buttonStyle(BrixieButtonStyle(variant: .primary))
-                
-                Button("Browse Categories") {
-                    // Navigate to categories
-                }
-                .buttonStyle(BrixieButtonStyle(variant: .ghost))
-            }
-        }
-    }
     
     private var searchContentView: some View {
         Group {

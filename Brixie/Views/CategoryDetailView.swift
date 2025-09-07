@@ -147,18 +147,11 @@ struct CategoryDetailView: View {
                     await loadSets(reset: true)
                 }
             }
-            .onChange(of: yearRange) { _, _ in
-                // Filtering is done locally, no need to reload
-            }
-            .onChange(of: minParts) { _, _ in
-                // Filtering is done locally, no need to reload
-            }
-            .onChange(of: maxParts) { _, _ in
-                // Filtering is done locally, no need to reload
-            }
+
         }
         .task {
-            if diContainer.apiKeyManager.hasValidAPIKey {
+            if (GeneratedConfiguration.hasEmbeddedAPIKey)
+            {
                 await initializeService()
             }
         }
@@ -168,7 +161,7 @@ struct CategoryDetailView: View {
     private func initializeService() async {
         guard themeService == nil else { return }
         
-        themeService = LegoThemeService(modelContext: modelContext, apiKey: diContainer.apiKeyManager.apiKey)
+        themeService = LegoThemeService(modelContext: modelContext, apiKey: GeneratedConfiguration.rebrickableAPIKey ?? "" )
         
         await loadSets(reset: true)
     }

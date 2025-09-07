@@ -15,25 +15,51 @@ Brixie is a multi-platform iOS/macOS SwiftUI application that integrates with th
 
 ## Development Commands
 
-Since this is an Xcode project, use the following commands:
+This project uses a Makefile for build automation with API key injection:
 
 ### Building
 ```bash
+# Build iOS app with API key
+REBRICKABLE_API_KEY="your_key" make build-ios
+
+# Build macOS app with API key  
+REBRICKABLE_API_KEY="your_key" make build-macos
+
+# Build both platforms
+REBRICKABLE_API_KEY="your_key" make build-all
+
+# Direct xcodebuild (without API key injection)
 xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug build
 ```
 
 ### Testing
 ```bash
-# Run unit tests
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15'
+# Run iOS tests
+make test-ios
 
-# Run UI tests
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:BrixieUITests
+# Run macOS tests
+make test-macos
+
+# Run all tests
+make test-all
+
+# Run unit tests directly
+xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 16'
 ```
 
-### Running a Single Test
+### Configuration Management
 ```bash
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:BrixieTests/BrixieTests/example
+# Generate API configuration
+make generate-config
+
+# Clean generated files
+make clean-config
+
+# Full clean
+make clean
+
+# Show all available targets
+make help
 ```
 
 ## Platform Support

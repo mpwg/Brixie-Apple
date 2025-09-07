@@ -15,20 +15,15 @@ protocol LegoSetRemoteDataSource: Sendable {
 }
 
 final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
-    private let apiKeyManager: APIKeyManager
-    
-    init(apiKeyManager: APIKeyManager) {
-        self.apiKeyManager = apiKeyManager
-    }
     
     func fetchSets(page: Int, pageSize: Int) async throws -> [LegoSet] {
-        guard !apiKeyManager.apiKey.isEmpty else {
+        guard GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
         do {
             // Set API key globally
-            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = GeneratedConfiguration.rebrickableAPIKey 
             
             let response = try await LegoAPI.legoSetsList(
                 page: page,
@@ -52,13 +47,13 @@ final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
     }
     
     func searchSets(query: String, page: Int, pageSize: Int) async throws -> [LegoSet] {
-        guard !apiKeyManager.apiKey.isEmpty else {
+        guard GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
         do {
             // Set API key globally
-            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = GeneratedConfiguration.rebrickableAPIKey
             
             let response = try await LegoAPI.legoSetsList(
                 page: page,
@@ -82,13 +77,13 @@ final class LegoSetRemoteDataSourceImpl: LegoSetRemoteDataSource {
     }
     
     func getSetDetails(setNum: String) async throws -> LegoSet? {
-        guard !apiKeyManager.apiKey.isEmpty else {
+        guard GeneratedConfiguration.hasEmbeddedAPIKey else {
             throw BrixieError.apiKeyMissing
         }
         
         do {
             // Set API key globally
-            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKeyManager.apiKey
+            RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = GeneratedConfiguration.rebrickableAPIKey 
             
             let apiSet = try await LegoAPI.legoSetsRead(setNum: setNum)
             

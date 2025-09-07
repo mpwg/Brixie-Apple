@@ -1,1 +1,7 @@
 Brixie.xcodeproj/xcuserdata/*
+
+# Generated configuration files - these contain sensitive API keys
+Brixie/Configuration/Generated/
+
+# Environment files with API keys
+.env

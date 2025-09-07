@@ -13,7 +13,6 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(ThemeManager.self) private var themeManager
     @Environment(DIContainer.self) private var diContainer
-    @State private var showingAPIKeyAlert = false
     @State private var showingClearCacheAlert = false
     @State private var cacheSize = "Calculating..."
     
@@ -26,7 +25,6 @@ struct SettingsView: View {
                 ScrollView {
                     VStack(spacing: 24) {
                         themeSection
-                        apiSection
                         cacheSection
                         aboutSection
                     }
@@ -43,16 +41,6 @@ struct SettingsView: View {
                         .foregroundStyle(Color.brixieText)
                 }
             }
-        }
-        .alert("Enter API Key", isPresented: $showingAPIKeyAlert) {
-            TextField("Rebrickable API Key", text: Binding(
-                get: { diContainer.apiKeyManager.apiKey },
-                set: { diContainer.apiKeyManager.apiKey = $0 }
-            ))
-            Button("Save") { }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Enter your Rebrickable API key. Get one for free at rebrickable.com")
         }
         .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
             Button("Clear", role: .destructive) {
@@ -144,78 +132,6 @@ struct SettingsView: View {
         }
     }
     
-    private var apiSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("API Configuration")
-                .font(.brixieHeadline)
-                .foregroundStyle(Color.brixieText)
-            
-            BrixieCard {
-                VStack(spacing: 16) {
-                    HStack(spacing: 16) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.brixieAccent.opacity(0.1))
-                                .frame(width: 48, height: 48)
-                            
-                            Image(systemName: diContainer.apiKeyManager.hasValidAPIKey ? "checkmark.shield.fill" : "key.fill")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundStyle(diContainer.apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : Color.brixieAccent)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Rebrickable API Key")
-                                .font(.brixieSubhead)
-                                .foregroundStyle(Color.brixieText)
-                            
-                            HStack(spacing: 6) {
-                                Circle()
-                                    .fill(diContainer.apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : .brixieSecondary)
-                                    .frame(width: 8, height: 8)
-                                Text(diContainer.apiKeyManager.hasValidAPIKey ? "Connected" : "Not configured")
-                                    .font(.brixieCaption)
-                                    .foregroundStyle(diContainer.apiKeyManager.hasValidAPIKey ? Color.brixieSuccess : Color.brixieTextSecondary)
-                            }
-                        }
-                        
-                        Spacer()
-                        
-                        Button("Configure") {
-                            showingAPIKeyAlert = true
-                        }
-                        .buttonStyle(BrixieButtonStyle(variant: .secondary))
-                    }
-                    
-                    Divider()
-                        .background(Color.brixieSecondary.opacity(0.3))
-                    
-                    Link(destination: URL(string: "https://rebrickable.com/api/")!) {
-                        HStack {
-                            Image(systemName: "link")
-                                .font(.system(size: 14))
-                                .foregroundStyle(Color.brixieAccent)
-                            
-                            Text(NSLocalizedString("Get Free API Key", comment: "Get API Key link"))
-                                .font(.brixieBody)
-                                .foregroundStyle(Color.brixieAccent)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "arrow.up.right")
-                                .font(.system(size: 12))
-                                .foregroundStyle(Color.brixieAccent.opacity(0.6))
-                        }
-                    }
-                }
-                .padding(20)
-            }
-            
-            Text("A free Rebrickable API key is required to fetch LEGO set data and unlock all features.")
-                .font(.brixieCaption)
-                .foregroundStyle(Color.brixieTextSecondary)
-                .padding(.leading, 4)
-        }
-    }
     
     private var cacheSection: some View {
         VStack(alignment: .leading, spacing: 16) {
