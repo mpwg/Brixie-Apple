@@ -43,6 +43,12 @@ final class SetsListViewModel {
         }
     }
     
+    /// Loads additional sets with protection against duplicate requests.
+    /// Features:
+    /// - Cancels any existing loadMore task before starting new one
+    /// - Guards against overlapping requests using isLoadingMore flag  
+    /// - Checks Task.isCancelled after network calls to prevent race conditions
+    /// - Maintains proper loading state throughout the operation
     func loadMoreSets() async {
         // Cancel any existing load more task
         loadMoreTask?.cancel()

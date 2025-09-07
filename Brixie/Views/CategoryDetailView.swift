@@ -204,6 +204,11 @@ struct CategoryDetailView: View {
         }
     }
     
+    /// Loads more sets with multiple protection mechanisms against duplicate requests:
+    /// - 500ms debouncing to prevent rapid button taps
+    /// - Task cancellation for concurrent request management  
+    /// - Guard logic to prevent overlapping operations
+    /// - Proper page rollback on cancellation
     private func loadMoreSets() {
         // Debounce: prevent requests more frequent than 500ms
         let now = Date()

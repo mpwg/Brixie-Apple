@@ -92,6 +92,25 @@ struct PaginationHardeningTests {
         #expect(!viewModel.isLoadingMore, "Expected isLoadingMore to be false after stress test")
     }
     
+    @Test("Task cancellation prevents race conditions")
+    func testTaskCancellationPreventsRaceConditions() async throws {
+        let mockRepository = MockSlowLegoSetRepository()
+        let viewModel = SetsListViewModel(legoSetRepository: mockRepository)
+        
+        // Start a loadMore operation
+        let task = Task {
+            await viewModel.loadMoreSets()
+        }
+        
+        // Cancel it quickly
+        task.cancel()
+        await task.value
+        
+        // Verify state is clean
+        #expect(!viewModel.isLoadingMore, "Expected isLoadingMore to be false after cancellation")
+        #expect(viewModel.currentPage == 1, "Expected currentPage to remain unchanged after cancellation")
+    }
+    
     @Test("CategoryDetailView debouncing prevents rapid button taps")
     func testCategoryDetailViewDebouncing() async throws {
         // This test validates the debouncing logic conceptually
