@@ -60,7 +60,13 @@ struct CategoriesView: View {
                         }
                         
                         if let error = vm.error {
-                            errorView(error.localizedDescription)
+                            BrixieErrorBanner(
+                                error: error,
+                                onDismiss: { vm.error = nil },
+                                onRetry: { 
+                                    Task { await vm.loadThemes() }
+                                }
+                            )
                         }
                     } else {
                         initializingView
@@ -123,31 +129,6 @@ struct CategoriesView: View {
         ) {
             BrixieLoadingView()
         }
-    }
-    
-    private func errorView(_ message: String) -> some View {
-        BrixieCard {
-            HStack(spacing: 12) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Color.brixieWarning)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Connection Issue")
-                        .font(.brixieSubhead)
-                        .foregroundStyle(Color.brixieText)
-                    
-                    Text(message)
-                        .font(.brixieBody)
-                        .foregroundStyle(Color.brixieTextSecondary)
-                        .lineLimit(3)
-                }
-                
-                Spacer()
-            }
-            .padding(16)
-        }
-        .padding(.horizontal, 20)
     }
     
     private var modernCategoriesView: some View {
@@ -279,7 +260,7 @@ struct ModernCategoryRowView: View {
             .ignoresSafeArea()
         
         CategoriesView()
-            .modelContainer(for: [LegoTheme.self, LegoSet.self], inMemory: true)
+            .modelContainer(ModelContainerFactory.createPreviewContainer())
     }
 }
 
