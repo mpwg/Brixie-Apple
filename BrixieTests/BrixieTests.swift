@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  BrixieTests.swift
 //  BrixieTests
@@ -11,7 +12,7 @@ import SwiftData
  
 @testable import Brixie
 
-// MARK: - Mock Data Sources
+// MARK: Mock Data Sources
 
 @MainActor
 final class MockLegoSetRemoteDataSource: LegoSetRemoteDataSource {
@@ -68,6 +69,7 @@ final class MockLocalDataSource: LocalDataSource {
         }
         
         if T.self == LegoSet.self {
+            // swiftlint:disable:next force_cast
             return fetchLegoSets as! [T]
         }
         
@@ -88,6 +90,7 @@ final class MockLocalDataSource: LocalDataSource {
                 results = results.filter { $0.isFavorite }
             }
             
+            // swiftlint:disable:next force_cast
             return results as! [T]
         }
         
@@ -465,11 +468,13 @@ struct RepositoryFallbackTests {
 // MARK: - Legacy Test
 
 struct BrixieTests {
-    @Test func example() async throws {
+    @Test
+    func example() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
     }
    
-    @Test func errorReporter_mapsURLErrorToNetworkError() async throws {
+    @Test
+    func errorReporter_mapsURLErrorToNetworkError() async throws {
         let errorReporter = ErrorReporter.shared
         let urlError = URLError(.notConnectedToInternet)
         
@@ -484,7 +489,8 @@ struct BrixieTests {
         }
     }
     
-    @Test func errorReporter_preservesBrixieError() async throws {
+    @Test
+    func errorReporter_preservesBrixieError() async throws {
         let errorReporter = ErrorReporter.shared
         let brixieError = BrixieError.apiKeyMissing
         
@@ -493,7 +499,8 @@ struct BrixieTests {
         #expect(errorReporter.currentError == .apiKeyMissing)
     }
     
-    @Test func errorReporter_handlesRecoveryActions() async throws {
+    @Test
+    func errorReporter_handlesRecoveryActions() async throws {
         let errorReporter = ErrorReporter.shared
         
         let networkErrorAction = errorReporter.handle(.networkError(underlying: URLError(.notConnectedToInternet)))
@@ -522,7 +529,8 @@ struct ThemeNamePopulationTests {
         }
     }
     
-    @Test func testLegoSetInitializerWithThemeName() async throws {
+    @Test
+    func testLegoSetInitializerWithThemeName() async throws {
         // Test that LegoSet can be initialized with a theme name
         let set = LegoSet(
             setNum: "75192",
@@ -543,7 +551,8 @@ struct ThemeNamePopulationTests {
         #expect(set.themeName == "Star Wars")
     }
     
-    @Test func testLegoSetInitializerWithoutThemeName() async throws {
+    @Test
+    func testLegoSetInitializerWithoutThemeName() async throws {
         // Test that LegoSet can be initialized without a theme name (backwards compatibility)
         let set = LegoSet(
             setNum: "75192",
@@ -563,7 +572,8 @@ struct ThemeNamePopulationTests {
         #expect(set.themeName == nil)
     }
     
-    @Test func testThemeNamePopulationWithCachedThemes() async throws {
+    @Test
+    func testThemeNamePopulationWithCachedThemes() async throws {
         // Test theme name population using cached themes
         let container = createInMemoryContainer()
         let localDataSource = SwiftDataSource(modelContext: container.mainContext)
@@ -601,7 +611,8 @@ struct ThemeNamePopulationTests {
         #expect(sets[1].themeName == "City")
     }
     
-    @Test func testThemeNamePopulationWithMissingTheme() async throws {
+    @Test
+    func testThemeNamePopulationWithMissingTheme() async throws {
         // Test theme name population when theme is not cached
         let container = createInMemoryContainer()
         let localDataSource = SwiftDataSource(modelContext: container.mainContext)
@@ -638,7 +649,8 @@ struct ThemeNamePopulationTests {
         #expect(sets[1].themeName == nil) // Theme not found
     }
     
-    @Test func testBackfillThemeNames() async throws {
+    @Test
+    func testBackfillThemeNames() async throws {
         // Test backfilling existing sets with theme names
         let container = createInMemoryContainer()
         let localDataSource = SwiftDataSource(modelContext: container.mainContext)
@@ -793,7 +805,7 @@ struct RecentSearchesStorageTests {
         let testStorage = TestRecentSearchesStorage()
         
         // Simulate corrupted data by setting invalid JSON
-        testStorage.userDefaults.set("invalid json data".data(using: .utf8), forKey: testStorage.storageKey)
+        testStorage.userDefaults.set(Data("invalid json data".utf8), forKey: testStorage.storageKey)
         
         // Should return empty array and clear corrupted data
         let loadedSearches = testStorage.loadRecentSearches()

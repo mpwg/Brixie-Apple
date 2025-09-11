@@ -105,7 +105,7 @@ struct BrixieBannerViewTests {
         let banner = BrixieBannerView(
             title: "Test",
             message: "Test message"
-        )            {}
+        ) {}
         
         #expect(banner.onDismiss == nil)
     }
@@ -116,7 +116,7 @@ struct BrixieBannerViewTests {
             title: "Test",
             message: "Test message",
             actionTitle: "Custom Action"
-        )            {}
+        ) {}
         
         #expect(banner.actionTitle == "Custom Action")
     }
