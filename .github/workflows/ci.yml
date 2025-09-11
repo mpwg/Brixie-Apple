@@ -50,9 +50,23 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
 
+      - name: Cache Xcode iOS Platform
+        id: cache-xcode-platform
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/xcode-downloads
+          key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}-${{ hashFiles('Brixie.xcodeproj') }}
+          restore-keys: |
+            xcode-platform-${{ matrix.platform }}-${{ runner.os }}-
+
       - name: Install iOS Platform
         run: |
-          xcodebuild -downloadPlatform iOS
+          # We'll store platform downloads under RUNNER_TEMP so we can cache them reliably
+          mkdir -p "${RUNNER_TEMP}/xcode-downloads"
+
+          if [ "${{ steps.cache-xcode-platform.outputs.cache-hit }}" != 'true' ]; then
+            echo "Cache miss: downloading iOS platform into default Xcode cache..."
+            xcodebuild -downloadPlatform iOS
 
       - name: Show Build Environment
         run: |
@@ -119,9 +133,18 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
 
+      - name: Cache Xcode iOS Platform
+        id: cache-xcode-platform
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/xcode-downloads
+          key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
+          restore-keys: |
+            xcode-platform-${{ matrix.platform }}-${{ runner.os }}
+
       - name: Install iOS Platform
         run: |
-          xcodebuild -downloadPlatform iOS
+          xcodebuild -downloadPlatform iOS -exportPath "${RUNNER_TEMP}/xcode-downloads"
 
       - name: Generate API Configuration
         run: |
