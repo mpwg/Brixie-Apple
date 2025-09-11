@@ -120,7 +120,7 @@ final class MockLocalDataSource: LocalDataSource {
     }
 }
 
-// MARK: - Test Data Helpers
+// MARK: Test Data Helpers
 
 extension LegoSet {
     static func mockSet(setNum: String = "123-1", name: String = "Test Set", year: Int = 2_023) -> LegoSet {
@@ -128,7 +128,7 @@ extension LegoSet {
     }
 }
 
-// MARK: - Repository Fallback Tests
+// MARK: Repository Fallback Tests
 
 struct RepositoryFallbackTests {
     // MARK: - fetchSets Tests

@@ -5,7 +5,11 @@ struct CachedImageCard<Content: View>: View {
     let maxHeight: CGFloat?
     let content: () -> Content
 
-    init(urlString: String?, maxHeight: CGFloat? = nil, @ViewBuilder content: @escaping () -> Content = { EmptyView() }) {
+    init(
+        urlString: String?,
+        maxHeight: CGFloat? = nil,
+        @ViewBuilder content: @escaping () -> Content = { EmptyView() }
+    ) {
         self.urlString = urlString
         self.maxHeight = maxHeight
         self.content = content

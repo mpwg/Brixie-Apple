@@ -285,13 +285,21 @@ struct FilterSheetView: View {
                 ) {
                     HStack {
                         Text(NSLocalizedString("Min:", comment: "Minimum label"))
-                        TextField(NSLocalizedString("Minimum", comment: "Minimum placeholder"), value: $minParts, format: .number)
+                        TextField(
+                            NSLocalizedString("Minimum", comment: "Minimum placeholder"),
+                            value: $minParts,
+                            format: .number
+                        )
                             .keyboardType(.numberPad)
                     }
                     
                     HStack {
                         Text(NSLocalizedString("Max:", comment: "Maximum label"))
-                        TextField(NSLocalizedString("Maximum", comment: "Maximum placeholder"), value: $maxParts, format: .number)
+                        TextField(
+                            NSLocalizedString("Maximum", comment: "Maximum placeholder"),
+                            value: $maxParts,
+                            format: .number
+                        )
                             .keyboardType(.numberPad)
                     }
                 }

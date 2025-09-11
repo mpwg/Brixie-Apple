@@ -16,9 +16,9 @@ struct BrixieBannerViewTests {
         let banner = BrixieBannerView(
             title: "Test Error",
             message: "Test message"
-        )            {
-                actionCalled = true
-            }
+        ) {
+            actionCalled = true
+        }
         
         // The banner is created successfully
         #expect(banner.title == "Test Error")

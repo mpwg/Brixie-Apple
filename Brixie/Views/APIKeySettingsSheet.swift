@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct APIKeySettingsSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss)
+    private var dismiss
+    @Environment(\.colorScheme)
+    private var colorScheme
     
     private let apiConfigurationService: APIConfigurationService
     @State private var apiKeyInput: String = ""
@@ -73,10 +75,16 @@ struct APIKeySettingsSheet: View {
                 HStack(spacing: 16) {
                     ZStack {
                         Circle()
-                            .fill(apiConfigurationService.hasValidAPIKey ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
+                            .fill(
+                                apiConfigurationService.hasValidAPIKey ?
+                                Color.green.opacity(0.1) : Color.orange.opacity(0.1)
+                            )
                             .frame(width: 48, height: 48)
                         
-                        Image(systemName: apiConfigurationService.hasValidAPIKey ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                        Image(
+                            systemName: apiConfigurationService.hasValidAPIKey ?
+                                "checkmark.circle.fill" : "exclamationmark.triangle.fill"
+                        )
                             .font(.system(size: 20, weight: .medium))
                             .foregroundStyle(apiConfigurationService.hasValidAPIKey ? Color.green : Color.orange)
                     }

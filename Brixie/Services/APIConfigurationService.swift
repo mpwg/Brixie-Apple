@@ -11,7 +11,9 @@ import SwiftUI
 @Observable
 @MainActor
 final class APIConfigurationService: @unchecked Sendable {
-    @AppStorage("rebrickableAPIKey") @ObservationIgnored private var userAPIKey: String = ""
+    @AppStorage("rebrickableAPIKey")
+    @ObservationIgnored
+    private var userAPIKey: String = ""
     
     // Read from generated configuration for embedded keys
     private var embeddedAPIKey: String? {
