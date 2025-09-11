@@ -47,6 +47,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
+      - name: where are you?
+        run: ls -l /Applications/Xcode26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/ || true
+
+      - name: what version are you?
+        run: cat /Applications/Xcode26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist || true
+
       - name: Cache
         uses: actions/cache@v4
         with:
