@@ -113,7 +113,7 @@ final class LegoThemeService {
         }
     }
     
-    // MARK: - Error Mapping
+    // MARK: Error Mapping
     
     private func mapToBrixieError(_ error: Error) -> BrixieError {
         if let brixieError = error as? BrixieError {

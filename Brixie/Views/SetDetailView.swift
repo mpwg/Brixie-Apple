@@ -10,7 +10,8 @@ import SwiftData
 
 struct SetDetailView: View {
     let set: LegoSet
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.modelContext)
+    private var modelContext
     @State private var isFavorite: Bool
     @State private var showingFullScreenImage = false
     
@@ -136,15 +137,22 @@ struct SetDetailView: View {
             Button {
                 toggleFavorite()
             } label: {
-                                Label(isFavorite ? NSLocalizedString("Remove from Favorites", comment: "Remove favorite action") : NSLocalizedString("Add to Favorites", comment: "Add favorite action"),
-                                            systemImage: isFavorite ? "heart.slash" : "heart")
+                Label(
+                    isFavorite ?
+                        NSLocalizedString("Remove from Favorites", comment: "Remove favorite action") :
+                        NSLocalizedString("Add to Favorites", comment: "Add favorite action"),
+                    systemImage: isFavorite ? "heart.slash" : "heart"
+                )
             }
             .buttonStyle(.borderedProminent)
             .tint(isFavorite ? .red : .blue)
             
             if let imageURL = set.imageURL {
                 ShareLink(item: URL(string: imageURL)!) {
-                                        Label(NSLocalizedString("Share Image", comment: "Share image action"), systemImage: "square.and.arrow.up")
+                    Label(
+                        NSLocalizedString("Share Image", comment: "Share image action"),
+                        systemImage: "square.and.arrow.up"
+                    )
                 }
                 .buttonStyle(.bordered)
             }
@@ -218,7 +226,8 @@ struct StatCard: View {
 
 struct FullScreenImageView: View {
     let imageURL: String?
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss)
+    private var dismiss
     
     var body: some View {
         NavigationStack {
