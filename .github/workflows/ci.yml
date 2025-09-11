@@ -47,6 +47,9 @@ jobs:
         with:
           xcode-version: latest
 
+      - name: fix unable to connect to the simulator
+        run: xcrun simctl list > /dev/null
+
       - name: Install xcpretty
         run: gem install xcpretty
 
@@ -125,6 +128,9 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest
+
+      - name: fix unable to connect to the simulator
+        run: xcrun simctl list > /dev/null
 
       - name: Install xcpretty
         run: gem install xcpretty
