@@ -1966,9 +1966,14 @@ final class DebounceTestLegoSetRepository: LegoSetRepository {
     var searchCallCount = 0
     var lastSearchQuery: String?
     
+    private let testSetYear = 2023
+    private let testSetThemeId = 1
+    private let testSet1NumParts = 100
+    private let testSet2NumParts = 200
+    
     private let testSets = [
-        LegoSet(setNum: "test-1", name: "Test Set 1", year: 2023, themeId: 1, numParts: 100),
-        LegoSet(setNum: "test-2", name: "Test Set 2", year: 2023, themeId: 1, numParts: 200)
+        LegoSet(setNum: "test-1", name: "Test Set 1", year: testSetYear, themeId: testSetThemeId, numParts: testSet1NumParts),
+        LegoSet(setNum: "test-2", name: "Test Set 2", year: testSetYear, themeId: testSetThemeId, numParts: testSet2NumParts)
     ]
     
     func fetchSets(page: Int, pageSize: Int) async throws -> [LegoSet] {
