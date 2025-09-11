@@ -65,14 +65,15 @@ final class SearchViewModel: ViewModelErrorHandling {
         
         // Create new search task with debounce delay
         searchTask = Task { [weak self] in
+            guard let self = self else { return }
             // Wait for debounce delay
-            try? await Task.sleep(nanoseconds: UInt64(self?.debounceDelay ?? 0.4 * 1_000_000_000))
+            try? await Task.sleep(nanoseconds: UInt64(self.debounceDelay * 1_000_000_000))
             
             // Check if task was cancelled during delay
             guard !Task.isCancelled else { return }
             
             // Perform the actual search
-            await self?.performSearch()
+            await self.performSearch()
         }
     }
     
