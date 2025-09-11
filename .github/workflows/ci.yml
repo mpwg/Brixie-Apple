@@ -50,18 +50,21 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
 
+      - name: create cache directory
+        run: mkdir -p "${{ runner.temp }}/xcode-downloads"
+
       - name: Cache Xcode iOS Platform
         id: cache-xcode-platform
         uses: actions/cache@v4
         with:
-          path: ~/xcode-downloads
+          path: ${{ runner.temp }}/xcode-downloads
           key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
           restore-keys: |
             xcode-platform-${{ matrix.platform }}-${{ runner.os }}
 
       - name: Install iOS Platform
         run: |
-          xcodebuild -downloadPlatform iOS -exportPath "~/xcode-downloads"
+          xcodebuild -downloadPlatform iOS -exportPath "${{ runner.temp }}/xcode-downloads"
 
       - name: Show Build Environment
         run: |
@@ -128,18 +131,21 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
 
+      - name: create cache directory
+        run: mkdir -p "${{ runner.temp }}/xcode-downloads"
+
       - name: Cache Xcode iOS Platform
         id: cache-xcode-platform
         uses: actions/cache@v4
         with:
-          path: ~/xcode-downloads
+          path: ${{ runner.temp }}/xcode-downloads
           key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
           restore-keys: |
             xcode-platform-${{ matrix.platform }}-${{ runner.os }}
 
       - name: Install iOS Platform
         run: |
-          xcodebuild -downloadPlatform iOS -exportPath "~/xcode-downloads"
+          xcodebuild -downloadPlatform iOS -exportPath "${{ runner.temp }}/xcode-downloads"
 
       - name: Generate API Configuration
         run: |
