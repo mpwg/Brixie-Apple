@@ -18,9 +18,9 @@ struct CategoryDetailView: View {
     @State private var searchText = ""
     @State private var sortOrder: SetSortOrder = .year
     @State private var showingFilters = false
-    @State private var yearRange: ClosedRange<Int> = 1950...2024
+    @State private var yearRange: ClosedRange<Int> = 1_950...2_024
     @State private var minParts: Int = 0
-    @State private var maxParts: Int = 10000
+    @State private var maxParts: Int = 10_000
     @State private var currentPage = 1
     @State private var hasMorePages = true
     @State private var isLoadingMore = false
@@ -155,7 +155,6 @@ struct CategoryDetailView: View {
                     await loadSets(reset: true)
                 }
             }
-
         }
         .task {
             if apiConfigurationService.hasValidAPIKey {
@@ -201,7 +200,6 @@ struct CategoryDetailView: View {
             }
             
             hasMorePages = fetchedSets.count == 20
-            
         } catch {
             // Handle error silently, keeping existing sets
         }
@@ -244,7 +242,6 @@ struct CategoryDetailView: View {
     }
 }
 
-
 struct FilterSheetView: View {
     @Binding var yearRange: ClosedRange<Int>
     @Binding var minParts: Int
@@ -264,7 +261,7 @@ struct FilterSheetView: View {
                         }
                         .font(.caption)
                         
-                        RangeSlider(range: $yearRange, bounds: 1950...2024)
+                        RangeSlider(range: $yearRange, bounds: 1_950...2_024)
                     }
                 }
                 
@@ -287,9 +284,9 @@ struct FilterSheetView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(NSLocalizedString("Reset", comment: "Reset button")) {
-                        yearRange = 1950...2024
+                        yearRange = 1_950...2_024
                         minParts = 0
-                        maxParts = 10000
+                        maxParts = 10_000
                     }
                 }
                 

@@ -51,16 +51,15 @@ struct SetsListView: View {
         }
     }
     
-    
     private var cachedSetsView: some View {
         List {
             ForEach(cachedSets) { set in
                 NavigationLink(destination: SetDetailView(set: set)) {
-                    SetRowView(set: set, onFavoriteToggle: { set in
+                    SetRowView(set: set) { set in
                         Task {
                             await viewModel?.toggleFavorite(for: set)
                         }
-                    })
+                    }
                 }
             }
         }
@@ -91,11 +90,11 @@ struct SetsListView: View {
             if let vm = viewModel {
                 ForEach(vm.sets) { set in
                     NavigationLink(destination: SetDetailView(set: set)) {
-                        SetRowView(set: set, onFavoriteToggle: { set in
+                        SetRowView(set: set) { set in
                             Task {
                                 await vm.toggleFavorite(for: set)
                             }
-                        })
+                        }
                     }
                     .onAppear {
                         if set == vm.sets.last {
@@ -204,7 +203,7 @@ struct SetRowView: View {
             
             Spacer()
             
-            FavoriteButton(isFavorite: set.isFavorite, action: { onFavoriteToggle?(set) })
+            FavoriteButton(isFavorite: set.isFavorite) { onFavoriteToggle?(set) }
         }
         .padding(.vertical, 4)
     }
@@ -220,9 +219,9 @@ struct SetRowView: View {
     let sample = LegoSet(
         setNum: "10294-1",
         name: "Titanic",
-        year: 2021,
+        year: 2_021,
         themeId: 1,
-        numParts: 9090,
+        numParts: 9_090,
         themeName: "Creator Expert"
     )
 

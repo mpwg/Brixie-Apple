@@ -90,7 +90,7 @@ struct CategoriesView: View {
                                         .tag(order)
                                 }
                             }
-                        } label: {
+                    } label: {
                             Image(systemName: "line.3.horizontal.decrease.circle.fill")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundStyle(Color.brixieAccent)
@@ -100,7 +100,6 @@ struct CategoriesView: View {
                 }
             }
             .searchable(text: $searchText, prompt: NSLocalizedString("Search categories", comment: "Search prompt"))
-
         }
         .task {
             if viewModel == nil {
@@ -109,7 +108,6 @@ struct CategoriesView: View {
             }
         }
     }
-    
     
     private var loadingView: some View {
         BrixieHeroSection(
@@ -263,4 +261,3 @@ struct ModernCategoryRowView: View {
             .modelContainer(ModelContainerFactory.createPreviewContainer())
     }
 }
-

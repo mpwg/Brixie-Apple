@@ -47,7 +47,7 @@ final class LegoThemeService {
                     id: apiTheme.id,
                     name: apiTheme.name,
                     parentId: apiTheme.parentId,
-                    setCount: 0 //TODO: FIXME!
+                    setCount: 0 // TODO: FIXME!
                 )
             }
             
@@ -62,7 +62,6 @@ final class LegoThemeService {
                 self.error = BrixieError.persistenceError(underlying: error)
             }
             return themes
-            
         } catch {
             self.error = mapToBrixieError(error)
             throw self.error!
@@ -108,7 +107,6 @@ final class LegoThemeService {
             }
             
             return legoSets
-            
         } catch {
             self.error = mapToBrixieError(error)
             throw self.error!
