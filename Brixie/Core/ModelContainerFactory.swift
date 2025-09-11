@@ -11,7 +11,6 @@ import SwiftData
 /// Factory for creating ModelContainer instances with centralized schema definition
 @MainActor
 struct ModelContainerFactory {
-    
     /// Centralized schema definition for all SwiftData models
     static let schema = Schema([
         LegoSet.self,

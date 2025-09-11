@@ -47,7 +47,7 @@ final class LegoSetService {
                     setNum: apiSet.setNum ?? "",
                     name: apiSet.name ?? "",
                     year: apiSet.year ?? 0,
-                    themeId: apiSet.themeId ?? 301, //other
+                    themeId: apiSet.themeId ?? 301, // other
                     numParts: apiSet.numParts ?? 0,
                     imageURL: apiSet.setImgUrl
                 )
@@ -60,7 +60,6 @@ final class LegoSetService {
             
             try modelContext.save()
             return legoSets
-            
         } catch {
             self.error = mapToBrixieError(error)
             throw self.error!
@@ -86,14 +85,13 @@ final class LegoSetService {
                     setNum: apiSet.setNum ?? "",
                     name: apiSet.name ?? "",
                     year: apiSet.year ?? 0,
-                    themeId: apiSet.themeId ?? 301, //other
+                    themeId: apiSet.themeId ?? 301, // other
                     numParts: apiSet.numParts ?? 0,
                     imageURL: apiSet.setImgUrl
                 )
             }
             
             return legoSets
-            
         } catch {
             self.error = mapToBrixieError(error)
             throw self.error!
@@ -111,15 +109,14 @@ final class LegoSetService {
             
             let legoSet = LegoSet(
                 setNum: apiSet.setNum ?? "",
-                name: apiSet.name   ?? "",
+                name: apiSet.name ?? "",
                 year: apiSet.year ?? 0,
-                themeId: apiSet.themeId ?? 301, //other
+                themeId: apiSet.themeId ?? 301, // other
                 numParts: apiSet.numParts ?? 0,
                 imageURL: apiSet.setImgUrl
             )
             
             return legoSet
-            
         } catch {
             self.error = mapToBrixieError(error)
             throw self.error!

@@ -75,7 +75,6 @@ final class CategoriesViewModel: ViewModelErrorHandling {
         }
     }
     
-    
     var cachedThemesAvailable: Bool {
         !themes.isEmpty
     }

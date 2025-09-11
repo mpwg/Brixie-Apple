@@ -30,12 +30,12 @@ final class DIContainer: @unchecked Sendable {
     
     // MARK: - Managers
     
-    var themeManager: ThemeManager = ThemeManager.shared
+    var themeManager = ThemeManager.shared
     
     // MARK: - Services
     
-    var imageCacheService: ImageCacheService = ImageCacheService.shared
-    var apiConfigurationService: APIConfigurationService = APIConfigurationService()
+    var imageCacheService = ImageCacheService.shared
+    var apiConfigurationService = APIConfigurationService()
     
     // MARK: - Data Sources
     

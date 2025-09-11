@@ -9,7 +9,6 @@ import Testing
 @testable import Brixie
 
 struct ViewModelHelpersTests {
-    
     // Mock repository for testing
     @MainActor
     final class MockLegoSetRepository: LegoSetRepository {
@@ -66,7 +65,7 @@ struct ViewModelHelpersTests {
     @MainActor
     func testToggleFavoriteOnRepository_markAsFavorite() async throws {
         let repository = MockLegoSetRepository()
-        let set = LegoSet(setNum: "123", name: "Test Set", year: 2023, themeId: 1, numParts: 100)
+        let set = LegoSet(setNum: "123", name: "Test Set", year: 2_023, themeId: 1, numParts: 100)
         set.isFavorite = false
         
         try await toggleFavoriteOnRepository(set: set, repository: repository)
@@ -80,7 +79,7 @@ struct ViewModelHelpersTests {
     @MainActor
     func testToggleFavoriteOnRepository_removeFromFavorites() async throws {
         let repository = MockLegoSetRepository()
-        let set = LegoSet(setNum: "456", name: "Test Set", year: 2023, themeId: 1, numParts: 100)
+        let set = LegoSet(setNum: "456", name: "Test Set", year: 2_023, themeId: 1, numParts: 100)
         set.isFavorite = true
         
         try await toggleFavoriteOnRepository(set: set, repository: repository)
@@ -95,7 +94,7 @@ struct ViewModelHelpersTests {
     func testToggleFavoriteOnRepository_throwsError() async throws {
         let repository = MockLegoSetRepository()
         repository.shouldThrowError = true
-        let set = LegoSet(setNum: "789", name: "Test Set", year: 2023, themeId: 1, numParts: 100)
+        let set = LegoSet(setNum: "789", name: "Test Set", year: 2_023, themeId: 1, numParts: 100)
         
         do {
             try await toggleFavoriteOnRepository(set: set, repository: repository)

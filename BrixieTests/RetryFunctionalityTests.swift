@@ -10,7 +10,6 @@ import Testing
 
 @MainActor
 struct RetryFunctionalityTests {
-    
     @Test("SetsListViewModel retry should call loadSets")
     func setsListViewModelRetryCallsLoadSets() async throws {
         // Mock repository for testing

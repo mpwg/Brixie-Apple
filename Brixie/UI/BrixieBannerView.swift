@@ -109,15 +109,14 @@ extension BrixieBannerView {
 
 #Preview {
     VStack(spacing: 16) {
-        BrixieBannerView.networkError(onRetry: {})
+        BrixieBannerView.networkError {}
         
-        BrixieBannerView.apiKeyError(onRetry: {})
+        BrixieBannerView.apiKeyError {}
         
         BrixieBannerView(
             title: "Custom Error",
-            message: "This is a custom error message that might be longer and span multiple lines.",
-            onAction: {}
-        )
+            message: "This is a custom error message that might be longer and span multiple lines."
+        )            {}
     }
     .padding()
 }

@@ -9,18 +9,16 @@ import Testing
 @testable import Brixie
 
 struct BrixieBannerViewTests {
-    
     @Test("Banner view should call action when retry button is tapped")
     func bannerViewCallsActionOnRetry() async throws {
         var actionCalled = false
         
         let banner = BrixieBannerView(
             title: "Test Error",
-            message: "Test message",
-            onAction: {
+            message: "Test message"
+        )            {
                 actionCalled = true
             }
-        )
         
         // The banner is created successfully
         #expect(banner.title == "Test Error")
@@ -54,9 +52,9 @@ struct BrixieBannerViewTests {
     func networkErrorBannerHasCorrectDefaults() async throws {
         var retryWasCalled = false
         
-        let banner = BrixieBannerView.networkError(onRetry: {
+        let banner = BrixieBannerView.networkError {
             retryWasCalled = true
-        })
+        }
         
         #expect(banner.title == "Connection Issue")
         #expect(banner.message == "Check your internet connection and try again")
@@ -71,9 +69,9 @@ struct BrixieBannerViewTests {
     func apiKeyErrorBannerHasCorrectDefaults() async throws {
         var actionWasCalled = false
         
-        let banner = BrixieBannerView.apiKeyError(onRetry: {
+        let banner = BrixieBannerView.apiKeyError {
             actionWasCalled = true
-        })
+        }
         
         #expect(banner.title == "API Key Required")
         #expect(banner.message == "Please enter a valid API key in settings")
@@ -89,9 +87,9 @@ struct BrixieBannerViewTests {
         let testError = BrixieError.networkError(underlying: NSError(domain: "test", code: 1))
         var retryWasCalled = false
         
-        let banner = BrixieBannerView.generalError(testError, onRetry: {
+        let banner = BrixieBannerView.generalError(testError) {
             retryWasCalled = true
-        })
+        }
         
         #expect(banner.title == "Something Went Wrong")
         #expect(banner.message == testError.recoverySuggestion)
@@ -106,9 +104,8 @@ struct BrixieBannerViewTests {
     func bannerWithoutDismissShouldNotHaveDismissCallback() async throws {
         let banner = BrixieBannerView(
             title: "Test",
-            message: "Test message",
-            onAction: {}
-        )
+            message: "Test message"
+        )            {}
         
         #expect(banner.onDismiss == nil)
     }
@@ -118,9 +115,8 @@ struct BrixieBannerViewTests {
         let banner = BrixieBannerView(
             title: "Test",
             message: "Test message",
-            actionTitle: "Custom Action",
-            onAction: {}
-        )
+            actionTitle: "Custom Action"
+        )            {}
         
         #expect(banner.actionTitle == "Custom Action")
     }
