@@ -58,6 +58,9 @@ jobs:
         with:
           xcode-version: latest
 
+      - name: Install xcpretty
+        run: gem install xcpretty
+
       - name: Cache iOS Platform
         id: cache-ios-platform
         uses: actions/cache@v4
@@ -146,6 +149,9 @@ jobs:
         with:
           xcode-version: latest
 
+      - name: Install xcpretty
+        run: gem install xcpretty
+
       - name: Cache iOS Platform
         id: cache-ios-platform-test
         uses: actions/cache@v4
@@ -182,4 +188,16 @@ jobs:
       - name: Run Tests
         run: |
           echo "🧪 Running ${{ matrix.platform }} tests..."
-          xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination "${{ matrix.destination }}" CODE_SIGNING_ALLOWED=NO
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          set -o pipefail
+          xcodebuild test \
+                     -project Brixie.xcodeproj \
+                     -scheme Brixie \
+                     -destination "${{ matrix.destination }}" \
+                     CODE_SIGNING_ALLOWED=NO \
+                     -quiet \
+                     | xcpretty --color --test
+          
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ ${{ matrix.platform }} tests completed successfully!"
