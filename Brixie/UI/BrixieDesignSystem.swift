@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-// MARK: - Pure SwiftUI Colors (No UIKit/AppKit Dependencies)
+// MARK: Pure SwiftUI Colors (No UIKit/AppKit Dependencies)
 extension Color {
     // Light Theme Colors
     static let brixieBackgroundLight = Color(red: 0.97, green: 0.97, blue: 0.99)
@@ -65,10 +65,9 @@ extension Color {
     static let brixieSecondary = brixieSecondaryDark
 }
 
-// MARK: - Gradients
+// MARK: Gradients
 extension LinearGradient {
-    @MainActor
-    static var brixiePrimary: LinearGradient {
+    @MainActor static var brixiePrimary: LinearGradient {
         LinearGradient(
             colors: [.brixieGradientStart, .brixieGradientEnd],
             startPoint: .topLeading,
@@ -76,8 +75,7 @@ extension LinearGradient {
         )
     }
     
-    @MainActor
-    static var brixieCard: LinearGradient {
+    @MainActor static var brixieCard: LinearGradient {
         LinearGradient(
             colors: [Color.brixieCardDark, Color.brixieCardDark.opacity(0.8)],
             startPoint: .topLeading,
@@ -86,7 +84,7 @@ extension LinearGradient {
     }
 }
 
-// MARK: - Typography
+// MARK: Typography
 extension Font {
     static let brixieTitle = Font.system(size: 28, weight: .bold, design: .rounded)
     static let brixieHeadline = Font.system(size: 20, weight: .semibold, design: .rounded)
@@ -95,7 +93,7 @@ extension Font {
     static let brixieCaption = Font.system(size: 12, weight: .medium, design: .default)
 }
 
-// MARK: - Shadows
+// MARK: Shadows
 extension View {
     func brixieCardShadow() -> some View {
         self.modifier(BrixieCardShadowModifier())
@@ -104,7 +102,8 @@ extension View {
 
 // ViewModifier for adaptive card shadow
 struct BrixieCardShadowModifier: ViewModifier {
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorScheme) 
+    private var colorScheme
     
     func body(content: Content) -> some View {
         content.shadow(color: Color.brixieShadow(for: colorScheme), radius: 12, x: 0, y: 6)
@@ -127,11 +126,12 @@ extension View {
     }
 }
 
-// MARK: - Card Styles
+// MARK: Card Styles
 struct BrixieCard<Content: View>: View {
     let content: Content
     let gradient: Bool
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorScheme) 
+    private var colorScheme
     
     init(gradient: Bool = false, @ViewBuilder content: () -> Content) {
         self.gradient = gradient
@@ -160,10 +160,11 @@ struct BrixieCard<Content: View>: View {
     }
 }
 
-// MARK: - Button Styles
+// MARK: Button Styles
 struct BrixieButtonStyle: ButtonStyle {
     let variant: Variant
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorScheme) 
+    private var colorScheme
     
     enum Variant: Sendable {
         case primary, secondary, ghost
@@ -218,7 +219,7 @@ struct BrixieButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - Loading Animation
+// MARK: Loading Animation
 struct BrixieLoadingView: View {
     @State private var isAnimating = false
     
@@ -247,7 +248,7 @@ struct BrixieLoadingView: View {
     }
 }
 
-// MARK: - Hero Section
+// MARK: Hero Section
 struct BrixieHeroSection<Content: View>: View {
     let title: String
     let subtitle: String
@@ -289,7 +290,7 @@ struct BrixieHeroSection<Content: View>: View {
     }
 }
 
-// MARK: - Animated Counter
+// MARK: Animated Counter
 struct AnimatedCounter: View {
     let value: Int
     @State private var displayValue: Int = 0

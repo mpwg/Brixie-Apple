@@ -131,7 +131,7 @@ extension LegoSet {
 // MARK: Repository Fallback Tests
 
 struct RepositoryFallbackTests {
-    // MARK: - fetchSets Tests
+    // MARK: fetchSets Tests
     
     @Test("fetchSets success case - returns remote data and saves locally")
     func fetchSetsSuccessCase() async throws {
@@ -246,7 +246,7 @@ struct RepositoryFallbackTests {
         }
     }
     
-    // MARK: - searchSets Tests
+    // MARK: searchSets Tests
     
     @Test("searchSets success case - returns remote search results")
     func searchSetsSuccessCase() async throws {
@@ -328,7 +328,7 @@ struct RepositoryFallbackTests {
         #expect(result.isEmpty)
     }
     
-    // MARK: - getSetDetails Tests
+    // MARK: getSetDetails Tests
     
     @Test("getSetDetails success case - returns remote data and saves locally")
     func getSetDetailsSuccessCase() async throws {
@@ -421,7 +421,7 @@ struct RepositoryFallbackTests {
         #expect(result == nil)
     }
     
-    // MARK: - Additional Repository Tests
+    // MARK: Additional Repository Tests
     
     @Test("getCachedSets fallback - returns empty array on error")
     func getCachedSetsFallback() async throws {
@@ -465,7 +465,7 @@ struct RepositoryFallbackTests {
     }
 }
 
-// MARK: - Legacy Test
+// MARK: Legacy Test
 
 struct BrixieTests {
     @Test
@@ -698,7 +698,7 @@ struct ThemeNamePopulationTests {
     }
 }
 
-// MARK: - Mock Data Sources
+// MARK: Mock Data Sources
 
 final class MockLegoSetRemoteDataSource: LegoSetRemoteDataSource {
     var mockSets: [LegoSet] = []
@@ -1001,7 +1001,7 @@ final class MockLegoThemeRepository: LegoThemeRepository {
     }
 }
 
-// MARK: - Pagination Hardening Tests
+// MARK: Pagination Hardening Tests
 
 struct PaginationHardeningTests {
     @Test("SetsListViewModel prevents overlapping loadMore calls") 
@@ -1118,7 +1118,7 @@ struct PaginationHardeningTests {
     }
 }
 
-// MARK: - Mock Implementations
+// MARK: Mock Implementations
 
 @MainActor
 final class MockLegoSetRepository: LegoSetRepository {
@@ -1168,7 +1168,7 @@ final class MockSlowLegoSetRepository: MockLegoSetRepository {
     }
 }
 
-// MARK: - API Configuration Tests
+// MARK: API Configuration Tests
 
 struct APIConfigurationTests {
     @Test("API Configuration Service initialization")
@@ -1254,7 +1254,7 @@ struct APIConfigurationTests {
     }
 }
 
-// MARK: - DI Container Tests
+// MARK: DI Container Tests
 
 struct DIContainerTests {
     @Test("DI Container provides API Configuration Service")
@@ -1312,7 +1312,7 @@ struct DIContainerTests {
     }
 }
 
-// MARK: - Remote Data Source Tests
+// MARK: Remote Data Source Tests
 
 struct RemoteDataSourceTests {
     @Test("LegoSetRemoteDataSource handles missing API key")
