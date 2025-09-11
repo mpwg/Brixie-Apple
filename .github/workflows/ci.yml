@@ -51,11 +51,15 @@ jobs:
         with:
           path: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/
           key: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist
-      
+
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
+
+      - name: fix unable to connect to iOS Simulator
+        run: |
+          xcrun simctl list > /dev/null # This command initializes the simulator service
 
       - name: install iOS
         run: |
@@ -93,9 +97,9 @@ jobs:
         platform: [iOS, macOS]
         include:
           - platform: iOS
-            destination: 'platform=iOS Simulator,name=iPhone 15'
+            destination: "platform=iOS Simulator,name=iPhone 15"
           - platform: macOS
-            destination: 'platform=macOS,variant=Mac Catalyst'
+            destination: "platform=macOS,variant=Mac Catalyst"
     environment: IntegrationTests
     env:
       REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
