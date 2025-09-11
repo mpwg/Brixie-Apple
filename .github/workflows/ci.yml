@@ -50,19 +50,8 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
 
-      - name: Cache Xcode Platforms
-        id: cache-xcode-platforms
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Caches/com.apple.dt.Xcode
-          key: xcode-platforms-${{ runner.os }}-xcode-${{ steps.setup-xcode.outputs.xcode-version }}
-          restore-keys: |
-            xcode-platforms-${{ runner.os }}-xcode-
-
       - name: Install iOS Platform
-        if: steps.cache-xcode-platforms.outputs.cache-hit != 'true'
         run: |
-          echo "📱 Downloading iOS platform..."
           xcodebuild -downloadPlatform iOS
 
       - name: Show Build Environment
@@ -130,30 +119,9 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
 
-      - name: Cache Xcode Platforms
-        id: cache-xcode-platforms-test
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Caches/com.apple.dt.Xcode
-          key: xcode-platforms-${{ runner.os }}-xcode-${{ steps.setup-xcode.outputs.xcode-version }}
-          restore-keys: |
-            xcode-platforms-${{ runner.os }}-xcode-
-
       - name: Install iOS Platform
-        if: steps.cache-xcode-platforms-test.outputs.cache-hit != 'true'
         run: |
-          echo "📱 Downloading iOS platform for tests..."
           xcodebuild -downloadPlatform iOS
-
-      - name: Cache Swift Package Manager
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-            ~/Library/Caches/org.swift.swiftpm
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-spm-
 
       - name: Generate API Configuration
         run: |
