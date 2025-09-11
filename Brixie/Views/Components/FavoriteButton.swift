@@ -9,7 +9,12 @@ struct FavoriteButton: View {
         Group {
             if prominent {
                 Button(action: action) {
-                    Label(isFavorite ? NSLocalizedString("Remove from Favorites", comment: "") : NSLocalizedString("Add to Favorites", comment: ""), systemImage: isFavorite ? "heart.slash" : "heart")
+                    Label(
+                        isFavorite ?
+                            NSLocalizedString("Remove from Favorites", comment: "") :
+                            NSLocalizedString("Add to Favorites", comment: ""),
+                        systemImage: isFavorite ? "heart.slash" : "heart"
+                    )
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(isFavorite ? .red : .blue)

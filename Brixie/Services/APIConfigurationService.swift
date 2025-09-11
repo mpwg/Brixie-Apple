@@ -11,6 +11,7 @@ import SwiftUI
 @Observable
 @MainActor
 final class APIConfigurationService: @unchecked Sendable {
+    // swiftlint:disable:next attributes
     @AppStorage("rebrickableAPIKey") @ObservationIgnored private var userAPIKey: String = ""
     
     // Read from generated configuration for embedded keys

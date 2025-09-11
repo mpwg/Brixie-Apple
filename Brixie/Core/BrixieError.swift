@@ -22,25 +22,40 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
     var errorDescription: String? {
         switch self {
         case .networkError(let error):
-            return Strings.networkError(error.localizedDescription).localized
+            return String(
+                format: NSLocalizedString("Network error: %@", comment: "Network error description"),
+                error.localizedDescription
+            )
         case .apiKeyMissing:
             return Strings.apiKeyMissing.localized
         case .parsingError:
             return Strings.parsingError.localized
         case .cacheError(let error):
-            return Strings.cacheError(error.localizedDescription).localized
+            return String(
+                format: NSLocalizedString("Cache operation failed: %@", comment: "Cache error description"),
+                error.localizedDescription
+            )
         case .invalidURL(let url):
-            return Strings.invalidURL(url).localized
+            return String(
+                format: NSLocalizedString("Invalid URL: %@", comment: "Invalid URL error"),
+                url
+            )
         case .dataNotFound:
             return Strings.dataNotFound.localized
         case .persistenceError(let error):
-            return Strings.persistenceError(error.localizedDescription).localized
+            return String(
+                format: NSLocalizedString("Data persistence failed: %@", comment: "Persistence error description"),
+                error.localizedDescription
+            )
         case .rateLimitExceeded:
             return Strings.rateLimitExceeded.localized
         case .unauthorized:
             return Strings.unauthorized.localized
         case .serverError(let statusCode):
-            return Strings.serverError(statusCode).localized
+            return String(
+                format: NSLocalizedString("Server error (status: %d)", comment: "Server error description"),
+                statusCode
+            )
         }
     }
     
@@ -59,8 +74,9 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
         }
     }
     
-    // MARK: - Equatable
+    // MARK: Equatable
     
+    // swiftlint:disable:next cyclomatic_complexity
     static func == (lhs: BrixieError, rhs: BrixieError) -> Bool {
         switch (lhs, rhs) {
         case (.networkError, .networkError):
@@ -71,7 +87,7 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
             return true
         case (.cacheError, .cacheError):
             return true
-        case (.invalidURL(let lhsURL), .invalidURL(let rhsURL)):
+        case let (.invalidURL(lhsURL), .invalidURL(rhsURL)):
             return lhsURL == rhsURL
         case (.dataNotFound, .dataNotFound):
             return true
@@ -81,7 +97,7 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
             return true
         case (.unauthorized, .unauthorized):
             return true
-        case (.serverError(let lhsCode), .serverError(let rhsCode)):
+        case let (.serverError(lhsCode), .serverError(rhsCode)):
             return lhsCode == rhsCode
         default:
             return false
@@ -89,7 +105,7 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
     }
 }
 
-// MARK: - Result Extensions
+// MARK: Result Extensions
 
 extension Result where Failure == BrixieError {
     static func networkError(_ error: Error) -> Result {
@@ -105,7 +121,7 @@ extension Result where Failure == BrixieError {
     }
 }
 
-// MARK: - Error Recovery
+// MARK: Error Recovery
 
 @MainActor
 @Observable
@@ -179,7 +195,7 @@ enum ErrorRecoveryAction: Sendable, Equatable {
     case showMessage(String)
 }
 
-// MARK: - Legacy Support
+// MARK: Legacy Support
 
 @MainActor
 final class ErrorHandler: @unchecked Sendable {

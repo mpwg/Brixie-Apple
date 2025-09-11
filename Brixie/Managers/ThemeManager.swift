@@ -9,9 +9,9 @@ import SwiftUI
 import Foundation
 
 enum AppTheme: String, CaseIterable, Identifiable, Sendable {
-    case light = "light"
-    case dark = "dark"
-    case system = "system"
+    case light
+    case dark
+    case system
     
     var id: String { rawValue }
     

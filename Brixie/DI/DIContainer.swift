@@ -28,16 +28,16 @@ final class DIContainer: @unchecked Sendable {
         }
     }
     
-    // MARK: - Managers
+    // MARK: Managers
     
     var themeManager = ThemeManager.shared
     
-    // MARK: - Services
+    // MARK: Services
     
     var imageCacheService = ImageCacheService.shared
     var apiConfigurationService = APIConfigurationService()
     
-    // MARK: - Data Sources
+    // MARK: Data Sources
     
     func makeLocalDataSource() -> LocalDataSource {
         SwiftDataSource(modelContext: modelContainer.mainContext)
@@ -51,7 +51,7 @@ final class DIContainer: @unchecked Sendable {
         LegoThemeRemoteDataSourceImpl(apiConfiguration: apiConfigurationService)
     }
     
-    // MARK: - Repositories
+    // MARK: Repositories
     
     func makeLegoSetRepository() -> LegoSetRepository {
         LegoSetRepositoryImpl(
@@ -68,7 +68,7 @@ final class DIContainer: @unchecked Sendable {
         )
     }
     
-    // MARK: - ViewModels
+    // MARK: ViewModels
     
     func makeSetsListViewModel() -> SetsListViewModel {
         SetsListViewModel(
@@ -97,7 +97,7 @@ final class DIContainer: @unchecked Sendable {
     }
 }
 
-// MARK: - Environment Key
+// MARK: Environment Key
 
 struct DIContainerKey: EnvironmentKey {
     // Provide a lazily-evaluated container; EnvironmentKey requires nonisolated static.
