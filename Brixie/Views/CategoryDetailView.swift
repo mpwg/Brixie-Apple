@@ -18,11 +18,18 @@ struct CategoryDetailView: View {
     @State private var searchText = ""
     @State private var sortOrder: SetSortOrder = .year
     @State private var showingFilters = false
-    @State private var yearRange: ClosedRange<Int> = 1950...2024
+    @State private var yearRange: ClosedRange<Int> = 1_950...2_024
     @State private var minParts: Int = 0
-    @State private var maxParts: Int = 10000
+    @State private var maxParts: Int = 10_000
     @State private var currentPage = 1
     @State private var hasMorePages = true
+    @State private var isLoadingMore = false
+    @State private var loadMoreTask: Task<Void, Never>?
+    @State private var lastLoadMoreTime: Date = .distantPast
+    
+    private var apiConfigurationService: APIConfigurationService {
+        diContainer.apiConfigurationService
+    }
     
     enum SetSortOrder: String, CaseIterable {
         case year = "-year"
@@ -78,7 +85,7 @@ struct CategoryDetailView: View {
                                 }
                             }
                             
-                            if hasMorePages && !service.isLoading {
+                            if hasMorePages && !service.isLoading && !isLoadingMore {
                                 Button(action: loadMoreSets) {
                                     HStack {
                                         Spacer()
@@ -87,9 +94,10 @@ struct CategoryDetailView: View {
                                     }
                                     .padding()
                                 }
+                                .disabled(isLoadingMore)
                             }
                             
-                            if service.isLoading && !sets.isEmpty {
+                            if service.isLoading && !sets.isEmpty || isLoadingMore {
                                 HStack {
                                     Spacer()
                                     ProgressView()
@@ -104,8 +112,8 @@ struct CategoryDetailView: View {
                         }
                     }
                     
-                    if let errorMessage = service.errorMessage {
-                        Text(errorMessage)
+                    if let error = service.error {
+                        Text(error.errorDescription ?? NSLocalizedString("Unknown error occurred", comment: "Generic error message"))
                             .foregroundColor(.red)
                             .padding()
                     }
@@ -147,11 +155,9 @@ struct CategoryDetailView: View {
                     await loadSets(reset: true)
                 }
             }
-
         }
         .task {
-            if (GeneratedConfiguration.hasEmbeddedAPIKey)
-            {
+            if apiConfigurationService.hasValidAPIKey {
                 await initializeService()
             }
         }
@@ -161,7 +167,7 @@ struct CategoryDetailView: View {
     private func initializeService() async {
         guard themeService == nil else { return }
         
-        themeService = LegoThemeService(modelContext: modelContext, apiKey: GeneratedConfiguration.rebrickableAPIKey ?? "" )
+        themeService = LegoThemeService(modelContext: modelContext, apiKey: apiConfigurationService.currentAPIKey ?? "")
         
         await loadSets(reset: true)
     }
@@ -171,9 +177,12 @@ struct CategoryDetailView: View {
         guard let service = themeService else { return }
         
         if reset {
+            // Cancel any existing loadMore task when resetting
+            loadMoreTask?.cancel()
             currentPage = 1
             sets = []
             hasMorePages = true
+            isLoadingMore = false
         }
         
         do {
@@ -191,20 +200,47 @@ struct CategoryDetailView: View {
             }
             
             hasMorePages = fetchedSets.count == 20
-            
         } catch {
             // Handle error silently, keeping existing sets
         }
     }
     
+    /// Loads more sets with multiple protection mechanisms against duplicate requests:
+    /// - 500ms debouncing to prevent rapid button taps
+    /// - Task cancellation for concurrent request management  
+    /// - Guard logic to prevent overlapping operations
+    /// - Proper page rollback on cancellation
     private func loadMoreSets() {
-        Task {
+        // Debounce: prevent requests more frequent than 500ms
+        let now = Date()
+        guard now.timeIntervalSince(lastLoadMoreTime) > 0.5 else { return }
+        lastLoadMoreTime = now
+        
+        // Cancel any existing load more task
+        loadMoreTask?.cancel()
+        
+        // Guard against multiple simultaneous requests
+        guard !isLoadingMore, let service = themeService, !service.isLoading else { return }
+        
+        loadMoreTask = Task { @MainActor in
+            isLoadingMore = true
+            defer { 
+                isLoadingMore = false
+                loadMoreTask = nil
+            }
+            
             currentPage += 1
+            
+            // Check if cancelled before starting network request
+            guard !Task.isCancelled else { 
+                currentPage -= 1 // Reset page if cancelled
+                return 
+            }
+            
             await loadSets()
         }
     }
 }
-
 
 struct FilterSheetView: View {
     @Binding var yearRange: ClosedRange<Int>
@@ -225,7 +261,7 @@ struct FilterSheetView: View {
                         }
                         .font(.caption)
                         
-                        RangeSlider(range: $yearRange, bounds: 1950...2024)
+                        RangeSlider(range: $yearRange, bounds: 1_950...2_024)
                     }
                 }
                 
@@ -248,9 +284,9 @@ struct FilterSheetView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(NSLocalizedString("Reset", comment: "Reset button")) {
-                        yearRange = 1950...2024
+                        yearRange = 1_950...2_024
                         minParts = 0
-                        maxParts = 10000
+                        maxParts = 10_000
                     }
                 }
                 
@@ -340,5 +376,5 @@ struct RangeSlider: View {
 
 #Preview {
     CategoryDetailView(theme: LegoTheme(id: 1, name: "City", setCount: 150))
-        .modelContainer(for: [LegoTheme.self, LegoSet.self], inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

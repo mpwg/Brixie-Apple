@@ -13,9 +13,16 @@ import SwiftData
 @MainActor
 final class LegoThemeService {
     private let modelContext: ModelContext
+    private let errorReporter = ErrorReporter.shared
     
     var isLoading = false
-    var errorMessage: String?
+    var error: BrixieError? {
+        didSet {
+            if let error = error {
+                errorReporter.report(error)
+            }
+        }
+    }
     
     init(modelContext: ModelContext, apiKey: String) {
         RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKey
@@ -24,7 +31,7 @@ final class LegoThemeService {
     
     func fetchThemes(page: Int = 1, pageSize: Int = 100) async throws -> [LegoTheme] {
         isLoading = true
-        errorMessage = nil
+        error = nil
         
         defer { isLoading = false }
         
@@ -40,7 +47,7 @@ final class LegoThemeService {
                     id: apiTheme.id,
                     name: apiTheme.name,
                     parentId: apiTheme.parentId,
-                    setCount: 0 //TODO: FIXME!
+                    setCount: 0 // TODO: FIXME!
                 )
             }
             
@@ -52,13 +59,12 @@ final class LegoThemeService {
             do {
                 try modelContext.save()
             } catch {
-                errorMessage = "Failed to save themes: \(error.localizedDescription)"
+                self.error = BrixieError.persistenceError(underlying: error)
             }
             return themes
-            
         } catch {
-            errorMessage = "Failed to fetch themes: \(error.localizedDescription)"
-            throw error
+            self.error = mapToBrixieError(error)
+            throw self.error!
         }
     }
     
@@ -70,14 +76,14 @@ final class LegoThemeService {
         do {
             return try modelContext.fetch(descriptor)
         } catch {
-            errorMessage = "Failed to fetch cached themes: \(error.localizedDescription)"
+            self.error = BrixieError.cacheError(underlying: error)
             return []
         }
     }
     
     func getSetsForTheme(themeId: Int, page: Int = 1, pageSize: Int = 20, ordering: String = "-year") async throws -> [LegoSet] {
         isLoading = true
-        errorMessage = nil
+        error = nil
         
         defer { isLoading = false }
         
@@ -101,10 +107,34 @@ final class LegoThemeService {
             }
             
             return legoSets
-            
         } catch {
-            errorMessage = "Failed to fetch sets for theme: \(error.localizedDescription)"
-            throw error
+            self.error = mapToBrixieError(error)
+            throw self.error!
         }
+    }
+    
+    // MARK: - Error Mapping
+    
+    private func mapToBrixieError(_ error: Error) -> BrixieError {
+        if let brixieError = error as? BrixieError {
+            return brixieError
+        }
+        
+        // Map common error types
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .notConnectedToInternet, .networkConnectionLost:
+                return .networkError(underlying: error)
+            case .timedOut:
+                return .networkError(underlying: error)
+            case .badURL:
+                return .invalidURL(urlError.localizedDescription)
+            default:
+                return .networkError(underlying: error)
+            }
+        }
+        
+        // Default mapping
+        return .networkError(underlying: error)
     }
 }
