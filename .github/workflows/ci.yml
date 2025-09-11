@@ -1,4 +1,4 @@
-name: CI Builds
+name: CI
 
 permissions:
   contents: read
@@ -10,48 +10,42 @@ on:
     branches: [main]
 
 jobs:
+  lint:
+    name: Code Quality (SwiftLint)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: make lint
+
   build:
+    name: Build - ${{ matrix.platform }}
+    runs-on: macos-latest
     strategy:
       matrix:
-        platform: [ios, macos]
+        platform: [iOS, macOS]
         include:
-          - platform: ios
+          - platform: iOS
             make_target: build-ios
-            display_name: iOS
-          - platform: macos
+          - platform: macOS
             make_target: build-macos
-            display_name: macOS
-          - os: macos-latest
-          - xcode: latest
-    name: Build - ${{ matrix.display_name }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
     environment: IntegrationTests
     env:
       REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
     steps:
-      - name: Setup Xcode ${{ matrix.xcode }}
+      - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: ${{ matrix.xcode }}
-      - name: Install iOS 26.0 simulator/runtime (best-effort)
-        if: runner.os == 'macOS'
-        continue-on-error: true
+          xcode-version: latest
+
+      - name: install iOS
         run: |
-          echo "🔁 Attempting best-effort install of iOS 26.0 simulator/runtime"
-          # Install xcode-install gem if available (used to fetch simulator runtimes)
-          if ! command -v xcversion >/dev/null 2>&1; then
-            echo "📦 Installing xcode-install gem (may require sudo)...";
-            sudo gem install xcode-install -N || true;
-          else
-            echo "✅ xcversion already available"
-          fi
-          # Try to install iOS 26.0 simulator runtime (requires Apple ID credentials in xcversion)
-          xcversion simulators --install='iOS 26.0' || true;
-          # List installed runtimes afterward (non-fatal)
-          echo "🔎 Available runtimes:"; xcrun simctl runtimes || true
-      - name: List
-        run: |
-          xcrun simctl list || true
+          xcodebuild -downloadPlatform iOS
 
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -59,7 +53,7 @@ jobs:
       - name: Show Build Environment
         run: |
           echo "🔍 Build Environment Info:"
-          echo "Platform: ${{ matrix.display_name }}"
+          echo "Platform: ${{ matrix.platform }}"
           echo "Xcode Version: $(xcodebuild -version)"
           echo "Available SDKs:"; xcodebuild -showsdks || true
           echo "Make Target: ${{ matrix.make_target }}"
@@ -69,6 +63,37 @@ jobs:
             echo "❌ API Key: Missing"
           fi
           echo ""
+
+      - name: Build App (CI unified)
+        run: |
+          echo "🔨 Building with Makefile (ci-build)..."
+          make ci-build
+
+  test:
+    name: Test - ${{ matrix.platform }}
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        platform: [iOS, macOS]
+        include:
+          - platform: iOS
+            make_target: test-ios
+            destination: 'platform=iOS Simulator,name=iPhone 15'
+          - platform: macOS
+            make_target: test-macos
+            destination: 'platform=macOS,variant=Mac Catalyst'
+    environment: IntegrationTests
+    env:
+      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
+    needs: build
+    steps:
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest
+
+      - name: Checkout Repository
+        uses: actions/checkout@v5
 
       - name: Cache Swift Package Manager
         uses: actions/cache@v4
@@ -80,64 +105,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
-      - name: Build App (CI unified)
+      - name: Run Tests
         run: |
-          echo "🔨 Building with Makefile (ci-build)..."
-          make ci-build
-
-      - name: Attempt install iOS 26 simulator runtime (best-effort)
-        if: runner.os == 'macOS'
-        continue-on-error: true
-        run: |
-          echo "🔁 Checking for iOS 26.0 SDK..."
-          if xcodebuild -showsdks 2>/dev/null | grep -q "iOS 26.0"; then
-            echo "📱 iOS 26.0 SDK already installed"
-            exit 0
-          fi
-          echo "⚠️  iOS 26.0 SDK missing — attempting best-effort install (may require Apple ID / take long)"
-          # Install xcode-install gem (used to manage Simulators/Xcode components). Best-effort.
-          sudo gem install xcode-install -N || true
-          # Try to install the simulator runtime. This may fail if credentials are required.
-          xcversion simulators --install='iOS 26.0' || true
-
-  # test:
-  #   strategy:
-  #     matrix:
-  #       platform: [ios, macos]
-  #       include:
-  #         - platform: ios
-  #           make_target: test-ios
-  #           display_name: iOS
-  #         - platform: macos
-  #           make_target: test-macos
-  #           display_name: macOS
-  #         - os: macos-latest
-  #         - xcode: latest-stable
-  #   name: Test - ${{ matrix.display_name }} on ${{ matrix.os }}
-  #   runs-on: ${{ matrix.os }}
-  #   env:
-  #     REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
-  #   needs: build
-  #   steps:
-  #     - name: Setup Xcode ${{ matrix.xcode }}
-  #       uses: maxim-lobanov/setup-xcode@v1
-  #       with:
-  #         xcode-version: ${{ matrix.xcode }}
-
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v5
-
-  #     - name: Cache Swift Package Manager
-  #       uses: actions/cache@v4
-  #       with:
-  #         path: |
-  #           ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-  #           ~/Library/Caches/org.swift.swiftpm
-  #         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-spm-
-
-  #     - name: Run Tests (platform-specific)
-  #       run: |
-  #         echo "🧪 Running ${{ matrix.display_name }} tests with Makefile..."
-  #         make ${{ matrix.make_target }}
+          echo "🧪 Running ${{ matrix.platform }} tests with Makefile..."
+          make ${{ matrix.make_target }}
