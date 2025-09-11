@@ -48,16 +48,16 @@ jobs:
         uses: actions/checkout@v5
 
       - name: where are you?
-        run: ls -l /Applications/Xcode26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/ || true
+        run: ls -l /Applications/Xcode_26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/ || true
 
       - name: what version are you?
-        run: cat /Applications/Xcode26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist || true
+        run: cat /Applications/Xcode_26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist || true
 
       - name: Cache
         uses: actions/cache@v4
         with:
-          path: /Applications/Xcode26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/
-          key: /Applications/Xcode26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist
+          path: /Applications/Xcode_26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/
+          key: /Applications/Xcode_26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist
 
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
