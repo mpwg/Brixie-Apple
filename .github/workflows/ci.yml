@@ -59,8 +59,6 @@ jobs:
         with:
           path: ${{ runner.temp }}/xcode-downloads
           key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
-          restore-keys: |
-            xcode-platform-${{ matrix.platform }}-${{ runner.os }}
 
       - name: Install iOS Platform
         run: |
@@ -140,8 +138,6 @@ jobs:
         with:
           path: ${{ runner.temp }}/xcode-downloads
           key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
-          restore-keys: |
-            xcode-platform-${{ matrix.platform }}-${{ runner.os }}
 
       - name: Install iOS Platform
         run: |
