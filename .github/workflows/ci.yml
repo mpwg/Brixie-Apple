@@ -53,24 +53,37 @@ jobs:
       - name: what version are you?
         run: cat /Applications/Xcode_26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist || true
 
-      - name: Cache
-        uses: actions/cache@v4
-        with:
-          path: /Applications/Xcode_26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/
-          key: /Applications/Xcode_26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist
-
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest
 
+      - name: Cache iOS Platform
+        id: cache-ios-platform
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/iOS DeviceSupport
+            ~/Library/Developer/Xcode/Platforms
+            /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+          key: ios-platform-${{ runner.os }}-xcode-${{ steps.setup-xcode.outputs.xcode-version || 'latest' }}
+          restore-keys: |
+            ios-platform-${{ runner.os }}-xcode-
+
+      - name: Install iOS Platform
+        if: steps.cache-ios-platform.outputs.cache-hit != 'true'
+        run: |
+          echo "📱 Installing iOS platform (cache miss)..."
+          xcodebuild -downloadPlatform iOS
+
+      - name: Verify iOS Platform Cache
+        if: steps.cache-ios-platform.outputs.cache-hit == 'true'
+        run: |
+          echo "✅ iOS platform restored from cache"
+
       - name: fix unable to connect to iOS Simulator
         run: |
           xcrun simctl list > /dev/null # This command initializes the simulator service
-
-      - name: install iOS
-        run: |
-          xcodebuild -downloadPlatform iOS
 
       - name: Show Build Environment
         run: |
@@ -94,7 +107,20 @@ jobs:
       - name: Build App
         run: |
           echo "🔨 Building ${{ matrix.platform }} app..."
-          xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug -destination "${{ matrix.destination }}" build CODE_SIGNING_ALLOWED=NO
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          set -o pipefail
+          xcodebuild -project Brixie.xcodeproj \
+                     -scheme Brixie \
+                     -configuration Debug \
+                     -destination "${{ matrix.destination }}" \
+                     build \
+                     CODE_SIGNING_ALLOWED=NO \
+                     -quiet \
+                     | xcpretty --color --simple
+          
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ ${{ matrix.platform }} build completed successfully!"
 
   test:
     name: Test - ${{ matrix.platform }}
@@ -119,6 +145,24 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest
+
+      - name: Cache iOS Platform
+        id: cache-ios-platform-test
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/iOS DeviceSupport
+            ~/Library/Developer/Xcode/Platforms
+            /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+          key: ios-platform-${{ runner.os }}-xcode-${{ steps.setup-xcode.outputs.xcode-version || 'latest' }}
+          restore-keys: |
+            ios-platform-${{ runner.os }}-xcode-
+
+      - name: Install iOS Platform
+        if: steps.cache-ios-platform-test.outputs.cache-hit != 'true'
+        run: |
+          echo "📱 Installing iOS platform for tests (cache miss)..."
+          xcodebuild -downloadPlatform iOS
 
       - name: Cache Swift Package Manager
         uses: actions/cache@v4
