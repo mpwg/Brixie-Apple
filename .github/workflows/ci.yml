@@ -56,12 +56,12 @@ jobs:
       - name: create cache directory
         run: mkdir -p "${{ runner.temp }}/xcode-downloads"
 
-      - name: Cache Xcode iOS Platform
-        id: cache-xcode-platform
-        uses: actions/cache@v4
-        with:
-          path: ${{ runner.temp }}/xcode-downloads
-          key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
+#      - name: Cache Xcode iOS Platform
+#        id: cache-xcode-platform
+#        uses: actions/cache@v4
+#        with:
+#          path: ${{ runner.temp }}/xcode-downloads
+#          key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
 
       - name: Install iOS Platform
         run: |
@@ -138,12 +138,12 @@ jobs:
       - name: create cache directory
         run: mkdir -p "${{ runner.temp }}/xcode-downloads"
 
-      - name: Cache Xcode iOS Platform
-        id: cache-xcode-platform
-        uses: actions/cache@v4
-        with:
-          path: ${{ runner.temp }}/xcode-downloads
-          key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
+ #     - name: Cache Xcode iOS Platform
+ #       id: cache-xcode-platform
+ #       uses: actions/cache@v4
+ #       with:
+ #         path: ${{ runner.temp }}/xcode-downloads
+ #         key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
 
       - name: Install iOS Platform
         run: |
