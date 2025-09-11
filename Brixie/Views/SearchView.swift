@@ -50,18 +50,20 @@ struct SearchView: View {
                 if let vm = viewModel {
                     BrixieSearchSuggestions(recentSearches: vm.recentSearches) { selection in
                         vm.searchText = selection
-                        Task { await vm.performSearch() }
+                        Task { await vm.performImmediateSearch() }
                     }
                 }
             }
             .onSubmit(of: .search) {
                 Task {
-                    await viewModel?.performSearch()
+                    await viewModel?.performImmediateSearch()
                 }
             }
             .onChange(of: viewModel?.searchText ?? "") { _, newValue in
                 if newValue.isEmpty {
                     viewModel?.clearResults()
+                } else {
+                    viewModel?.performDebouncedSearch()
                 }
             }
         }
@@ -107,7 +109,7 @@ struct SearchView: View {
                                     Button {
                                         vm.searchText = search
                                         Task {
-                                            await vm.performSearch()
+                                            await vm.performImmediateSearch()
                                         }
                                     } label: {
                                         HStack(spacing: 6) {
