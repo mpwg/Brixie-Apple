@@ -57,6 +57,10 @@ brew install swiftlint
 Run SwiftLint:
 
 ```bash
+# Using Makefile (recommended)
+make lint
+
+# Or directly
 swiftlint lint
 ```
 
@@ -64,20 +68,19 @@ swiftlint lint
 
 The project uses GitHub Actions for CI/CD with the following workflow:
 
-- **Build and Test**: Builds and tests the app on iOS, macOS, and visionOS
-- **Code Quality**: Runs SwiftLint and static analysis
-- **Archive**: Creates release archives for distribution (main branch only)
+- **Code Quality**: Runs SwiftLint for code style and quality checks
+- **Build and Test**: Builds and tests the app on iOS and macOS using Makefile targets
+- **Platform Support**: Matrix builds for both iOS and macOS platforms
 
 ### CI Configuration
 
 The CI pipeline includes:
 
-- Matrix builds for multiple platforms and configurations
+- **Lint Job**: SwiftLint code quality checks with strict mode
+- **Build Job**: Matrix builds for iOS and macOS platforms using `make ci-build`
+- **Test Job**: Matrix tests for iOS and macOS platforms using `make test-ios` and `make test-macos`
 - Caching for Swift Package Manager and DerivedData
-- Unit and UI testing (UI tests skip visionOS due to simulator limitations)
-- SwiftLint code quality checks
-- Static code analysis
-- Archive creation for release builds
+- Proper job dependencies (tests run after successful builds)
 
 ## Architecture
 
@@ -112,6 +115,11 @@ let setNum = Strings.setNumber("10234").localized // "Set #10234"
 - SwiftUI
 - SwiftData
 - [RebrickableLegoAPIClient](https://github.com/mpwg/Rebrickable-swift) (v2.0.0+)
+
+## Documentation
+
+- [Data Migration Strategy](MIGRATION.md) - Guidelines for SwiftData schema evolution
+- [Build Configuration](BUILD_CONFIGURATION.md) - API key management and build setup
 
 ## License
 

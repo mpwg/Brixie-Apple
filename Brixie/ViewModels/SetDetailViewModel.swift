@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class SetDetailViewModel {
+final class SetDetailViewModel: ViewModelErrorHandling {
     private let legoSetRepository: LegoSetRepository
     
     var set: LegoSet
@@ -31,26 +31,17 @@ final class SetDetailViewModel {
             if let detailedSet = try await legoSetRepository.getSetDetails(setNum: set.setNum) {
                 set = detailedSet
             }
-        } catch let brixieError as BrixieError {
-            error = brixieError
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
         }
     }
     
     func toggleFavorite() async {
         do {
-            if set.isFavorite {
-                try await legoSetRepository.removeFromFavorites(set)
-            } else {
-                try await legoSetRepository.markAsFavorite(set)
-            }
-            
+            try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
             set.isFavorite.toggle()
-        } catch let brixieError as BrixieError {
-            error = brixieError
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
         }
     }
     

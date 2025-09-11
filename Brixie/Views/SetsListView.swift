@@ -16,17 +16,26 @@ struct SetsListView: View {
     
     var body: some View {
         NavigationStack {
-            Group {
-                if let vm = viewModel {
-                    if vm.sets.isEmpty && !cachedSets.isEmpty {
-                        cachedSetsView
-                    } else if vm.sets.isEmpty && !vm.isLoading {
-                        emptyStateView
+            VStack(spacing: 0) {
+                // Error banner for initial load failures
+                if let vm = viewModel, let error = vm.error, vm.sets.isEmpty && cachedSets.isEmpty {
+                    errorBannerView(for: error)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                }
+                
+                Group {
+                    if let vm = viewModel {
+                        if vm.sets.isEmpty && !cachedSets.isEmpty {
+                            cachedSetsView
+                        } else if vm.sets.isEmpty && !vm.isLoading {
+                            emptyStateView
+                        } else {
+                            setsListView
+                        }
                     } else {
-                        setsListView
+                        ProgressView("Loading...")
                     }
-                } else {
-                    ProgressView("Loading...")
                 }
             }
             .navigationTitle("LEGO Sets")
@@ -42,16 +51,15 @@ struct SetsListView: View {
         }
     }
     
-    
     private var cachedSetsView: some View {
         List {
             ForEach(cachedSets) { set in
                 NavigationLink(destination: SetDetailView(set: set)) {
-                    SetRowView(set: set, onFavoriteToggle: { set in
+                    SetRowView(set: set) { set in
                         Task {
                             await viewModel?.toggleFavorite(for: set)
                         }
-                    })
+                    }
                 }
             }
         }
@@ -82,11 +90,11 @@ struct SetsListView: View {
             if let vm = viewModel {
                 ForEach(vm.sets) { set in
                     NavigationLink(destination: SetDetailView(set: set)) {
-                        SetRowView(set: set, onFavoriteToggle: { set in
+                        SetRowView(set: set) { set in
                             Task {
                                 await vm.toggleFavorite(for: set)
                             }
-                        })
+                        }
                     }
                     .onAppear {
                         if set == vm.sets.last {
@@ -111,6 +119,37 @@ struct SetsListView: View {
             await viewModel?.loadSets()
         }
     }
+    
+    @ViewBuilder
+    private func errorBannerView(for error: BrixieError) -> some View {
+        switch error {
+        case .networkError:
+            BrixieBannerView.networkError(onRetry: {
+                Task {
+                    await viewModel?.retryLoad()
+                }
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        case .apiKeyMissing, .unauthorized:
+            BrixieBannerView.apiKeyError(onRetry: {
+                // Navigate to settings - for now just clear error
+                viewModel?.error = nil
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        default:
+            BrixieBannerView.generalError(error, onRetry: {
+                Task {
+                    await viewModel?.retryLoad()
+                }
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+        }
+    }
 }
 
 struct SetRowView: View {
@@ -124,14 +163,8 @@ struct SetRowView: View {
     
     var body: some View {
         HStack {
-            AsyncCachedImage(urlString: set.imageURL)
-                .aspectRatio(contentMode: .fit)
+            CachedImageCard(urlString: set.imageURL, maxHeight: 60)
                 .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(.gray.opacity(0.1))
-                )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(set.name)
@@ -152,6 +185,16 @@ struct SetRowView: View {
                         .foregroundStyle(.blue)
                         .clipShape(Capsule())
                     
+                    if let themeName = set.themeName {
+                        Text(themeName)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(.green.opacity(0.2))
+                            .foregroundStyle(.green)
+                            .clipShape(Capsule())
+                    }
+                    
                     Text(String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -160,13 +203,7 @@ struct SetRowView: View {
             
             Spacer()
             
-            Button(action: {
-                onFavoriteToggle?(set)
-            }) {
-                Image(systemName: set.isFavorite ? "heart.fill" : "heart")
-                    .foregroundStyle(set.isFavorite ? .red : .gray)
-            }
-            .buttonStyle(.plain)
+            FavoriteButton(isFavorite: set.isFavorite) { onFavoriteToggle?(set) }
         }
         .padding(.vertical, 4)
     }
@@ -174,7 +211,7 @@ struct SetRowView: View {
 
 #Preview {
     SetsListView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
 
 #Preview {
@@ -182,9 +219,10 @@ struct SetRowView: View {
     let sample = LegoSet(
         setNum: "10294-1",
         name: "Titanic",
-        year: 2021,
+        year: 2_021,
         themeId: 1,
-        numParts: 9090
+        numParts: 9_090,
+        themeName: "Creator Expert"
     )
 
     SetRowView(set: sample)

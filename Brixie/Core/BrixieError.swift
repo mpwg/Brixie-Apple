@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum BrixieError: LocalizedError, Sendable {
+enum BrixieError: LocalizedError, Sendable, Equatable {
     case networkError(underlying: Error)
     case apiKeyMissing
     case parsingError
@@ -58,6 +58,35 @@ enum BrixieError: LocalizedError, Sendable {
             return Strings.tryAgainLater.localized
         }
     }
+    
+    // MARK: - Equatable
+    
+    static func == (lhs: BrixieError, rhs: BrixieError) -> Bool {
+        switch (lhs, rhs) {
+        case (.networkError, .networkError):
+            return true
+        case (.apiKeyMissing, .apiKeyMissing):
+            return true
+        case (.parsingError, .parsingError):
+            return true
+        case (.cacheError, .cacheError):
+            return true
+        case (.invalidURL(let lhsURL), .invalidURL(let rhsURL)):
+            return lhsURL == rhsURL
+        case (.dataNotFound, .dataNotFound):
+            return true
+        case (.persistenceError, .persistenceError):
+            return true
+        case (.rateLimitExceeded, .rateLimitExceeded):
+            return true
+        case (.unauthorized, .unauthorized):
+            return true
+        case (.serverError(let lhsCode), .serverError(let rhsCode)):
+            return lhsCode == rhsCode
+        default:
+            return false
+        }
+    }
 }
 
 // MARK: - Result Extensions
@@ -79,10 +108,30 @@ extension Result where Failure == BrixieError {
 // MARK: - Error Recovery
 
 @MainActor
-final class ErrorHandler: @unchecked Sendable {
-    static let shared = ErrorHandler()
+@Observable
+final class ErrorReporter: @unchecked Sendable {
+    static let shared = ErrorReporter()
+    
+    private(set) var currentError: BrixieError?
+    private(set) var isShowingError = false
     
     private init() {}
+    
+    func report(_ error: Error) {
+        let brixieError = mapToBrixieError(error)
+        currentError = brixieError
+        isShowingError = true
+    }
+    
+    func report(_ error: BrixieError) {
+        currentError = error
+        isShowingError = true
+    }
+    
+    func clearError() {
+        currentError = nil
+        isShowingError = false
+    }
     
     func handle(_ error: BrixieError) -> ErrorRecoveryAction {
         switch error {
@@ -98,11 +147,47 @@ final class ErrorHandler: @unchecked Sendable {
             return .showMessage(error.errorDescription ?? "Unknown error")
         }
     }
+    
+    private func mapToBrixieError(_ error: Error) -> BrixieError {
+        if let brixieError = error as? BrixieError {
+            return brixieError
+        }
+        
+        // Map common error types
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .notConnectedToInternet, .networkConnectionLost:
+                return .networkError(underlying: error)
+            case .timedOut:
+                return .networkError(underlying: error)
+            case .badURL:
+                return .invalidURL(urlError.localizedDescription)
+            default:
+                return .networkError(underlying: error)
+            }
+        }
+        
+        // Default mapping
+        return .networkError(underlying: error)
+    }
 }
 
-enum ErrorRecoveryAction: Sendable {
+enum ErrorRecoveryAction: Sendable, Equatable {
     case retry
     case requestAPIKey
     case clearCache
     case showMessage(String)
+}
+
+// MARK: - Legacy Support
+
+@MainActor
+final class ErrorHandler: @unchecked Sendable {
+    static let shared = ErrorHandler()
+    
+    private init() {}
+    
+    func handle(_ error: BrixieError) -> ErrorRecoveryAction {
+        return ErrorReporter.shared.handle(error)
+    }
 }
