@@ -2,8 +2,6 @@
 //  Strings.swift
 //  Brixie
 //
-//  Created by Claude on 07.09.25.
-//
 
 import Foundation
 
