@@ -15,51 +15,37 @@ Brixie is a multi-platform iOS/macOS SwiftUI application that integrates with th
 
 ## Development Commands
 
-This project uses a Makefile for build automation with API key injection:
+This project uses direct xcodebuild commands with a configuration generation script:
+
+### Configuration Management
+```bash
+# Generate API configuration with API key
+REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
+
+# Clean generated files
+rm -f Brixie/Configuration/Generated/GeneratedConfiguration.swift
+```
 
 ### Building
 ```bash
-# Build iOS app with API key
-REBRICKABLE_API_KEY="your_key" make build-ios
+# Generate config and build iOS app
+REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
+xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16' build
 
-# Build macOS app with API key  
-REBRICKABLE_API_KEY="your_key" make build-macos
-
-# Build both platforms
-REBRICKABLE_API_KEY="your_key" make build-all
-
-# Direct xcodebuild (without API key injection)
-xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug build
+# Generate config and build macOS app
+REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
+xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug -destination 'platform=macOS,variant=Mac Catalyst' build
 ```
 
 ### Testing
 ```bash
-# Run iOS tests
-make test-ios
-
-# Run macOS tests
-make test-macos
-
-# Run all tests
-make test-all
-
-# Run unit tests directly
+# Generate config and run iOS tests
+REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
 xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 16'
-```
 
-### Configuration Management
-```bash
-# Generate API configuration
-make generate-config
-
-# Clean generated files
-make clean-config
-
-# Full clean
-make clean
-
-# Show all available targets
-make help
+# Generate config and run macOS tests
+REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
+xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=macOS,variant=Mac Catalyst'
 ```
 
 ## Platform Support

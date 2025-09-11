@@ -9,9 +9,10 @@ import Foundation
 
 @Observable
 @MainActor
-final class SearchViewModel {
+final class SearchViewModel: ViewModelErrorHandling {
     private let legoSetRepository: LegoSetRepository
     private let legoThemeRepository: LegoThemeRepository
+    private let recentSearchesStorage: RecentSearchesStorage
     
     // Debounce configuration
     private var searchTask: Task<Void, Never>?
@@ -25,10 +26,14 @@ final class SearchViewModel {
     var recentSearches: [String] = []
     var showingNoResults = false
     
-    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository, debounceDelay: TimeInterval = 0.4) {
+    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository, recentSearchesStorage: RecentSearchesStorage = .shared, debounceDelay: TimeInterval = 0.4) {
         self.legoSetRepository = legoSetRepository
         self.legoThemeRepository = legoThemeRepository
+        self.recentSearchesStorage = recentSearchesStorage
         self.debounceDelay = debounceDelay
+        
+        // Load recent searches from storage
+        self.recentSearches = recentSearchesStorage.loadRecentSearches()
     }
     
     deinit {
@@ -80,13 +85,9 @@ final class SearchViewModel {
         
         let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Add to recent searches
-        if !recentSearches.contains(trimmedSearch) {
-            recentSearches.insert(trimmedSearch, at: 0)
-            if recentSearches.count > 5 {
-                recentSearches = Array(recentSearches.prefix(5))
-            }
-        }
+        // Add to recent searches and persist
+        recentSearchesStorage.addSearch(trimmedSearch)
+        recentSearches = recentSearchesStorage.loadRecentSearches()
         
         isSearching = true
         showingNoResults = false
@@ -102,12 +103,8 @@ final class SearchViewModel {
             )
             searchResults = results
             showingNoResults = results.isEmpty
-        } catch let brixieError as BrixieError {
-            error = brixieError
-            searchResults = []
-            showingNoResults = true
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
             searchResults = []
             showingNoResults = true
         }
@@ -138,24 +135,32 @@ final class SearchViewModel {
         searchTask = nil
     }
     
+    // Method for manually testing persistence
+    func addManualSearch(_ search: String) {
+        recentSearchesStorage.addSearch(search)
+        recentSearches = recentSearchesStorage.loadRecentSearches()
+    }
+    
+    // Method to clear recent searches for testing
+    func clearRecentSearches() {
+        recentSearchesStorage.clearRecentSearches()
+        recentSearches = []
+    }
+    
     func toggleFavorite(for set: LegoSet) async {
         do {
-            if set.isFavorite {
-                try await legoSetRepository.removeFromFavorites(set)
-            } else {
-                try await legoSetRepository.markAsFavorite(set)
-            }
-            
+            try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
             if let index = searchResults.firstIndex(where: { $0.id == set.id }) {
                 searchResults[index].isFavorite.toggle()
             }
-        } catch let brixieError as BrixieError {
-            error = brixieError
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
         }
     }
     
+    func retrySearch() async {
+        await performSearch()
+    }
     
     var hasResults: Bool {
         !searchResults.isEmpty
