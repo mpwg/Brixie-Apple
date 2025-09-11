@@ -57,5 +57,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [LegoSet.self, LegoTheme.self], inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

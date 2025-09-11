@@ -11,22 +11,25 @@ import Foundation
 final class LegoSetRepositoryImpl: LegoSetRepository {
     private let remoteDataSource: LegoSetRemoteDataSource
     private let localDataSource: LocalDataSource
+    private let themeRepository: LegoThemeRepository
 
-    init(remoteDataSource: LegoSetRemoteDataSource, localDataSource: LocalDataSource) {
+    init(remoteDataSource: LegoSetRemoteDataSource, localDataSource: LocalDataSource, themeRepository: LegoThemeRepository) {
         self.remoteDataSource = remoteDataSource
         self.localDataSource = localDataSource
+        self.themeRepository = themeRepository
     }
     
     func fetchSets(page: Int, pageSize: Int) async throws -> [LegoSet] {
         do {
             let remoteSets = try await remoteDataSource.fetchSets(page: page, pageSize: pageSize)
+            let setsWithThemeNames = await populateThemeNames(for: remoteSets)
             
             if page == 1 {
                 try localDataSource.deleteAll(LegoSet.self)
             }
             
-            try localDataSource.save(remoteSets)
-            return remoteSets
+            try localDataSource.save(setsWithThemeNames)
+            return setsWithThemeNames
         } catch {
             if case BrixieError.networkError = error {
                 let cachedSets = await getCachedSets()
@@ -40,7 +43,8 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
     
     func searchSets(query: String, page: Int, pageSize: Int) async throws -> [LegoSet] {
         do {
-            return try await remoteDataSource.searchSets(query: query, page: page, pageSize: pageSize)
+            let remoteSets = try await remoteDataSource.searchSets(query: query, page: page, pageSize: pageSize)
+            return await populateThemeNames(for: remoteSets)
         } catch {
             let cachedSets = await getCachedSets()
             return cachedSets.filter { set in
@@ -53,8 +57,12 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
     func getSetDetails(setNum: String) async throws -> LegoSet? {
         do {
             if let remoteSet = try await remoteDataSource.getSetDetails(setNum: setNum) {
-                try localDataSource.save([remoteSet])
-                return remoteSet
+                let setsWithThemeNames = await populateThemeNames(for: [remoteSet])
+                let setWithThemeName = setsWithThemeNames.first
+                if let setWithThemeName = setWithThemeName {
+                    try localDataSource.save([setWithThemeName])
+                }
+                return setWithThemeName
             }
             return nil
         } catch {
@@ -97,14 +105,59 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
     func allSets(pageSize: Int = 20) -> PaginatedAsyncSequence<LegoSet> {
         PaginatedAsyncSequence(pageSize: pageSize) { [weak self] page, pageSize in
             guard let self = self else { throw BrixieError.dataNotFound }
-            return try await self.fetchSets(page: page, pageSize: pageSize)
+            let sets = try await self.fetchSets(page: page, pageSize: pageSize)
+            return await self.populateThemeNames(for: sets)
         }
     }
     
     func searchSets(query: String, pageSize: Int = 20) -> PaginatedAsyncSequence<LegoSet> {
         PaginatedAsyncSequence(pageSize: pageSize) { [weak self] page, pageSize in
             guard let self = self else { throw BrixieError.dataNotFound }
-            return try await self.searchSets(query: query, page: page, pageSize: pageSize)
+            let sets = try await self.searchSets(query: query, page: page, pageSize: pageSize)
+            return await self.populateThemeNames(for: sets)
         }
+    }
+    
+    // MARK: - Theme Name Population
+    
+    /// Populate theme names for sets using cached themes
+    private func populateThemeNames(for sets: [LegoSet]) async -> [LegoSet] {
+        let cachedThemes = await themeRepository.getCachedThemes()
+        let themeNameMap = Dictionary(uniqueKeysWithValues: cachedThemes.map { ($0.id, $0.name) })
+        
+        return sets.map { set in
+            let themeName = themeNameMap[set.themeId]
+            return LegoSet(
+                setNum: set.setNum,
+                name: set.name,
+                year: set.year,
+                themeId: set.themeId,
+                numParts: set.numParts,
+                imageURL: set.imageURL,
+                themeName: themeName
+            )
+        }
+    }
+    
+    /// Backfill existing sets with theme names
+    func backfillThemeNames() async throws {
+        let cachedSets = await getCachedSets()
+        let setsNeedingThemeNames = cachedSets.filter { $0.themeName == nil }
+        
+        if setsNeedingThemeNames.isEmpty {
+            return
+        }
+        
+        let setsWithThemeNames = await populateThemeNames(for: setsNeedingThemeNames)
+        
+        // Update existing sets with theme names
+        for (index, set) in setsNeedingThemeNames.enumerated() {
+            if index < setsWithThemeNames.count {
+                set.themeName = setsWithThemeNames[index].themeName
+            }
+        }
+        
+        try localDataSource.save(setsNeedingThemeNames)
+    }
     }
 }
