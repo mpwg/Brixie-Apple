@@ -50,8 +50,8 @@ jobs:
       - name: Cache
         uses: actions/cache@v4
         with:
-          path: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/
-          key: /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist
+          path: /Applications/Xcode26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/
+          key: /Applications/Xcode26.0.app/Contents/Developer/Platforms/iPhoneOS.platform/version.plist
 
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
