@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import OSLog
 
 struct SetDetailView: View {
     let set: LegoSet
@@ -166,7 +167,7 @@ struct SetDetailView: View {
         do {
             try modelContext.save()
         } catch {
-            print("Failed to update favorite status: \(error)")
+            BrixieLogger.persistenceError(error, message: "Failed to update favorite status")
         }
     }
     
@@ -176,7 +177,7 @@ struct SetDetailView: View {
         do {
             try modelContext.save()
         } catch {
-            print("Failed to update view date: \(error)")
+            BrixieLogger.persistenceError(error, message: "Failed to update view date")
         }
     }
 }
