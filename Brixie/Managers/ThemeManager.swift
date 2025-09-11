@@ -18,11 +18,11 @@ enum AppTheme: String, CaseIterable, Identifiable, Sendable {
     var displayName: String {
         switch self {
         case .light:
-            return NSLocalizedString("Light", comment: "Light theme")
+            return Strings.light.localized
         case .dark:
-            return NSLocalizedString("Dark", comment: "Dark theme")
+            return Strings.dark.localized
         case .system:
-            return NSLocalizedString("System", comment: "System theme")
+            return Strings.system.localized
         }
     }
     

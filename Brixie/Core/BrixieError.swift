@@ -27,9 +27,9 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
                 error.localizedDescription
             )
         case .apiKeyMissing:
-            return NSLocalizedString("API key is required to fetch data", comment: "API key missing error")
+            return Strings.apiKeyMissing.localized
         case .parsingError:
-            return NSLocalizedString("Failed to parse response", comment: "Parsing error description")
+            return Strings.parsingError.localized
         case .cacheError(let error):
             return String(
                 format: NSLocalizedString("Cache operation failed: %@", comment: "Cache error description"),
@@ -41,16 +41,16 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
                 url
             )
         case .dataNotFound:
-            return NSLocalizedString("Requested data not found", comment: "Data not found error")
+            return Strings.dataNotFound.localized
         case .persistenceError(let error):
             return String(
                 format: NSLocalizedString("Data persistence failed: %@", comment: "Persistence error description"),
                 error.localizedDescription
             )
         case .rateLimitExceeded:
-            return NSLocalizedString("API rate limit exceeded. Please try again later", comment: "Rate limit error")
+            return Strings.rateLimitExceeded.localized
         case .unauthorized:
-            return NSLocalizedString("Unauthorized. Please check your API key", comment: "Unauthorized error")
+            return Strings.unauthorized.localized
         case .serverError(let statusCode):
             return String(
                 format: NSLocalizedString("Server error (status: %d)", comment: "Server error description"),
@@ -62,15 +62,15 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
     var recoverySuggestion: String? {
         switch self {
         case .networkError:
-            return NSLocalizedString("Check your internet connection and try again", comment: "Network error recovery")
+            return Strings.checkConnection.localized
         case .apiKeyMissing, .unauthorized:
-            return NSLocalizedString("Please enter a valid API key in settings", comment: "API key recovery")
+            return Strings.enterValidApiKey.localized
         case .rateLimitExceeded:
-            return NSLocalizedString("Wait a few minutes before making more requests", comment: "Rate limit recovery")
+            return Strings.waitBeforeRetry.localized
         case .cacheError:
-            return NSLocalizedString("Try clearing the app cache in settings", comment: "Cache error recovery")
+            return Strings.clearAppCache.localized
         default:
-            return NSLocalizedString("Please try again later", comment: "Generic recovery suggestion")
+            return Strings.tryAgainLater.localized
         }
     }
     

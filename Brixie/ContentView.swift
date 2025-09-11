@@ -52,13 +52,13 @@ struct ContentView: View {
                 
                 FavoritesView()
                     .tabItem {
-                        Label(NSLocalizedString("Favorites", comment: "Tab label for favorites"), systemImage: "heart")
+                        Label(Strings.favorites.localized, systemImage: "heart")
                     }
                     .tag(3)
                 
                 SettingsView()
                     .tabItem {
-                        Label(NSLocalizedString("Settings", comment: "Tab label for settings"), systemImage: "gear")
+                        Label(Strings.settings.localized, systemImage: "gear")
                     }
                     .tag(4)
             }
