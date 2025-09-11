@@ -66,7 +66,7 @@ jobs:
 
       - name: install iOS
         run: |
-          xcodebuild -downloadPlatform iOS -exportPath
+          xcodebuild -downloadPlatform iOS
 
       - name: Checkout Repository
         uses: actions/checkout@v5
