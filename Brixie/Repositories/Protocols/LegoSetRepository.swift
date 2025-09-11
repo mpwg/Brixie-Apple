@@ -17,4 +17,12 @@ protocol LegoSetRepository {
     func removeFromFavorites(_ set: LegoSet) async throws
     func getFavoriteSets() async -> [LegoSet]
     func backfillThemeNames() async throws
+    
+    // MARK: - AsyncSequence Methods
+    
+    /// Returns an async sequence of all sets with automatic pagination
+    func allSets(pageSize: Int) -> PaginatedAsyncSequence<LegoSet>
+    
+    /// Returns an async sequence of search results with automatic pagination
+    func searchSets(query: String, pageSize: Int) -> PaginatedAsyncSequence<LegoSet>
 }

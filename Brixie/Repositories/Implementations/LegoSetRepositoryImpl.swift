@@ -100,6 +100,24 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
         }
     }
     
+    // MARK: - AsyncSequence Methods
+    
+    func allSets(pageSize: Int = 20) -> PaginatedAsyncSequence<LegoSet> {
+        PaginatedAsyncSequence(pageSize: pageSize) { [weak self] page, pageSize in
+            guard let self = self else { throw BrixieError.dataNotFound }
+            let sets = try await self.fetchSets(page: page, pageSize: pageSize)
+            return await self.populateThemeNames(for: sets)
+        }
+    }
+    
+    func searchSets(query: String, pageSize: Int = 20) -> PaginatedAsyncSequence<LegoSet> {
+        PaginatedAsyncSequence(pageSize: pageSize) { [weak self] page, pageSize in
+            guard let self = self else { throw BrixieError.dataNotFound }
+            let sets = try await self.searchSets(query: query, page: page, pageSize: pageSize)
+            return await self.populateThemeNames(for: sets)
+        }
+    }
+    
     // MARK: - Theme Name Population
     
     /// Populate theme names for sets using cached themes
@@ -140,5 +158,6 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
         }
         
         try localDataSource.save(setsNeedingThemeNames)
+    }
     }
 }

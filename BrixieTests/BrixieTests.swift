@@ -1353,3 +1353,173 @@ struct RemoteDataSourceTests {
         }
     }
 }
+
+// MARK: - PaginatedAsyncSequence Tests
+
+@Suite("PaginatedAsyncSequence Tests")
+struct PaginatedAsyncSequenceTests {
+    
+    @Test("Basic pagination iteration works correctly")
+    func testBasicPagination() async throws {
+        // Given: A mock data source with multiple pages
+        let totalItems = 25
+        let pageSize = 10
+        
+        let fetchPage: @Sendable (Int, Int) async throws -> [Int] = { page, pageSize in
+            let startIndex = (page - 1) * pageSize
+            let endIndex = min(startIndex + pageSize, totalItems)
+            guard startIndex < totalItems else { return [] }
+            return Array(startIndex..<endIndex)
+        }
+        
+        // When: We iterate through the sequence
+        let sequence = PaginatedAsyncSequence(pageSize: pageSize, fetchPage: fetchPage)
+        var collectedItems: [Int] = []
+        
+        for try await item in sequence {
+            collectedItems.append(item)
+        }
+        
+        // Then: All items should be collected
+        #expect(collectedItems.count == totalItems)
+        #expect(collectedItems == Array(0..<totalItems))
+    }
+    
+    @Test("Empty page handling works correctly")
+    func testEmptyPageHandling() async throws {
+        // Given: A data source that returns empty results
+        let fetchPage: @Sendable (Int, Int) async throws -> [String] = { _, _ in
+            return []
+        }
+        
+        // When: We iterate through the sequence
+        let sequence = PaginatedAsyncSequence(pageSize: 10, fetchPage: fetchPage)
+        var collectedItems: [String] = []
+        
+        for try await item in sequence {
+            collectedItems.append(item)
+        }
+        
+        // Then: No items should be collected
+        #expect(collectedItems.isEmpty)
+    }
+    
+    @Test("Error propagation works correctly")
+    func testErrorPropagation() async throws {
+        // Given: A data source that throws an error
+        let expectedError = BrixieError.networkError(underlying: NSError(domain: "Test", code: 123))
+        
+        let fetchPage: @Sendable (Int, Int) async throws -> [String] = { _, _ in
+            throw expectedError
+        }
+        
+        // When/Then: Error should be propagated
+        let sequence = PaginatedAsyncSequence(pageSize: 10, fetchPage: fetchPage)
+        
+        await #expect(throws: BrixieError.self) {
+            for try await _ in sequence {
+                // Should not reach here
+            }
+        }
+    }
+    
+    @Test("Collection methods work correctly")
+    func testCollectionMethods() async throws {
+        // Given: A mock data source with 25 items
+        let totalItems = 25
+        let pageSize = 5
+        
+        let fetchPage: @Sendable (Int, Int) async throws -> [Int] = { page, pageSize in
+            let startIndex = (page - 1) * pageSize
+            let endIndex = min(startIndex + pageSize, totalItems)
+            guard startIndex < totalItems else { return [] }
+            return Array(startIndex..<endIndex)
+        }
+        
+        let sequence = PaginatedAsyncSequence(pageSize: pageSize, fetchPage: fetchPage)
+        
+        // Test collect(limit:)
+        let limited = try await sequence.collect(limit: 10)
+        #expect(limited.count == 10)
+        #expect(limited == Array(0..<10))
+        
+        // Test collect() - should get all items
+        let all = try await sequence.collect()
+        #expect(all.count == totalItems)
+        #expect(all == Array(0..<totalItems))
+        
+        // Test collectByPages()
+        let pageArrays = try await sequence.collectByPages()
+        #expect(pageArrays.count == 5) // 25 items / 5 per page = 5 pages
+        #expect(pageArrays[0] == [0, 1, 2, 3, 4])
+        #expect(pageArrays[4] == [20, 21, 22, 23, 24])
+    }
+    
+    @Test("Custom start page works correctly")
+    func testCustomStartPage() async throws {
+        // Given: A sequence starting from page 3
+        let fetchPage: @Sendable (Int, Int) async throws -> [Int] = { page, pageSize in
+            // Return page number * 10 to make it clear which page we're on
+            return Array(repeating: page * 10, count: pageSize)
+        }
+        
+        // When: We create a sequence starting from page 3
+        let sequence = PaginatedAsyncSequence(pageSize: 2, startPage: 3, fetchPage: fetchPage)
+        let items = try await sequence.collect(limit: 4)
+        
+        // Then: Should get items from pages 3 and 4
+        #expect(items == [30, 30, 40, 40])
+    }
+}
+
+// MARK: - Repository AsyncSequence Integration Tests
+
+@Suite("Repository AsyncSequence Integration Tests")
+struct RepositoryAsyncSequenceIntegrationTests {
+    
+    @Test("LegoSetRepository allSets AsyncSequence works correctly")
+    @MainActor
+    func testLegoSetRepositoryAllSets() async throws {
+        // Given: A mock repository
+        let mockRepo = MockLegoSetRepository()
+        
+        // When: We use the allSets async sequence
+        let sequence = mockRepo.allSets(pageSize: 5)
+        let sets = try await sequence.collect(limit: 8)
+        
+        // Then: Should get 8 sets
+        #expect(sets.count == 8)
+        #expect(sets.allSatisfy { $0.name.contains("Mock Set") })
+    }
+    
+    @Test("LegoSetRepository searchSets AsyncSequence works correctly")
+    @MainActor
+    func testLegoSetRepositorySearchSets() async throws {
+        // Given: A mock repository
+        let mockRepo = MockLegoSetRepository()
+        
+        // When: We search using async sequence
+        let sequence = mockRepo.searchSets(query: "castle", pageSize: 3)
+        let sets = try await sequence.collect(limit: 6)
+        
+        // Then: Should get search results
+        #expect(sets.count == 6)
+        #expect(sets.allSatisfy { $0.name.lowercased().contains("castle") })
+    }
+}
+
+// MARK: - Mock Repository Extensions for AsyncSequence
+
+extension MockLegoSetRepository {
+    func allSets(pageSize: Int = 20) -> PaginatedAsyncSequence<LegoSet> {
+        PaginatedAsyncSequence(pageSize: pageSize) { page, pageSize in
+            return try await self.fetchSets(page: page, pageSize: pageSize)
+        }
+    }
+    
+    func searchSets(query: String, pageSize: Int = 20) -> PaginatedAsyncSequence<LegoSet> {
+        PaginatedAsyncSequence(pageSize: pageSize) { page, pageSize in
+            return try await self.searchSets(query: query, page: page, pageSize: pageSize)
+        }
+    }
+}

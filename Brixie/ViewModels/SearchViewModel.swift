@@ -50,11 +50,11 @@ final class SearchViewModel: ViewModelErrorHandling {
         defer { isSearching = false }
         
         do {
-            let results = try await legoSetRepository.searchSets(
-                query: trimmedSearch,
-                page: 1,
-                pageSize: 50
-            )
+            // Use AsyncSequence for more flexible pagination
+            let results = try await legoSetRepository
+                .searchSets(query: trimmedSearch, pageSize: 50)
+                .collect(limit: 50) // Limit to first 50 results for UI responsiveness
+                
             searchResults = results
             showingNoResults = results.isEmpty
         } catch {

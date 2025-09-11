@@ -16,28 +16,46 @@ final class SetsListViewModel: ViewModelErrorHandling {
     var isLoading = false
     var isLoadingMore = false
     var error: BrixieError?
-    var currentPage = 1
     
     private let pageSize = 20
-    private var loadMoreTask: Task<Void, Never>?
+    private var currentTask: Task<Void, Never>?
     
     init(legoSetRepository: LegoSetRepository) {
         self.legoSetRepository = legoSetRepository
     }
     
     func loadSets() async {
-        currentPage = 1
+        // Cancel any existing loading task
+        currentTask?.cancel()
+        
+        sets = []
         isLoading = true
         error = nil
         
         defer { isLoading = false }
         
-        do {
-            sets = try await legoSetRepository.fetchSets(page: currentPage, pageSize: pageSize)
-        } catch {
-            handleError(error)
-            sets = await legoSetRepository.getCachedSets()
+        currentTask = Task {
+            do {
+                // Collect the first page worth of data
+                let initialSets = try await legoSetRepository
+                    .allSets(pageSize: pageSize)
+                    .collect(limit: pageSize)
+                
+                guard !Task.isCancelled else { return }
+                
+                sets = initialSets
+            } catch let brixieError as BrixieError {
+                guard !Task.isCancelled else { return }
+                error = brixieError
+                sets = await legoSetRepository.getCachedSets()
+            } catch {
+                guard !Task.isCancelled else { return }
+                self.error = BrixieError.networkError(underlying: error)
+                sets = await legoSetRepository.getCachedSets()
+            }
         }
+        
+        await currentTask?.value
     }
     
     /// Loads additional sets with protection against duplicate requests.
@@ -47,35 +65,41 @@ final class SetsListViewModel: ViewModelErrorHandling {
     /// - Checks Task.isCancelled after network calls to prevent race conditions
     /// - Maintains proper loading state throughout the operation
     func loadMoreSets() async {
-        // Cancel any existing load more task
-        loadMoreTask?.cancel()
+        guard !isLoadingMore && !sets.isEmpty else { return }
         
-        guard !isLoadingMore else { return }
+        isLoadingMore = true
+        defer { isLoadingMore = false }
         
-        loadMoreTask = Task { @MainActor in
-            isLoadingMore = true
-            defer { 
-                isLoadingMore = false
-                loadMoreTask = nil
-            }
-            
-            let nextPage = currentPage + 1
-            
+        currentTask?.cancel()
+        
+        currentTask = Task {
             do {
-                let newSets = try await legoSetRepository.fetchSets(page: nextPage, pageSize: pageSize)
-                // Check if task was cancelled during network request
-                guard !Task.isCancelled else { return }
+                // Calculate the next page based on current set count
+                let nextPageIndex = (sets.count / pageSize) + 1
+                
+                // Create a sequence starting from the next page
+                let paginatedSequence = PaginatedAsyncSequence<LegoSet>(
+                    pageSize: pageSize,
+                    startPage: nextPageIndex
+                ) { [weak self] page, pageSize in
+                    guard let self = self else { throw BrixieError.dataNotFound }
+                    return try await self.legoSetRepository.fetchSets(page: page, pageSize: pageSize)
+                }
+                
+                // Get the next page
+                let newSets = try await paginatedSequence.collect(limit: pageSize)
+                
+                guard !Task.isCancelled, !newSets.isEmpty else { return }
                 
                 sets.append(contentsOf: newSets)
-                currentPage = nextPage
             } catch {
                 // Don't update error state for pagination failures
-                // but check if we were cancelled
+                // This maintains existing behavior
                 guard !Task.isCancelled else { return }
             }
         }
         
-        await loadMoreTask?.value
+        await currentTask?.value
     }
     
     func toggleFavorite(for set: LegoSet) async {
@@ -87,6 +111,27 @@ final class SetsListViewModel: ViewModelErrorHandling {
             }
         } catch {
             handleError(error)
+        }
+    }
+    
+    func retryLoad() async {
+        await loadSets()
+    }
+    
+    var cachedSetsAvailable: Bool {
+        !sets.isEmpty
+    }
+    
+    /// Backfill theme names for existing sets
+    func backfillThemeNames() async {
+        do {
+            try await legoSetRepository.backfillThemeNames()
+            // Refresh the current sets list to show updated theme names
+            sets = await legoSetRepository.getCachedSets()
+        } catch let brixieError as BrixieError {
+            error = brixieError
+        } catch {
+            self.error = BrixieError.networkError(underlying: error)
         }
     }
     

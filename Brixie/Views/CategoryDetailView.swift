@@ -24,12 +24,6 @@ struct CategoryDetailView: View {
     @State private var currentPage = 1
     @State private var hasMorePages = true
     @State private var isLoadingMore = false
-    @State private var loadMoreTask: Task<Void, Never>?
-    @State private var lastLoadMoreTime: Date = .distantPast
-    
-    private var apiConfigurationService: APIConfigurationService {
-        diContainer.apiConfigurationService
-    }
     
     enum SetSortOrder: String, CaseIterable {
         case year = "-year"
@@ -97,7 +91,7 @@ struct CategoryDetailView: View {
                                 .disabled(isLoadingMore)
                             }
                             
-                            if service.isLoading && !sets.isEmpty || isLoadingMore {
+                            if (service.isLoading && !sets.isEmpty) || isLoadingMore {
                                 HStack {
                                     Spacer()
                                     ProgressView()
@@ -211,23 +205,11 @@ struct CategoryDetailView: View {
     /// - Guard logic to prevent overlapping operations
     /// - Proper page rollback on cancellation
     private func loadMoreSets() {
-        // Debounce: prevent requests more frequent than 500ms
-        let now = Date()
-        guard now.timeIntervalSince(lastLoadMoreTime) > 0.5 else { return }
-        lastLoadMoreTime = now
+        guard !isLoadingMore && hasMorePages else { return }
         
-        // Cancel any existing load more task
-        loadMoreTask?.cancel()
-        
-        // Guard against multiple simultaneous requests
-        guard !isLoadingMore, let service = themeService, !service.isLoading else { return }
-        
-        loadMoreTask = Task { @MainActor in
+        Task {
             isLoadingMore = true
-            defer { 
-                isLoadingMore = false
-                loadMoreTask = nil
-            }
+            defer { isLoadingMore = false }
             
             currentPage += 1
             
