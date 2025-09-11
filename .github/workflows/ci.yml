@@ -54,19 +54,19 @@ jobs:
         id: cache-xcode-platform
         uses: actions/cache@v4
         with:
-          path: ${{ runner.temp }}/xcode-downloads
-          key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}-${{ hashFiles('Brixie.xcodeproj') }}
+          path: ${{ $HOME }}/xcode-downloads
+          key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
           restore-keys: |
-            xcode-platform-${{ matrix.platform }}-${{ runner.os }}-
+            xcode-platform-${{ matrix.platform }}-${{ runner.os }}
 
       - name: Install iOS Platform
         run: |
-          # We'll store platform downloads under RUNNER_TEMP so we can cache them reliably
-          mkdir -p "${RUNNER_TEMP}/xcode-downloads"
+          # We'll store platform downloads under $HOME so we can cache them reliably
+          mkdir -p "${HOME}/xcode-downloads"
 
           if [ "${{ steps.cache-xcode-platform.outputs.cache-hit }}" != 'true' ]; then
             echo "Cache miss: downloading iOS platform into default Xcode cache..."
-            xcodebuild -downloadPlatform iOS
+            xcodebuild -downloadPlatform iOS -exportPath "${HOME}/xcode-downloads"
 
       - name: Show Build Environment
         run: |
@@ -137,14 +137,14 @@ jobs:
         id: cache-xcode-platform
         uses: actions/cache@v4
         with:
-          path: ${{ runner.temp }}/xcode-downloads
+          path: ${{ $HOME }}/xcode-downloads
           key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
           restore-keys: |
             xcode-platform-${{ matrix.platform }}-${{ runner.os }}
 
       - name: Install iOS Platform
         run: |
-          xcodebuild -downloadPlatform iOS -exportPath "${RUNNER_TEMP}/xcode-downloads"
+          xcodebuild -downloadPlatform iOS -exportPath "${HOME}/xcode-downloads"
 
       - name: Generate API Configuration
         run: |
