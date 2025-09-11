@@ -74,15 +74,9 @@ jobs:
             ios-platform-${{ runner.os }}-xcode-
 
       - name: Install iOS Platform
-        if: steps.cache-ios-platform.outputs.cache-hit != 'true'
         run: |
-          echo "📱 Installing iOS platform (cache miss)..."
+          echo "📱 Installing iOS platform ..."
           xcodebuild -downloadPlatform iOS
-
-      - name: Verify iOS Platform Cache
-        if: steps.cache-ios-platform.outputs.cache-hit == 'true'
-        run: |
-          echo "✅ iOS platform restored from cache"
 
       - name: fix unable to connect to iOS Simulator
         run: |
@@ -111,7 +105,7 @@ jobs:
         run: |
           echo "🔨 Building ${{ matrix.platform }} app..."
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          
+
           set -o pipefail
           xcodebuild -project Brixie.xcodeproj \
                      -scheme Brixie \
@@ -121,7 +115,7 @@ jobs:
                      CODE_SIGNING_ALLOWED=NO \
                      -quiet \
                      | xcpretty --color --simple
-          
+
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "✅ ${{ matrix.platform }} build completed successfully!"
 
@@ -189,7 +183,7 @@ jobs:
         run: |
           echo "🧪 Running ${{ matrix.platform }} tests..."
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          
+
           set -o pipefail
           xcodebuild test \
                      -project Brixie.xcodeproj \
@@ -198,6 +192,6 @@ jobs:
                      CODE_SIGNING_ALLOWED=NO \
                      -quiet \
                      | xcpretty --color --test
-          
+
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "✅ ${{ matrix.platform }} tests completed successfully!"
