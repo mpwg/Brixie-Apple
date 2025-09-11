@@ -80,7 +80,6 @@ struct SearchView: View {
         }
     }
     
-    
     private var searchContentView: some View {
         Group {
             if let vm = viewModel {
@@ -107,7 +106,7 @@ struct SearchView: View {
                                 .font(.brixieHeadline)
                                 .foregroundStyle(Color.brixieText)
                             Spacer()
-                        }
+                            }
                         .padding(.horizontal, 20)
                         
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -195,11 +194,11 @@ struct SearchView: View {
                     
                     ForEach(vm.searchResults) { set in
                         NavigationLink(destination: SetDetailView(set: set)) {
-                            SetRowView(set: set, onFavoriteToggle: { set in
+                            SetRowView(set: set) { set in
                                 Task {
                                     await vm.toggleFavorite(for: set)
                                 }
-                            })
+                            }
                         }
                         .buttonStyle(PlainButtonStyle())
                     }

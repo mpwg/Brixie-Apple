@@ -35,8 +35,8 @@ final class DIContainer: @unchecked Sendable {
     
     // MARK: - Services
     
-    var imageCacheService: ImageCacheService = ImageCacheService.shared
-    var apiConfigurationService: APIConfigurationService = APIConfigurationService()
+    var imageCacheService = ImageCacheService.shared
+    var apiConfigurationService = APIConfigurationService()
     
     // MARK: - Data Sources
     

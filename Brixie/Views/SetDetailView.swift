@@ -248,9 +248,9 @@ struct FullScreenImageView: View {
     let sampleSet = LegoSet(
         setNum: "10294-1",
         name: "Titanic",
-        year: 2021,
+        year: 2_021,
         themeId: 1,
-        numParts: 9090
+        numParts: 9_090
     )
     
     NavigationStack {

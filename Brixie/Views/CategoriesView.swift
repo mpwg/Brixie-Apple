@@ -105,11 +105,16 @@ struct CategoriesView: View {
                                     .padding(6)
                                     .background(Circle().fill(Color.brixieCard))
                             }
-                    }
+                    } label: {
+                            Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(Color.brixieAccent)
+                                .padding(6)
+                                .background(Circle().fill(Color.brixieCard))
+                        }
                 }
             }
             .searchable(text: $searchText, prompt: NSLocalizedString("Search categories", comment: "Search prompt"))
-
         }
         .task {
             if viewModel == nil {
@@ -118,7 +123,6 @@ struct CategoriesView: View {
             }
         }
     }
-    
     
     private var loadingView: some View {
         BrixieHeroSection(
@@ -272,4 +276,3 @@ struct ModernCategoryRowView: View {
             .modelContainer(ModelContainerFactory.createPreviewContainer())
     }
 }
-

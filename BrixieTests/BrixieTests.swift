@@ -119,7 +119,7 @@ final class MockLocalDataSource: LocalDataSource {
 // MARK: - Test Data Helpers
 
 extension LegoSet {
-    static func mockSet(setNum: String = "123-1", name: String = "Test Set", year: Int = 2023) -> LegoSet {
+    static func mockSet(setNum: String = "123-1", name: String = "Test Set", year: Int = 2_023) -> LegoSet {
         LegoSet(setNum: setNum, name: name, year: year, themeId: 1, numParts: 100)
     }
 }
@@ -127,7 +127,6 @@ extension LegoSet {
 // MARK: - Repository Fallback Tests
 
 struct RepositoryFallbackTests {
-    
     // MARK: - fetchSets Tests
     
     @Test("fetchSets success case - returns remote data and saves locally")
@@ -476,7 +475,6 @@ struct RepositoryFallbackTests {
 }
 
 // MARK: - Legacy Test
->>>>>>> main
 
 struct BrixieTests {
     @Test func example() async throws {
@@ -523,10 +521,9 @@ struct BrixieTests {
             #expect(Bool(false), "Expected showMessage action for rate limit error")
         }
     }
-
 }
 
-// MARK: - NetworkMonitorService Tests
+<// MARK: - NetworkMonitorService Tests
 
 struct NetworkMonitorServiceTests {
     
@@ -708,6 +705,7 @@ struct BadgeVariantTests {
     }
 }
     
+struct ThemeNamePopulationTests {
     private func createInMemoryContainer() -> ModelContainer {
         let schema = Schema([LegoSet.self, LegoTheme.self])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
@@ -723,18 +721,18 @@ struct BadgeVariantTests {
         let set = LegoSet(
             setNum: "75192",
             name: "Millennium Falcon",
-            year: 2017,
+            year: 2_017,
             themeId: 158,
-            numParts: 7541,
+            numParts: 7_541,
             imageURL: "http://example.com/image.jpg",
             themeName: "Star Wars"
         )
         
         #expect(set.setNum == "75192")
         #expect(set.name == "Millennium Falcon")
-        #expect(set.year == 2017)
+        #expect(set.year == 2_017)
         #expect(set.themeId == 158)
-        #expect(set.numParts == 7541)
+        #expect(set.numParts == 7_541)
         #expect(set.imageURL == "http://example.com/image.jpg")
         #expect(set.themeName == "Star Wars")
     }
@@ -744,17 +742,17 @@ struct BadgeVariantTests {
         let set = LegoSet(
             setNum: "75192",
             name: "Millennium Falcon",
-            year: 2017,
+            year: 2_017,
             themeId: 158,
-            numParts: 7541,
+            numParts: 7_541,
             imageURL: "http://example.com/image.jpg"
         )
         
         #expect(set.setNum == "75192")
         #expect(set.name == "Millennium Falcon")
-        #expect(set.year == 2017)
+        #expect(set.year == 2_017)
         #expect(set.themeId == 158)
-        #expect(set.numParts == 7541)
+        #expect(set.numParts == 7_541)
         #expect(set.imageURL == "http://example.com/image.jpg")
         #expect(set.themeName == nil)
     }
@@ -785,8 +783,8 @@ struct BadgeVariantTests {
         
         // Mock sets without theme names
         mockRemoteDataSource.mockSets = [
-            LegoSet(setNum: "75192", name: "Millennium Falcon", year: 2017, themeId: 158, numParts: 7541),
-            LegoSet(setNum: "60380", name: "Downtown", year: 2023, themeId: 52, numParts: 1211)
+            LegoSet(setNum: "75192", name: "Millennium Falcon", year: 2_017, themeId: 158, numParts: 7_541),
+            LegoSet(setNum: "60380", name: "Downtown", year: 2_023, themeId: 52, numParts: 1_211)
         ]
         
         // Fetch sets - should populate theme names
@@ -822,8 +820,8 @@ struct BadgeVariantTests {
         
         // Mock sets with one having a missing theme
         mockRemoteDataSource.mockSets = [
-            LegoSet(setNum: "75192", name: "Millennium Falcon", year: 2017, themeId: 158, numParts: 7541),
-            LegoSet(setNum: "60380", name: "Downtown", year: 2023, themeId: 999, numParts: 1211) // Theme ID 999 doesn't exist
+            LegoSet(setNum: "75192", name: "Millennium Falcon", year: 2_017, themeId: 158, numParts: 7_541),
+            LegoSet(setNum: "60380", name: "Downtown", year: 2_023, themeId: 999, numParts: 1_211) // Theme ID 999 doesn't exist
         ]
         
         // Fetch sets - should populate theme names where available
@@ -840,9 +838,9 @@ struct BadgeVariantTests {
         let localDataSource = SwiftDataSource(modelContext: container.mainContext)
         
         // Create and save sets without theme names
-        let setWithoutTheme1 = LegoSet(setNum: "75192", name: "Millennium Falcon", year: 2017, themeId: 158, numParts: 7541)
-        let setWithoutTheme2 = LegoSet(setNum: "60380", name: "Downtown", year: 2023, themeId: 52, numParts: 1211)
-        let setWithTheme = LegoSet(setNum: "75300", name: "Imperial TIE Fighter", year: 2021, themeId: 158, numParts: 432, themeName: "Star Wars")
+        let setWithoutTheme1 = LegoSet(setNum: "75192", name: "Millennium Falcon", year: 2_017, themeId: 158, numParts: 7_541)
+        let setWithoutTheme2 = LegoSet(setNum: "60380", name: "Downtown", year: 2_023, themeId: 52, numParts: 1_211)
+        let setWithTheme = LegoSet(setNum: "75300", name: "Imperial TIE Fighter", year: 2_021, themeId: 158, numParts: 432, themeName: "Star Wars")
         try localDataSource.save([setWithoutTheme1, setWithoutTheme2, setWithTheme])
         
         // Create and save themes
@@ -922,7 +920,6 @@ final class MockLegoThemeRemoteDataSource: LegoThemeRemoteDataSource {
 }
 
 struct RecentSearchesStorageTests {
-    
     @Test("RecentSearchesStorage saves and loads searches correctly")
     @MainActor
     func testSaveAndLoadSearches() async throws {
@@ -1070,7 +1067,6 @@ final class TestRecentSearchesStorage {
 }
 
 struct SearchViewModelTests {
-    
     @Test("SearchViewModel loads recent searches on initialization")
     @MainActor
     func testLoadRecentSearchesOnInit() async throws {
@@ -1190,7 +1186,6 @@ final class MockLegoThemeRepository: LegoThemeRepository {
 // MARK: - Pagination Hardening Tests
 
 struct PaginationHardeningTests {
-    
     @Test("SetsListViewModel prevents overlapping loadMore calls") 
     func testSetsListViewModelPreventsOverlappingLoadMore() async throws {
         // Create a mock repository that tracks call count
@@ -1203,7 +1198,7 @@ struct PaginationHardeningTests {
         async let task3: Void = viewModel.loadMoreSets()
         
         // Wait for all tasks to complete
-        let _ = await (task1, task2, task3)
+        _ = await (task1, task2, task3)
         
         // Verify only one actual network call was made
         #expect(mockRepository.fetchCallCount <= 1, "Expected at most 1 fetch call, got \(mockRepository.fetchCallCount)")
@@ -1322,8 +1317,8 @@ final class MockLegoSetRepository: LegoSetRepository {
         
         // Return mock data
         return [
-            LegoSet(setNum: "\(page)-1", name: "Test Set \(page)", year: 2024, themeId: 1, numParts: 100),
-            LegoSet(setNum: "\(page)-2", name: "Test Set \(page + 1)", year: 2024, themeId: 1, numParts: 200)
+            LegoSet(setNum: "\(page)-1", name: "Test Set \(page)", year: 2_024, themeId: 1, numParts: 100),
+            LegoSet(setNum: "\(page)-2", name: "Test Set \(page + 1)", year: 2_024, themeId: 1, numParts: 200)
         ]
     }
     
@@ -1358,7 +1353,6 @@ final class MockSlowLegoSetRepository: MockLegoSetRepository {
 // MARK: - API Configuration Tests
 
 struct APIConfigurationTests {
-    
     @Test("API Configuration Service initialization")
     @MainActor
     func testAPIConfigurationServiceInitialization() async throws {
@@ -1445,7 +1439,6 @@ struct APIConfigurationTests {
 // MARK: - DI Container Tests
 
 struct DIContainerTests {
-    
     @Test("DI Container provides API Configuration Service")
     @MainActor
     func testDIContainerProvidesAPIConfiguration() async throws {
@@ -1504,7 +1497,6 @@ struct DIContainerTests {
 // MARK: - Remote Data Source Tests
 
 struct RemoteDataSourceTests {
-    
     @Test("LegoSetRemoteDataSource handles missing API key")
     @MainActor
     func testLegoSetRemoteDataSourceMissingAPIKey() async throws {
@@ -1553,6 +1545,5 @@ struct RemoteDataSourceTests {
                 try await dataSource.getThemeDetails(id: 1)
             }
         }
->>>>>>> main
     }
 }

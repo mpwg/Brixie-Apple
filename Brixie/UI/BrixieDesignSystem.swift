@@ -29,7 +29,6 @@ extension Color {
     static let brixieWarning = Color(red: 1.0, green: 0.6, blue: 0.0)
     static let brixieGradientStart = Color(red: 0.0, green: 0.35, blue: 0.8)
     static let brixieGradientEnd = Color(red: 0.2, green: 0.6, blue: 1.0)
-    
 }
 
 // Helper functions to get adaptive colors based on ColorScheme

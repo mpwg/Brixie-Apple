@@ -189,7 +189,6 @@ struct SettingsView: View {
         }
     }
     
-    
     private var cacheSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Storage Management")

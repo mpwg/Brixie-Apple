@@ -29,7 +29,7 @@ struct BrixieSearchSuggestions: View {
 
 struct BrixieSearchSuggestions_Previews: PreviewProvider {
     static var previews: some View {
-        BrixieSearchSuggestions(recentSearches: ["Star Wars", "City"], onSelect: { _ in })
+        BrixieSearchSuggestions(recentSearches: ["Star Wars", "City"]) { _ in }
             .previewLayout(.sizeThatFits)
             .padding()
     }
