@@ -11,8 +11,10 @@ import SwiftData
 struct CategoryDetailView: View {
     let theme: LegoTheme
     
-    @Environment(\.modelContext) private var modelContext
-    @Environment(DIContainer.self) private var diContainer
+    @Environment(\.modelContext)
+    private var modelContext
+    @Environment(DIContainer.self)
+    private var diContainer
     @State private var themeService: LegoThemeService?
     @State private var sets: [LegoSet] = []
     @State private var searchText = ""
@@ -106,14 +108,22 @@ struct CategoryDetailView: View {
                                 .padding()
                             }
                         }
-                        .searchable(text: $searchText, prompt: NSLocalizedString("Search sets", comment: "Search prompt"))
+                        .searchable(
+                            text: $searchText,
+                            prompt: NSLocalizedString("Search sets", comment: "Search prompt")
+                        )
                         .refreshable {
                             await loadSets(reset: true)
                         }
                     }
                     
                     if let error = service.error {
-                        Text(error.errorDescription ?? NSLocalizedString("Unknown error occurred", comment: "Generic error message"))
+                        Text(
+                            error.errorDescription ?? NSLocalizedString(
+                                "Unknown error occurred",
+                                comment: "Generic error message"
+                            )
+                        )
                             .foregroundColor(.red)
                             .padding()
                     }
@@ -127,7 +137,9 @@ struct CategoryDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
-                        Button(action: { showingFilters = true }) {
+                        Button {
+                            showingFilters = true
+                        } label: {
                             Image(systemName: "line.3.horizontal.decrease.circle")
                         }
                         
@@ -247,12 +259,15 @@ struct FilterSheetView: View {
     @Binding var minParts: Int
     @Binding var maxParts: Int
     
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss)
+    private var dismiss
     
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text(NSLocalizedString("Year Range", comment: "Filter section"))) {
+                Section(
+                    header: Text(NSLocalizedString("Year Range", comment: "Filter section"))
+                ) {
                     VStack {
                         HStack {
                             Text(String(yearRange.lowerBound))
@@ -265,16 +280,26 @@ struct FilterSheetView: View {
                     }
                 }
                 
-                Section(header: Text(NSLocalizedString("Part Count", comment: "Filter section"))) {
+                Section(
+                    header: Text(NSLocalizedString("Part Count", comment: "Filter section"))
+                ) {
                     HStack {
                         Text(NSLocalizedString("Min:", comment: "Minimum label"))
-                        TextField(NSLocalizedString("Minimum", comment: "Minimum placeholder"), value: $minParts, format: .number)
+                        TextField(
+                            NSLocalizedString("Minimum", comment: "Minimum placeholder"),
+                            value: $minParts,
+                            format: .number
+                        )
                             .keyboardType(.numberPad)
                     }
                     
                     HStack {
                         Text(NSLocalizedString("Max:", comment: "Maximum label"))
-                        TextField(NSLocalizedString("Maximum", comment: "Maximum placeholder"), value: $maxParts, format: .number)
+                        TextField(
+                            NSLocalizedString("Maximum", comment: "Maximum placeholder"),
+                            value: $maxParts,
+                            format: .number
+                        )
                             .keyboardType(.numberPad)
                     }
                 }

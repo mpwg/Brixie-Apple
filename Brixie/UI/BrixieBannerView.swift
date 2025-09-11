@@ -72,7 +72,7 @@ struct BrixieBannerView: View {
     }
 }
 
-// MARK: - Convenience Initializers
+// MARK: Convenience Initializers
 
 extension BrixieBannerView {
     /// Creates a banner for network errors with default retry messaging
@@ -116,7 +116,7 @@ extension BrixieBannerView {
         BrixieBannerView(
             title: "Custom Error",
             message: "This is a custom error message that might be longer and span multiple lines."
-        )            {}
+        ) {}
     }
     .padding()
 }
