@@ -14,6 +14,11 @@ protocol LocalDataSource {
     func fetch<T: PersistentModel>(_ type: T.Type, predicate: Predicate<T>?) throws -> [T]
     func delete<T: PersistentModel>(_ item: T) throws
     func deleteAll<T: PersistentModel>(_ type: T.Type) throws
+    
+    // Sync timestamp methods
+    func saveSyncTimestamp(_ timestamp: SyncTimestamp) throws
+    func getLastSyncTimestamp(for syncType: SyncType) throws -> SyncTimestamp?
+    func getAllSyncTimestamps() throws -> [SyncTimestamp]
 }
 
 final class SwiftDataSource: LocalDataSource {
@@ -70,6 +75,49 @@ final class SwiftDataSource: LocalDataSource {
         do {
             try modelContext.delete(model: type)
             try modelContext.save()
+        } catch {
+            throw BrixieError.persistenceError(underlying: error)
+        }
+    }
+    
+    // MARK: - Sync Timestamp Methods
+    
+    func saveSyncTimestamp(_ timestamp: SyncTimestamp) throws {
+        // Update existing or insert new
+        if let existingTimestamp = try? getLastSyncTimestamp(for: timestamp.syncType) {
+            existingTimestamp.lastSync = timestamp.lastSync
+            existingTimestamp.isSuccessful = timestamp.isSuccessful
+            existingTimestamp.itemCount = timestamp.itemCount
+        } else {
+            modelContext.insert(timestamp)
+        }
+        
+        do {
+            try modelContext.save()
+        } catch {
+            throw BrixieError.persistenceError(underlying: error)
+        }
+    }
+    
+    func getLastSyncTimestamp(for syncType: SyncType) throws -> SyncTimestamp? {
+        do {
+            let predicate = #Predicate<SyncTimestamp> { $0.syncType == syncType }
+            var descriptor = FetchDescriptor<SyncTimestamp>(predicate: predicate)
+            descriptor.sortBy = [SortDescriptor(\.lastSync, order: .reverse)]
+            descriptor.fetchLimit = 1
+            
+            let results = try modelContext.fetch(descriptor)
+            return results.first
+        } catch {
+            throw BrixieError.persistenceError(underlying: error)
+        }
+    }
+    
+    func getAllSyncTimestamps() throws -> [SyncTimestamp] {
+        do {
+            var descriptor = FetchDescriptor<SyncTimestamp>()
+            descriptor.sortBy = [SortDescriptor(\.lastSync, order: .reverse)]
+            return try modelContext.fetch(descriptor)
         } catch {
             throw BrixieError.persistenceError(underlying: error)
         }

@@ -27,6 +27,7 @@ struct BrixieApp: App {
             ContentView()
                 .environment(diContainer)
                 .environment(diContainer.themeManager)
+                .environment(diContainer.networkMonitorService)
                 .preferredColorScheme(diContainer.themeManager.colorScheme)
         }
         .modelContainer(diContainer.modelContainer)

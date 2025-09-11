@@ -26,8 +26,29 @@ final class LegoThemeRepositoryImpl: LegoThemeRepository {
             }
             
             try localDataSource.save(remoteThemes)
+            
+            // Save successful sync timestamp
+            let syncTimestamp = SyncTimestamp(
+                id: "themes-sync",
+                lastSync: Date(),
+                syncType: .themes,
+                isSuccessful: true,
+                itemCount: remoteThemes.count
+            )
+            try localDataSource.saveSyncTimestamp(syncTimestamp)
+            
             return remoteThemes
         } catch {
+            // Save failed sync timestamp
+            let syncTimestamp = SyncTimestamp(
+                id: "themes-sync",
+                lastSync: Date(),
+                syncType: .themes,
+                isSuccessful: false,
+                itemCount: 0
+            )
+            try? localDataSource.saveSyncTimestamp(syncTimestamp)
+            
             if case BrixieError.networkError = error {
                 let cachedThemes = await getCachedThemes()
                 if !cachedThemes.isEmpty {
@@ -67,6 +88,14 @@ final class LegoThemeRepositoryImpl: LegoThemeRepository {
             return try localDataSource.fetch(LegoTheme.self)
         } catch {
             return []
+        }
+    }
+    
+    func getLastSyncTimestamp(for syncType: SyncType) async -> SyncTimestamp? {
+        do {
+            return try localDataSource.getLastSyncTimestamp(for: syncType)
+        } catch {
+            return nil
         }
     }
 }
