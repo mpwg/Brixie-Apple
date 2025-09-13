@@ -1,0 +1,337 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+# Project configuration
+APP_IDENTIFIER = "eu.mpwg.brixie"
+SCHEME_NAME = "Brixie"
+PROJECT_PATH = "./Brixie.xcodeproj"
+DEVELOPMENT_TEAM = ENV['DEVELOPMENT_TEAM'] # Set your Apple Developer Team ID here
+
+# Branch-based configuration
+def get_branch_name
+  branch_name = ENV['GITHUB_HEAD_REF'] || ENV['GITHUB_REF_NAME'] || sh("git rev-parse --abbrev-ref HEAD", log: false).strip
+  UI.message("🌿 Current branch: #{branch_name}")
+  branch_name
+end
+
+def get_build_configuration
+  branch = get_branch_name
+  case branch
+  when 'main'
+    'Release'
+  when /^release\/.*/
+    'Release'
+  when /^hotfix\/.*/
+    'Release'
+  else
+    'Debug'
+  end
+end
+
+def get_build_number_suffix
+  branch = get_branch_name
+  case branch
+  when 'main'
+    ''
+  when 'develop'
+    '-dev'
+  when /^feature\/.*/
+    '-feature'
+  when /^release\/.*/
+    '-rc'
+  when /^hotfix\/.*/
+    '-hotfix'
+  else
+    '-branch'
+  end
+end
+
+before_all do
+  # Ensure we have the required API key
+  unless ENV["REBRICKABLE_API_KEY"]
+    UI.user_error!("❌ REBRICKABLE_API_KEY environment variable is required")
+  end
+
+  # Generate API configuration
+  sh("REBRICKABLE_API_KEY='#{ENV['REBRICKABLE_API_KEY']}' ../Scripts/generate-api-config.sh")
+
+  # Setup code signing if running in CI
+  if ENV['CI'] == 'true'
+    setup_code_signing
+  end
+end
+
+def setup_code_signing
+  # Use match for code signing in CI
+  match(
+    type: "development",
+    app_identifier: APP_IDENTIFIER,
+    readonly: true,
+    clone_branch_directly: true
+  )
+end
+
+platform :ios do
+  desc "Show available lanes and their descriptions"
+  lane :show_help do
+    puts "\n🚀 Available Fastlane lanes for Brixie:\n\n"
+    puts "📱 iOS Lanes:"
+    puts "  • fastlane ios build_ios     - Build iOS app for simulator"
+    puts "  • fastlane ios test_ios      - Run iOS tests"
+    puts "\n💻 macOS Lanes:"
+    puts "  • fastlane ios build_macos   - Build macOS app (Mac Catalyst)"
+    puts "  • fastlane ios test_macos    - Run macOS tests"
+    puts "\n🔧 Utility Lanes:"
+    puts "  • fastlane ios build_all     - Build both iOS and macOS"
+    puts "  • fastlane ios test_all      - Run tests on both platforms"
+    puts "  • fastlane ios certificates  - Sync code signing certificates"
+    puts "  • fastlane ios clean         - Clean build artifacts"
+    puts "  • fastlane ios show_help     - Show this help"
+    puts "\n🌿 Branch Management:"
+    puts "  • fastlane ios create_release version:1.0.0  - Create release branch"
+    puts "  • fastlane ios finish_release version:1.0.0  - Finish release (merge to main/develop)"
+    puts "  • fastlane ios create_hotfix version:1.0.1   - Create hotfix branch"
+    puts "\n📋 Branch Strategy:"
+    puts "  • main      - Production releases (Release build)"
+    puts "  • develop   - Development integration (Debug build)"
+    puts "  • feature/* - Feature development (Debug build)"
+    puts "  • release/* - Release preparation (Release build)"
+    puts "  • hotfix/*  - Production hotfixes (Release build)"
+    puts "\n"
+  end
+
+  desc "Build iOS app for simulator"
+  lane :build_ios do
+    branch = get_branch_name
+    config = get_build_configuration
+    UI.message("🍎 Building iOS app (#{config} for #{branch})...")
+
+    # Determine if we're running in CI environment
+    is_ci = ENV['CI'] == 'true'
+
+    build_settings = {
+      "CODE_SIGN_STYLE" => "Manual",
+      "DEVELOPMENT_TEAM" => DEVELOPMENT_TEAM,
+      "PRODUCT_BUNDLE_IDENTIFIER" => APP_IDENTIFIER
+    }
+    destination = "platform=iOS Simulator,name=iPhone 16"
+
+    if is_ci
+      setup_code_signing
+      destination = "generic/platform=iOS"
+      build_settings["PROVISIONING_PROFILE_SPECIFIER"] = ENV["sigh_#{APP_IDENTIFIER}_development"]
+    end
+
+    xcodebuild(
+      project: PROJECT_PATH,
+      scheme: SCHEME_NAME,
+      configuration: config,
+      destination: destination,
+      build: true,
+      clean: true,
+      xcargs: build_settings.map { |k, v| "#{k}=#{v}" }.join(" ")
+    )
+
+    UI.success("✅ iOS build completed successfully (#{config})!")
+  end
+
+  desc "Build macOS app (Mac Catalyst)"
+  lane :build_macos do
+    branch = get_branch_name
+    config = get_build_configuration
+    UI.message("💻 Building macOS app (Mac Catalyst, #{config} for #{branch})...")
+
+    # Determine if we're running in CI environment
+    is_ci = ENV['CI'] == 'true'
+
+    build_settings = {
+      "CODE_SIGN_STYLE" => "Manual",
+      "DEVELOPMENT_TEAM" => DEVELOPMENT_TEAM,
+      "PRODUCT_BUNDLE_IDENTIFIER" => APP_IDENTIFIER
+    }
+    destination = "platform=macOS,variant=Mac Catalyst"
+
+    if is_ci
+      setup_code_signing
+      destination = "generic/platform=macOS,variant=Mac Catalyst"
+      build_settings["PROVISIONING_PROFILE_SPECIFIER"] = ENV["sigh_#{APP_IDENTIFIER}_development"]
+    end
+
+    xcodebuild(
+      project: PROJECT_PATH,
+      scheme: SCHEME_NAME,
+      configuration: config,
+      destination: destination,
+      build: true,
+      clean: true,
+      xcargs: build_settings.map { |k, v| "#{k}=#{v}" }.join(" ")
+    )
+
+    UI.success("✅ macOS build completed successfully (#{config})!")
+  end
+
+  desc "Build both iOS and macOS apps"
+  lane :build_all do
+    UI.message("🚀 Building all platforms...")
+
+    build_ios
+    build_macos
+
+    UI.success("✅ All builds completed successfully!")
+  end
+
+  desc "Run iOS tests"
+  lane :test_ios do
+    UI.message("🧪 Running iOS tests...")
+
+    run_tests(
+      project: PROJECT_PATH,
+      scheme: SCHEME_NAME,
+      destination: "platform=iOS Simulator,name=iPhone 16",
+      clean: true
+    )
+
+    UI.success("✅ iOS tests completed successfully!")
+  end
+
+  desc "Run macOS tests"
+  lane :test_macos do
+    UI.message("🧪 Running macOS tests...")
+
+    run_tests(
+      project: PROJECT_PATH,
+      scheme: SCHEME_NAME,
+      destination: "platform=macOS,variant=Mac Catalyst",
+      clean: true
+    )
+
+    UI.success("✅ macOS tests completed successfully!")
+  end
+
+  desc "Run tests on all platforms"
+  lane :test_all do
+    UI.message("🧪 Running tests on all platforms...")
+
+    test_ios
+    test_macos
+
+    UI.success("✅ All tests completed successfully!")
+  end
+
+  desc "Sync code signing certificates and profiles"
+  lane :certificates do
+    UI.message("📱 Syncing certificates and provisioning profiles...")
+
+    match(
+      type: "development",
+      app_identifier: APP_IDENTIFIER
+    )
+
+    UI.success("✅ Certificates synced successfully!")
+  end
+
+  desc "Clean build artifacts"
+  lane :clean do
+    UI.message("🧹 Cleaning build artifacts...")
+
+    clear_derived_data
+
+    # Clean generated configuration
+    sh("rm -f ../Brixie/Configuration/Generated/GeneratedConfiguration.swift")
+
+    UI.success("✅ Clean completed successfully!")
+  end
+
+  # Branch-specific lanes
+  desc "Create a new release branch"
+  lane :create_release do |options|
+    version = options[:version]
+    unless version
+      UI.user_error!("❌ Please specify version: fastlane ios create_release version:1.0.0")
+    end
+
+    UI.message("🚀 Creating release branch for version #{version}...")
+
+    # Ensure we're on develop branch
+    sh("git checkout develop")
+    sh("git pull origin develop")
+
+    # Create release branch
+    sh("git checkout -b release/#{version}")
+    sh("git push -u origin release/#{version}")
+
+    UI.success("✅ Release branch release/#{version} created successfully!")
+    UI.important("Next steps:")
+    UI.important("1. Update version numbers in your project")
+    UI.important("2. Run tests: fastlane ios test_all")
+    UI.important("3. Create PR to main when ready")
+  end
+
+  desc "Finish a release by merging to main and develop"
+  lane :finish_release do |options|
+    version = options[:version]
+    unless version
+      UI.user_error!("❌ Please specify version: fastlane ios finish_release version:1.0.0")
+    end
+
+    release_branch = "release/#{version}"
+    UI.message("🎯 Finishing release #{version}...")
+
+    # Merge to main
+    sh("git checkout main")
+    sh("git pull origin main")
+    sh("git merge --no-ff #{release_branch}")
+    sh("git tag #{version}")
+    sh("git push origin main --tags")
+
+    # Merge back to develop
+    sh("git checkout develop")
+    sh("git pull origin develop")
+    sh("git merge --no-ff #{release_branch}")
+    sh("git push origin develop")
+
+    # Clean up release branch
+    sh("git branch -d #{release_branch}")
+    sh("git push origin --delete #{release_branch}")
+
+    UI.success("✅ Release #{version} finished successfully!")
+  end
+
+  desc "Create a hotfix branch"
+  lane :create_hotfix do |options|
+    version = options[:version]
+    unless version
+      UI.user_error!("❌ Please specify version: fastlane ios create_hotfix version:1.0.1")
+    end
+
+    UI.message("🚑 Creating hotfix branch for version #{version}...")
+
+    # Ensure we're on main branch
+    sh("git checkout main")
+    sh("git pull origin main")
+
+    # Create hotfix branch
+    sh("git checkout -b hotfix/#{version}")
+    sh("git push -u origin hotfix/#{version}")
+
+    UI.success("✅ Hotfix branch hotfix/#{version} created successfully!")
+  end
+
+  error do |lane, exception|
+    UI.error("❌ Lane '#{lane}' failed with error: #{exception.message}")
+  end
+end
