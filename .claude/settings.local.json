@@ -29,7 +29,8 @@
       "Bash(CI=true REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios build_ios)",
       "Bash(CI=true REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios build_macos)",
       "Bash(plutil:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(codesign:*)"
     ],
     "deny": [],
     "ask": []

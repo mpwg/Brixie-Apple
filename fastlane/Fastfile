@@ -15,11 +15,6 @@
 
 default_platform(:ios)
 
-# Load environment variables from .env file if it exists
-if File.exist?('.env')
-  ENV.each { |k, v| ENV[k] = v }
-end
-
 # Project configuration
 APP_IDENTIFIER = "eu.mpwg.brixie"
 SCHEME_NAME = "Brixie"
