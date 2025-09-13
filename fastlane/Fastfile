@@ -33,6 +33,7 @@ WORKSPACE_PATH = "./Brixie.xcodeproj"
 platform :ios do
   before_all do
 #    ensure_xcode_version(version: "15.0")
+    sh("REBRICKABLE_API_KEY='#{ENV['REBRICKABLE_API_KEY']}' ../Scripts/generate-api-config.sh")
     
     # Setup keychain for CI
     if is_ci
