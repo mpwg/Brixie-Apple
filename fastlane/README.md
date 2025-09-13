@@ -87,6 +87,30 @@ Sync code signing certificates and profiles
 
 Clean build artifacts
 
+### ios create_release
+
+```sh
+[bundle exec] fastlane ios create_release
+```
+
+Create a new release branch
+
+### ios finish_release
+
+```sh
+[bundle exec] fastlane ios finish_release
+```
+
+Finish a release by merging to main and develop
+
+### ios create_hotfix
+
+```sh
+[bundle exec] fastlane ios create_hotfix
+```
+
+Create a hotfix branch
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

@@ -13,9 +13,19 @@ Brixie is a multi-platform iOS/macOS SwiftUI application that integrates with th
 - **Data Model**: `Item.swift` - SwiftData model with timestamp property
 - **External Dependencies**: Uses `RebrickableLegoAPIClient` package from https://github.com/mpwg/Rebrickable-swift (v2.0.0+)
 
+## Branching Strategy
+
+This project follows a Git Flow branching model with the following branches:
+
+- **main** - Production releases (builds with Release configuration)
+- **develop** - Development integration branch (builds with Debug configuration)
+- **feature/** - Feature development branches (builds with Debug configuration)
+- **release/** - Release preparation branches (builds with Release configuration)
+- **hotfix/** - Production hotfix branches (builds with Release configuration)
+
 ## Development Commands
 
-This project uses Fastlane for build automation and testing. All commands require the `REBRICKABLE_API_KEY` environment variable.
+This project uses Fastlane for build automation and testing. All commands require the `REBRICKABLE_API_KEY` environment variable. The build configuration (Debug/Release) is automatically determined based on the current branch.
 
 ### Fastlane Lanes
 
@@ -53,6 +63,18 @@ REBRICKABLE_API_KEY="your_key" fastlane ios clean
 
 # Show available lanes and help
 fastlane ios show_help
+```
+
+#### Branch Management
+```bash
+# Create a new release branch from develop
+REBRICKABLE_API_KEY="your_key" fastlane ios create_release version:1.0.0
+
+# Finish a release (merge to main and develop, create tag)
+REBRICKABLE_API_KEY="your_key" fastlane ios finish_release version:1.0.0
+
+# Create a hotfix branch from main
+REBRICKABLE_API_KEY="your_key" fastlane ios create_hotfix version:1.0.1
 ```
 
 ### Direct xcodebuild (legacy)

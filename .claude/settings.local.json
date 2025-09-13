@@ -30,7 +30,8 @@
       "Bash(CI=true REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios build_macos)",
       "Bash(plutil:*)",
       "Bash(sed:*)",
-      "Bash(codesign:*)"
+      "Bash(codesign:*)",
+      "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios show_help)"
     ],
     "deny": [],
     "ask": []

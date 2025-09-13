@@ -21,6 +21,45 @@ SCHEME_NAME = "Brixie"
 PROJECT_PATH = "./Brixie.xcodeproj"
 DEVELOPMENT_TEAM = ENV['DEVELOPMENT_TEAM'] # Set your Apple Developer Team ID here
 
+# Branch-based configuration
+def get_branch_name
+  branch_name = ENV['GITHUB_HEAD_REF'] || ENV['GITHUB_REF_NAME'] || sh("git rev-parse --abbrev-ref HEAD", log: false).strip
+  UI.message("🌿 Current branch: #{branch_name}")
+  branch_name
+end
+
+def get_build_configuration
+  branch = get_branch_name
+  case branch
+  when 'main'
+    'Release'
+  when /^release\/.*/
+    'Release'
+  when /^hotfix\/.*/
+    'Release'
+  else
+    'Debug'
+  end
+end
+
+def get_build_number_suffix
+  branch = get_branch_name
+  case branch
+  when 'main'
+    ''
+  when 'develop'
+    '-dev'
+  when /^feature\/.*/
+    '-feature'
+  when /^release\/.*/
+    '-rc'
+  when /^hotfix\/.*/
+    '-hotfix'
+  else
+    '-branch'
+  end
+end
+
 before_all do
   # Ensure we have the required API key
   unless ENV["REBRICKABLE_API_KEY"]
@@ -59,13 +98,27 @@ platform :ios do
     puts "\n🔧 Utility Lanes:"
     puts "  • fastlane ios build_all     - Build both iOS and macOS"
     puts "  • fastlane ios test_all      - Run tests on both platforms"
+    puts "  • fastlane ios certificates  - Sync code signing certificates"
+    puts "  • fastlane ios clean         - Clean build artifacts"
     puts "  • fastlane ios show_help     - Show this help"
+    puts "\n🌿 Branch Management:"
+    puts "  • fastlane ios create_release version:1.0.0  - Create release branch"
+    puts "  • fastlane ios finish_release version:1.0.0  - Finish release (merge to main/develop)"
+    puts "  • fastlane ios create_hotfix version:1.0.1   - Create hotfix branch"
+    puts "\n📋 Branch Strategy:"
+    puts "  • main      - Production releases (Release build)"
+    puts "  • develop   - Development integration (Debug build)"
+    puts "  • feature/* - Feature development (Debug build)"
+    puts "  • release/* - Release preparation (Release build)"
+    puts "  • hotfix/*  - Production hotfixes (Release build)"
     puts "\n"
   end
 
   desc "Build iOS app for simulator"
   lane :build_ios do
-    UI.message("🍎 Building iOS app...")
+    branch = get_branch_name
+    config = get_build_configuration
+    UI.message("🍎 Building iOS app (#{config} for #{branch})...")
 
     # Determine if we're running in CI environment
     is_ci = ENV['CI'] == 'true'
@@ -86,19 +139,21 @@ platform :ios do
     xcodebuild(
       project: PROJECT_PATH,
       scheme: SCHEME_NAME,
-      configuration: "Debug",
+      configuration: config,
       destination: destination,
       build: true,
       clean: true,
       xcargs: build_settings.map { |k, v| "#{k}=#{v}" }.join(" ")
     )
 
-    UI.success("✅ iOS build completed successfully!")
+    UI.success("✅ iOS build completed successfully (#{config})!")
   end
 
   desc "Build macOS app (Mac Catalyst)"
   lane :build_macos do
-    UI.message("💻 Building macOS app (Mac Catalyst)...")
+    branch = get_branch_name
+    config = get_build_configuration
+    UI.message("💻 Building macOS app (Mac Catalyst, #{config} for #{branch})...")
 
     # Determine if we're running in CI environment
     is_ci = ENV['CI'] == 'true'
@@ -119,14 +174,14 @@ platform :ios do
     xcodebuild(
       project: PROJECT_PATH,
       scheme: SCHEME_NAME,
-      configuration: "Debug",
+      configuration: config,
       destination: destination,
       build: true,
       clean: true,
       xcargs: build_settings.map { |k, v| "#{k}=#{v}" }.join(" ")
     )
 
-    UI.success("✅ macOS build completed successfully!")
+    UI.success("✅ macOS build completed successfully (#{config})!")
   end
 
   desc "Build both iOS and macOS apps"
@@ -199,6 +254,81 @@ platform :ios do
     sh("rm -f ../Brixie/Configuration/Generated/GeneratedConfiguration.swift")
 
     UI.success("✅ Clean completed successfully!")
+  end
+
+  # Branch-specific lanes
+  desc "Create a new release branch"
+  lane :create_release do |options|
+    version = options[:version]
+    unless version
+      UI.user_error!("❌ Please specify version: fastlane ios create_release version:1.0.0")
+    end
+
+    UI.message("🚀 Creating release branch for version #{version}...")
+
+    # Ensure we're on develop branch
+    sh("git checkout develop")
+    sh("git pull origin develop")
+
+    # Create release branch
+    sh("git checkout -b release/#{version}")
+    sh("git push -u origin release/#{version}")
+
+    UI.success("✅ Release branch release/#{version} created successfully!")
+    UI.important("Next steps:")
+    UI.important("1. Update version numbers in your project")
+    UI.important("2. Run tests: fastlane ios test_all")
+    UI.important("3. Create PR to main when ready")
+  end
+
+  desc "Finish a release by merging to main and develop"
+  lane :finish_release do |options|
+    version = options[:version]
+    unless version
+      UI.user_error!("❌ Please specify version: fastlane ios finish_release version:1.0.0")
+    end
+
+    release_branch = "release/#{version}"
+    UI.message("🎯 Finishing release #{version}...")
+
+    # Merge to main
+    sh("git checkout main")
+    sh("git pull origin main")
+    sh("git merge --no-ff #{release_branch}")
+    sh("git tag #{version}")
+    sh("git push origin main --tags")
+
+    # Merge back to develop
+    sh("git checkout develop")
+    sh("git pull origin develop")
+    sh("git merge --no-ff #{release_branch}")
+    sh("git push origin develop")
+
+    # Clean up release branch
+    sh("git branch -d #{release_branch}")
+    sh("git push origin --delete #{release_branch}")
+
+    UI.success("✅ Release #{version} finished successfully!")
+  end
+
+  desc "Create a hotfix branch"
+  lane :create_hotfix do |options|
+    version = options[:version]
+    unless version
+      UI.user_error!("❌ Please specify version: fastlane ios create_hotfix version:1.0.1")
+    end
+
+    UI.message("🚑 Creating hotfix branch for version #{version}...")
+
+    # Ensure we're on main branch
+    sh("git checkout main")
+    sh("git pull origin main")
+
+    # Create hotfix branch
+    sh("git checkout -b hotfix/#{version}")
+    sh("git push -u origin hotfix/#{version}")
+
+    UI.success("✅ Hotfix branch hotfix/#{version} created successfully!")
   end
 
   error do |lane, exception|
