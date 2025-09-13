@@ -15,61 +15,37 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
-### ios show_help
+### ios dev
 
 ```sh
-[bundle exec] fastlane ios show_help
+[bundle exec] fastlane ios dev
 ```
 
-Show available lanes and their descriptions
+Build development version for testing
 
-### ios build_ios
+### ios beta
 
 ```sh
-[bundle exec] fastlane ios build_ios
+[bundle exec] fastlane ios beta
 ```
 
-Build iOS app for simulator
+Build and upload to TestFlight
 
-### ios build_macos
+### ios release
 
 ```sh
-[bundle exec] fastlane ios build_macos
+[bundle exec] fastlane ios release
 ```
 
-Build macOS app (Mac Catalyst)
+Build and upload to App Store
 
-### ios build_all
+### ios build
 
 ```sh
-[bundle exec] fastlane ios build_all
+[bundle exec] fastlane ios build
 ```
 
-Build both iOS and macOS apps
-
-### ios test_ios
-
-```sh
-[bundle exec] fastlane ios test_ios
-```
-
-Run iOS tests
-
-### ios test_macos
-
-```sh
-[bundle exec] fastlane ios test_macos
-```
-
-Run macOS tests
-
-### ios test_all
-
-```sh
-[bundle exec] fastlane ios test_all
-```
-
-Run tests on all platforms
+Build app without distribution (for CI validation)
 
 ### ios certificates
 
@@ -77,39 +53,31 @@ Run tests on all platforms
 [bundle exec] fastlane ios certificates
 ```
 
-Sync code signing certificates and profiles
+Sync development certificates and provisioning profiles
 
-### ios clean
-
-```sh
-[bundle exec] fastlane ios clean
-```
-
-Clean build artifacts
-
-### ios create_release
+### ios update_certificates
 
 ```sh
-[bundle exec] fastlane ios create_release
+[bundle exec] fastlane ios update_certificates
 ```
 
-Create a new release branch
+Update certificates and push to git
 
-### ios finish_release
+### ios version
 
 ```sh
-[bundle exec] fastlane ios finish_release
+[bundle exec] fastlane ios version
 ```
 
-Finish a release by merging to main and develop
+Show current version and build number
 
-### ios create_hotfix
+### ios show_help
 
 ```sh
-[bundle exec] fastlane ios create_hotfix
+[bundle exec] fastlane ios show_help
 ```
 
-Create a hotfix branch
+Show available lanes
 
 ----
 

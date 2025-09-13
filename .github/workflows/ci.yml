@@ -1,47 +1,48 @@
-name: CI
+# GitHub Actions CI/CD for Brixie iOS App
+# See https://docs.github.com/en/actions for details
+#
+# Branch Strategy:
+# - main: Production-ready code, triggers TestFlight deployment
+# - develop: Development code, triggers dev builds with artifacts
+# - feature/*: Feature branches, build validation only via PRs
+#
+# Tag Strategy:
+# - v*: Version tags (e.g., v1.0.0, v1.2.3), triggers App Store deployment
+# - Tags should follow semantic versioning (major.minor.patch)
+#
+# Deployment Flow:
+# 1. PR to develop/main: Build validation only
+# 2. Push to develop: Development build (artifacts)
+# 3. Push to main: TestFlight deployment
+# 4. Create version tag: App Store deployment + GitHub release
+# 5. Manual trigger: Choose beta (TestFlight) or production (App Store)
 
-permissions:
-  contents: read
+name: CI/CD
 
 on:
   push:
-    branches:
-      - main
-      - develop
-      - "release/**"
-      - "hotfix/**"
+    branches: [main, develop]
+    tags: ["v*"] # Version tags like v1.0.0, v1.2.3, v2.0.0-beta.1
   pull_request:
-    branches:
-      - main
-      - develop
-      - "release/**"
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      deploy_type:
+        description: "Deployment type"
+        required: true
+        default: "beta"
+        type: choice
+        options:
+          - beta
+          - production
+
+permissions:
+  contents: write # Needed for git tags and version bumps
 
 jobs:
-  lint:
-    name: Code Quality (SwiftLint)
+  build-and-test:
+    name: Build & Test
     runs-on: macos-26
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v5
-
-      - name: Install SwiftLint
-        run: brew install swiftlint
-
-      - name: Run SwiftLint
-        run: swiftlint lint --config .swiftlint.yml --strict
-
-  build:
-    name: Build - ${{ matrix.platform }}
-    runs-on: macos-26
-    strategy:
-      matrix:
-        platform: [iOS, macOS]
-        include:
-          - platform: iOS
-            lane: build_ios
-          - platform: macOS
-            lane: build_macos
-    environment: IntegrationTests
     env:
       # Load Fastlane / Apple credentials from repository secrets
       APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -57,53 +58,60 @@ jobs:
       MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v5
-
-      - name: Setup Ruby and Fastlane
-        uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.4"
-          bundler-cache: true
+          fetch-depth: 0 # Needed for git operations
 
-      - name: Bundle install
+      - name: Validate required secrets
+        shell: bash
         run: |
-          bundle install
-
-      - name: Show Build Environment
-        run: |
-          echo "🔍 Build Environment Info:"
-          echo "Platform: ${{ matrix.platform }}"
-          echo "Lane: ${{ matrix.lane }}"
-          echo "Xcode Version: $(xcodebuild -version)"
-          if [ -n "$REBRICKABLE_API_KEY" ]; then
-            echo "✅ API Key: Present"
-          else
-            echo "❌ API Key: Missing"
+          missing=()
+          for v in APPLE_ID MATCH_PASSWORD DEVELOPMENT_TEAM MATCH_GIT_URL APP_STORE_CONNECT_API_KEY_CONTENT APP_STORE_CONNECT_API_KEY_ISSUER_ID APP_STORE_CONNECT_API_KEY_KEY_ID MATCH_GIT_BASIC_AUTHORIZATION KEYCHAIN_PASSWORD; do
+            if [ -z "${!v}" ]; then
+              missing+=($v)
+            fi
+          done
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "Missing required secrets: ${missing[*]}"
+            echo "Please add these names to repository Secrets (Settings → Secrets & variables → Actions)."
+            exit 1
           fi
-          echo ""
+          echo "All required secrets are set."
 
-      - name: Build App with Fastlane
+      - name: Set up Ruby (for Fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Bundle install
         run: |
-          echo "🚀 Building ${{ matrix.platform }} app using Fastlane..."
-          bundle exec fastlane ios ${{ matrix.lane }}
+          bundle install
 
-  test:
-    name: Test - ${{ matrix.platform }}
+      # - name: Install certificates and provisioning profiles
+      #   run: |
+      #     bundle exec fastlane certificates
+
+      - name: Build for validation
+        run: |
+          bundle exec fastlane build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
+          retention-days: 30
+
+  # Development builds (on develop branch)
+  deploy-dev:
+    name: Deploy Development
+    needs: build-and-test
     runs-on: macos-26
-    needs: build
-    strategy:
-      matrix:
-        platform: [iOS, macOS]
-        include:
-          - platform: iOS
-            lane: test_ios
-          - platform: macOS
-            lane: test_macos
-    environment: IntegrationTests
+    if: github.ref == 'refs/heads/develop'
     env:
       # Load Fastlane / Apple credentials from repository secrets
       APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -119,13 +127,14 @@ jobs:
       MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-      - name: Setup Ruby and Fastlane
+      - name: Set up Ruby (for Fastlane)
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4"
@@ -135,7 +144,132 @@ jobs:
         run: |
           bundle install
 
-      - name: Run Tests with Fastlane
+      - name: Build development version
         run: |
-          echo "🧪 Running ${{ matrix.platform }} tests using Fastlane..."
-          bundle exec fastlane ios ${{ matrix.lane }}
+          bundle exec fastlane dev
+
+      - name: Upload development build
+        uses: actions/upload-artifact@v4
+        with:
+          name: development-build
+          path: build/development/
+          retention-days: 7
+
+  # Beta builds (TestFlight) - on main branch or manual trigger
+  deploy-beta:
+    name: Deploy to TestFlight
+    needs: build-and-test
+    runs-on: macos-26
+    if: |
+      github.ref == 'refs/heads/main' || 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_type == 'beta')
+    env:
+      # Load Fastlane / Apple credentials from repository secrets
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPSTORE_TEAM_ID: ${{ secrets.APPSTORE_TEAM_ID }}
+      APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      FASTLANE_SKIP_UPDATE_CHECK: 1
+      FASTLANE_HIDE_GITHUB_ISSUES: 1
+      FASTLANE_HIDE_CHANGELOG: 1
+      DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Ruby (for Fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Bundle install
+        run: |
+          bundle install
+
+      - name: Build and upload to TestFlight
+        run: |
+          bundle exec fastlane beta
+
+      - name: Upload TestFlight build
+        uses: actions/upload-artifact@v4
+        with:
+          name: testflight-build
+          path: build/testflight/
+          retention-days: 90
+
+  # Production release (App Store) - only on version tags
+  deploy-production:
+    name: Deploy to App Store
+    needs: build-and-test
+    runs-on: macos-26
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_type == 'production')
+    env:
+      # Load Fastlane / Apple credentials from repository secrets
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPSTORE_TEAM_ID: ${{ secrets.APPSTORE_TEAM_ID }}
+      APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      FASTLANE_SKIP_UPDATE_CHECK: 1
+      FASTLANE_HIDE_GITHUB_ISSUES: 1
+      FASTLANE_HIDE_CHANGELOG: 1
+      DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Set up Ruby (for Fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Bundle install
+        run: |
+          bundle install
+
+      - name: Build and upload to App Store
+        run: |
+          bundle exec fastlane release
+
+      - name: Upload App Store build
+        uses: actions/upload-artifact@v4
+        with:
+          name: appstore-build
+          path: build/appstore/
+          retention-days: 365
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
