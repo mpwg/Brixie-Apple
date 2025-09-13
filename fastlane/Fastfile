@@ -21,9 +21,10 @@ if File.exist?('.env')
 end
 
 # Project configuration
-APP_IDENTIFIER = "net.brixie.app"
+APP_IDENTIFIER = "eu.mpwg.brixie"
 SCHEME_NAME = "Brixie"
 PROJECT_PATH = "./Brixie.xcodeproj"
+DEVELOPMENT_TEAM = ENV['DEVELOPMENT_TEAM'] # Set your Apple Developer Team ID here
 
 before_all do
   # Ensure we have the required API key
@@ -33,6 +34,21 @@ before_all do
 
   # Generate API configuration
   sh("REBRICKABLE_API_KEY='#{ENV['REBRICKABLE_API_KEY']}' ../Scripts/generate-api-config.sh")
+
+  # Setup code signing if running in CI
+  if ENV['CI'] == 'true'
+    setup_code_signing
+  end
+end
+
+def setup_code_signing
+  # Use match for code signing in CI
+  match(
+    type: "development",
+    app_identifier: APP_IDENTIFIER,
+    readonly: true,
+    clone_branch_directly: true
+  )
 end
 
 platform :ios do
@@ -59,12 +75,17 @@ platform :ios do
     # Determine if we're running in CI environment
     is_ci = ENV['CI'] == 'true'
 
-    build_settings = {}
+    build_settings = {
+      "CODE_SIGN_STYLE" => "Manual",
+      "DEVELOPMENT_TEAM" => DEVELOPMENT_TEAM,
+      "PRODUCT_BUNDLE_IDENTIFIER" => APP_IDENTIFIER
+    }
     destination = "platform=iOS Simulator,name=iPhone 16"
 
     if is_ci
-      build_settings["CODE_SIGNING_ALLOWED"] = "NO"
+      setup_code_signing
       destination = "generic/platform=iOS"
+      build_settings["PROVISIONING_PROFILE_SPECIFIER"] = ENV["sigh_#{APP_IDENTIFIER}_development"]
     end
 
     xcodebuild(
@@ -87,12 +108,17 @@ platform :ios do
     # Determine if we're running in CI environment
     is_ci = ENV['CI'] == 'true'
 
-    build_settings = {}
+    build_settings = {
+      "CODE_SIGN_STYLE" => "Manual",
+      "DEVELOPMENT_TEAM" => DEVELOPMENT_TEAM,
+      "PRODUCT_BUNDLE_IDENTIFIER" => APP_IDENTIFIER
+    }
     destination = "platform=macOS,variant=Mac Catalyst"
 
     if is_ci
-      build_settings["CODE_SIGNING_ALLOWED"] = "NO"
+      setup_code_signing
       destination = "generic/platform=macOS,variant=Mac Catalyst"
+      build_settings["PROVISIONING_PROFILE_SPECIFIER"] = ENV["sigh_#{APP_IDENTIFIER}_development"]
     end
 
     xcodebuild(
@@ -154,6 +180,18 @@ platform :ios do
     test_macos
 
     UI.success("✅ All tests completed successfully!")
+  end
+
+  desc "Sync code signing certificates and profiles"
+  lane :certificates do
+    UI.message("📱 Syncing certificates and provisioning profiles...")
+
+    match(
+      type: "development",
+      app_identifier: APP_IDENTIFIER
+    )
+
+    UI.success("✅ Certificates synced successfully!")
   end
 
   desc "Clean build artifacts"

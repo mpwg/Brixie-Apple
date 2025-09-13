@@ -71,6 +71,14 @@ Run macOS tests
 
 Run tests on all platforms
 
+### ios certificates
+
+```sh
+[bundle exec] fastlane ios certificates
+```
+
+Sync code signing certificates and profiles
+
 ### ios clean
 
 ```sh

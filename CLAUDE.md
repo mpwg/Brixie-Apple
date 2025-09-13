@@ -45,6 +45,9 @@ REBRICKABLE_API_KEY="your_key" fastlane ios test_all
 
 #### Utilities
 ```bash
+# Sync code signing certificates and profiles
+REBRICKABLE_API_KEY="your_key" fastlane ios certificates
+
 # Clean build artifacts and generated files
 REBRICKABLE_API_KEY="your_key" fastlane ios clean
 
