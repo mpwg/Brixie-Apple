@@ -8,13 +8,13 @@ on:
     branches:
       - main
       - develop
-      - 'release/**'
-      - 'hotfix/**'
+      - "release/**"
+      - "hotfix/**"
   pull_request:
     branches:
       - main
       - develop
-      - 'release/**'
+      - "release/**"
 
 jobs:
   lint:
@@ -43,13 +43,20 @@ jobs:
             lane: build_macos
     environment: IntegrationTests
     env:
-      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
+      # Load Fastlane / Apple credentials from repository secrets
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPSTORE_TEAM_ID: ${{ secrets.APPSTORE_TEAM_ID }}
+      APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
       FASTLANE_SKIP_UPDATE_CHECK: 1
       FASTLANE_HIDE_GITHUB_ISSUES: 1
       FASTLANE_HIDE_CHANGELOG: 1
+      DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
     steps:
       - name: Checkout Repository
@@ -58,8 +65,12 @@ jobs:
       - name: Setup Ruby and Fastlane
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: "3.4"
           bundler-cache: true
+
+      - name: Bundle install
+        run: |
+          bundle install
 
       - name: Show Build Environment
         run: |
@@ -93,13 +104,20 @@ jobs:
             lane: test_macos
     environment: IntegrationTests
     env:
-      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
+      # Load Fastlane / Apple credentials from repository secrets
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPSTORE_TEAM_ID: ${{ secrets.APPSTORE_TEAM_ID }}
+      APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
       FASTLANE_SKIP_UPDATE_CHECK: 1
       FASTLANE_HIDE_GITHUB_ISSUES: 1
       FASTLANE_HIDE_CHANGELOG: 1
+      DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
     steps:
       - name: Checkout Repository
@@ -108,8 +126,12 @@ jobs:
       - name: Setup Ruby and Fastlane
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: "3.4"
           bundler-cache: true
+
+      - name: Bundle install
+        run: |
+          bundle install
 
       - name: Run Tests with Fastlane
         run: |
