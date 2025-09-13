@@ -41,9 +41,7 @@ platform :ios do
   UI.message("🔑 REBRICKABLE_API_KEY is set")
   UI.message("🔐 Generating API configuration")
   # Generate API configuration
-  chdir ".." do
-    sh("./Scripts/generate-api-config.sh")
-  end
+  sh("cd .. && ./Scripts/generate-api-config.sh")
   
   UI.success("✅ API configuration generated")
 
