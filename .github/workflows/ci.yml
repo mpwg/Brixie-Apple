@@ -32,7 +32,7 @@ jobs:
 
   build:
     name: Build - ${{ matrix.platform }}
-    runs-on: macos-latest
+    runs-on: macos-26
     strategy:
       matrix:
         platform: [iOS, macOS]
@@ -93,7 +93,7 @@ jobs:
 
   test:
     name: Test - ${{ matrix.platform }}
-    runs-on: macos-latest
+    runs-on: macos-26
     needs: build
     strategy:
       matrix:
