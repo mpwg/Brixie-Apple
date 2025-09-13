@@ -58,6 +58,7 @@ jobs:
       MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -127,6 +128,7 @@ jobs:
       MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -178,6 +180,7 @@ jobs:
       MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -230,6 +233,7 @@ jobs:
       MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
       MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
 
     steps:
       - name: Checkout repository
