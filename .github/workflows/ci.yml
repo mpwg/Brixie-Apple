@@ -5,14 +5,21 @@ permissions:
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - develop
+      - 'release/**'
+      - 'hotfix/**'
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - develop
+      - 'release/**'
 
 jobs:
   lint:
     name: Code Quality (SwiftLint)
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -31,49 +38,35 @@ jobs:
         platform: [iOS, macOS]
         include:
           - platform: iOS
-            destination: "generic/platform=iOS"
+            lane: build_ios
           - platform: macOS
-            destination: "generic/platform=macOS,variant=Mac Catalyst"
+            lane: build_macos
     environment: IntegrationTests
     env:
       REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      FASTLANE_SKIP_UPDATE_CHECK: 1
+      FASTLANE_HIDE_GITHUB_ISSUES: 1
+      FASTLANE_HIDE_CHANGELOG: 1
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      - name: Setup Xcode
-        id: setup-xcode
-        uses: maxim-lobanov/setup-xcode@v1
+      - name: Setup Ruby and Fastlane
+        uses: ruby/setup-ruby@v1
         with:
-          xcode-version: latest
-
-      - name: fix unable to connect to the simulator
-        run: xcrun simctl list > /dev/null
-
-      - name: Install xcpretty
-        run: gem install xcpretty
-
-      - name: create cache directory
-        run: mkdir -p "${{ runner.temp }}/xcode-downloads"
-
-      #      - name: Cache Xcode iOS Platform
-      #        id: cache-xcode-platform
-      #        uses: actions/cache@v4
-      #        with:
-      #          path: ${{ runner.temp }}/xcode-downloads
-      #          key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
-
-      - name: Install iOS Platform
-        run: |
-          xcodebuild -downloadPlatform iOS -exportPath "${{ runner.temp }}/xcode-downloads"
+          ruby-version: '3.2'
+          bundler-cache: true
 
       - name: Show Build Environment
         run: |
           echo "🔍 Build Environment Info:"
           echo "Platform: ${{ matrix.platform }}"
+          echo "Lane: ${{ matrix.lane }}"
           echo "Xcode Version: $(xcodebuild -version)"
-          echo "Available SDKs:"; xcodebuild -showsdks || true
-          echo "Destination: ${{ matrix.destination }}"
           if [ -n "$REBRICKABLE_API_KEY" ]; then
             echo "✅ API Key: Present"
           else
@@ -81,92 +74,44 @@ jobs:
           fi
           echo ""
 
-      - name: Generate API Configuration
+      - name: Build App with Fastlane
         run: |
-          echo "🔧 Generating API configuration..."
-          ./Scripts/generate-api-config.sh
-
-      - name: Build App
-        run: |
-          echo "🔨 Building ${{ matrix.platform }} app..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-          set -o pipefail
-          xcodebuild -project Brixie.xcodeproj \
-                     -scheme Brixie \
-                     -configuration Debug \
-                     -destination "${{ matrix.destination }}" \
-                     build \
-                     CODE_SIGNING_ALLOWED=NO \
-                     -quiet \
-                     | xcpretty --color --simple
-
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ ${{ matrix.platform }} build completed successfully!"
+          echo "🚀 Building ${{ matrix.platform }} app using Fastlane..."
+          bundle exec fastlane ios ${{ matrix.lane }}
 
   test:
     name: Test - ${{ matrix.platform }}
     runs-on: macos-latest
+    needs: build
     strategy:
       matrix:
         platform: [iOS, macOS]
         include:
           - platform: iOS
-            destination: "platform=iOS Simulator,name=iPhone 15"
+            lane: test_ios
           - platform: macOS
-            destination: "platform=macOS,variant=Mac Catalyst"
+            lane: test_macos
     environment: IntegrationTests
     env:
       REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
-    needs: build
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      FASTLANE_SKIP_UPDATE_CHECK: 1
+      FASTLANE_HIDE_GITHUB_ISSUES: 1
+      FASTLANE_HIDE_CHANGELOG: 1
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      - name: Setup Xcode
-        id: setup-xcode
-        uses: maxim-lobanov/setup-xcode@v1
+      - name: Setup Ruby and Fastlane
+        uses: ruby/setup-ruby@v1
         with:
-          xcode-version: latest
+          ruby-version: '3.2'
+          bundler-cache: true
 
-      - name: fix unable to connect to the simulator
-        run: xcrun simctl list > /dev/null
-
-      - name: Install xcpretty
-        run: gem install xcpretty
-
-      - name: create cache directory
-        run: mkdir -p "${{ runner.temp }}/xcode-downloads"
-
-      #     - name: Cache Xcode iOS Platform
-      #       id: cache-xcode-platform
-      #       uses: actions/cache@v4
-      #       with:
-      #         path: ${{ runner.temp }}/xcode-downloads
-      #         key: xcode-platform-${{ matrix.platform }}-${{ runner.os }}
-
-      - name: Install iOS Platform
+      - name: Run Tests with Fastlane
         run: |
-          xcodebuild -downloadPlatform iOS -exportPath "${{ runner.temp }}/xcode-downloads"
-
-      - name: Generate API Configuration
-        run: |
-          echo "🔧 Generating API configuration..."
-          ./Scripts/generate-api-config.sh
-
-      - name: Run Tests
-        run: |
-          echo "🧪 Running ${{ matrix.platform }} tests..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-          set -o pipefail
-          xcodebuild test \
-                     -project Brixie.xcodeproj \
-                     -scheme Brixie \
-                     -destination "${{ matrix.destination }}" \
-                     CODE_SIGNING_ALLOWED=NO \
-                     -quiet \
-                     | xcpretty --color --test
-
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ ${{ matrix.platform }} tests completed successfully!"
+          echo "🧪 Running ${{ matrix.platform }} tests using Fastlane..."
+          bundle exec fastlane ios ${{ matrix.lane }}
