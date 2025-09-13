@@ -15,18 +15,46 @@ Brixie is a multi-platform iOS/macOS SwiftUI application that integrates with th
 
 ## Development Commands
 
-This project uses direct xcodebuild commands with a configuration generation script:
+This project uses Fastlane for build automation and testing. All commands require the `REBRICKABLE_API_KEY` environment variable.
 
-### Configuration Management
+### Fastlane Lanes
+
+#### Building
 ```bash
-# Generate API configuration with API key
-REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
+# Build iOS app for simulator
+REBRICKABLE_API_KEY="your_key" fastlane ios build_ios
 
-# Clean generated files
-rm -f Brixie/Configuration/Generated/GeneratedConfiguration.swift
+# Build macOS app (Mac Catalyst)
+REBRICKABLE_API_KEY="your_key" fastlane ios build_macos
+
+# Build both platforms
+REBRICKABLE_API_KEY="your_key" fastlane ios build_all
 ```
 
-### Building
+#### Testing
+```bash
+# Run iOS tests
+REBRICKABLE_API_KEY="your_key" fastlane ios test_ios
+
+# Run macOS tests
+REBRICKABLE_API_KEY="your_key" fastlane ios test_macos
+
+# Run tests on both platforms
+REBRICKABLE_API_KEY="your_key" fastlane ios test_all
+```
+
+#### Utilities
+```bash
+# Clean build artifacts and generated files
+REBRICKABLE_API_KEY="your_key" fastlane ios clean
+
+# Show available lanes and help
+fastlane ios show_help
+```
+
+### Direct xcodebuild (legacy)
+If needed, you can still use direct xcodebuild commands:
+
 ```bash
 # Generate config and build iOS app
 REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
@@ -35,17 +63,6 @@ xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug -destin
 # Generate config and build macOS app
 REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
 xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug -destination 'platform=macOS,variant=Mac Catalyst' build
-```
-
-### Testing
-```bash
-# Generate config and run iOS tests
-REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 16'
-
-# Generate config and run macOS tests
-REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=macOS,variant=Mac Catalyst'
 ```
 
 ## Platform Support

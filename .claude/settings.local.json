@@ -22,7 +22,12 @@
       "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" make generate-config)",
       "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" make build-ios)",
       "Bash(rm:*)",
-      "WebFetch(domain:productionresultssa16.blob.core.windows.net)"
+      "WebFetch(domain:productionresultssa16.blob.core.windows.net)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios build_ios)",
+      "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios build_macos)",
+      "Bash(CI=true REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios build_ios)",
+      "Bash(CI=true REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios build_macos)"
     ],
     "deny": [],
     "ask": []

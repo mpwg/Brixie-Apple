@@ -15,9 +15,160 @@
 
 default_platform(:ios)
 
+# Load environment variables from .env file if it exists
+if File.exist?('.env')
+  ENV.each { |k, v| ENV[k] = v }
+end
+
+# Project configuration
+APP_IDENTIFIER = "net.brixie.app"
+SCHEME_NAME = "Brixie"
+PROJECT_PATH = "./Brixie.xcodeproj"
+
+before_all do
+  # Ensure we have the required API key
+  unless ENV["REBRICKABLE_API_KEY"]
+    UI.user_error!("❌ REBRICKABLE_API_KEY environment variable is required")
+  end
+
+  # Generate API configuration
+  sh("REBRICKABLE_API_KEY='#{ENV['REBRICKABLE_API_KEY']}' ../Scripts/generate-api-config.sh")
+end
+
 platform :ios do
-  desc "Description of what the lane does"
-  lane :custom_lane do
-    # add actions here: https://docs.fastlane.tools/actions
+  desc "Show available lanes and their descriptions"
+  lane :show_help do
+    puts "\n🚀 Available Fastlane lanes for Brixie:\n\n"
+    puts "📱 iOS Lanes:"
+    puts "  • fastlane ios build_ios     - Build iOS app for simulator"
+    puts "  • fastlane ios test_ios      - Run iOS tests"
+    puts "\n💻 macOS Lanes:"
+    puts "  • fastlane ios build_macos   - Build macOS app (Mac Catalyst)"
+    puts "  • fastlane ios test_macos    - Run macOS tests"
+    puts "\n🔧 Utility Lanes:"
+    puts "  • fastlane ios build_all     - Build both iOS and macOS"
+    puts "  • fastlane ios test_all      - Run tests on both platforms"
+    puts "  • fastlane ios show_help     - Show this help"
+    puts "\n"
+  end
+
+  desc "Build iOS app for simulator"
+  lane :build_ios do
+    UI.message("🍎 Building iOS app...")
+
+    # Determine if we're running in CI environment
+    is_ci = ENV['CI'] == 'true'
+
+    build_settings = {}
+    destination = "platform=iOS Simulator,name=iPhone 16"
+
+    if is_ci
+      build_settings["CODE_SIGNING_ALLOWED"] = "NO"
+      destination = "generic/platform=iOS"
+    end
+
+    xcodebuild(
+      project: PROJECT_PATH,
+      scheme: SCHEME_NAME,
+      configuration: "Debug",
+      destination: destination,
+      build: true,
+      clean: true,
+      xcargs: build_settings.map { |k, v| "#{k}=#{v}" }.join(" ")
+    )
+
+    UI.success("✅ iOS build completed successfully!")
+  end
+
+  desc "Build macOS app (Mac Catalyst)"
+  lane :build_macos do
+    UI.message("💻 Building macOS app (Mac Catalyst)...")
+
+    # Determine if we're running in CI environment
+    is_ci = ENV['CI'] == 'true'
+
+    build_settings = {}
+    destination = "platform=macOS,variant=Mac Catalyst"
+
+    if is_ci
+      build_settings["CODE_SIGNING_ALLOWED"] = "NO"
+      destination = "generic/platform=macOS,variant=Mac Catalyst"
+    end
+
+    xcodebuild(
+      project: PROJECT_PATH,
+      scheme: SCHEME_NAME,
+      configuration: "Debug",
+      destination: destination,
+      build: true,
+      clean: true,
+      xcargs: build_settings.map { |k, v| "#{k}=#{v}" }.join(" ")
+    )
+
+    UI.success("✅ macOS build completed successfully!")
+  end
+
+  desc "Build both iOS and macOS apps"
+  lane :build_all do
+    UI.message("🚀 Building all platforms...")
+
+    build_ios
+    build_macos
+
+    UI.success("✅ All builds completed successfully!")
+  end
+
+  desc "Run iOS tests"
+  lane :test_ios do
+    UI.message("🧪 Running iOS tests...")
+
+    run_tests(
+      project: PROJECT_PATH,
+      scheme: SCHEME_NAME,
+      destination: "platform=iOS Simulator,name=iPhone 16",
+      clean: true
+    )
+
+    UI.success("✅ iOS tests completed successfully!")
+  end
+
+  desc "Run macOS tests"
+  lane :test_macos do
+    UI.message("🧪 Running macOS tests...")
+
+    run_tests(
+      project: PROJECT_PATH,
+      scheme: SCHEME_NAME,
+      destination: "platform=macOS,variant=Mac Catalyst",
+      clean: true
+    )
+
+    UI.success("✅ macOS tests completed successfully!")
+  end
+
+  desc "Run tests on all platforms"
+  lane :test_all do
+    UI.message("🧪 Running tests on all platforms...")
+
+    test_ios
+    test_macos
+
+    UI.success("✅ All tests completed successfully!")
+  end
+
+  desc "Clean build artifacts"
+  lane :clean do
+    UI.message("🧹 Cleaning build artifacts...")
+
+    clear_derived_data
+
+    # Clean generated configuration
+    sh("rm -f ../Brixie/Configuration/Generated/GeneratedConfiguration.swift")
+
+    UI.success("✅ Clean completed successfully!")
+  end
+
+  error do |lane, exception|
+    UI.error("❌ Lane '#{lane}' failed with error: #{exception.message}")
   end
 end

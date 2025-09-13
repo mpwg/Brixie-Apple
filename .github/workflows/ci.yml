@@ -31,35 +31,32 @@ jobs:
         platform: [iOS, macOS]
         include:
           - platform: iOS
-            destination: "generic/platform=iOS"
+            lane: build_ios
           - platform: macOS
-            destination: "generic/platform=macOS,variant=Mac Catalyst"
+            lane: build_macos
     environment: IntegrationTests
     env:
       REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPSTORE_TEAM_ID: ${{ secrets.APPSTORE_TEAM_ID }}
-      FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
-      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
       FASTLANE_SKIP_UPDATE_CHECK: 1
       FASTLANE_HIDE_GITHUB_ISSUES: 1
       FASTLANE_HIDE_CHANGELOG: 1
-      DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
-      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
-      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
+      - name: Setup Ruby and Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
       - name: Show Build Environment
         run: |
           echo "🔍 Build Environment Info:"
           echo "Platform: ${{ matrix.platform }}"
+          echo "Lane: ${{ matrix.lane }}"
           echo "Xcode Version: $(xcodebuild -version)"
-          echo "Available SDKs:"; xcodebuild -showsdks || true
-          echo "Destination: ${{ matrix.destination }}"
           if [ -n "$REBRICKABLE_API_KEY" ]; then
             echo "✅ API Key: Present"
           else
@@ -67,25 +64,41 @@ jobs:
           fi
           echo ""
 
-      - name: Generate API Configuration
+      - name: Build App with Fastlane
         run: |
-          echo "🔧 Generating API configuration..."
-          ./Scripts/generate-api-config.sh
+          echo "🚀 Building ${{ matrix.platform }} app using Fastlane..."
+          bundle exec fastlane ios ${{ matrix.lane }}
 
-      - name: Build App
+  test:
+    name: Test - ${{ matrix.platform }}
+    runs-on: macos-latest
+    needs: build
+    strategy:
+      matrix:
+        platform: [iOS, macOS]
+        include:
+          - platform: iOS
+            lane: test_ios
+          - platform: macOS
+            lane: test_macos
+    environment: IntegrationTests
+    env:
+      REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
+      FASTLANE_SKIP_UPDATE_CHECK: 1
+      FASTLANE_HIDE_GITHUB_ISSUES: 1
+      FASTLANE_HIDE_CHANGELOG: 1
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Setup Ruby and Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Run Tests with Fastlane
         run: |
-          echo "🔨 Building ${{ matrix.platform }} app..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-          set -o pipefail
-          xcodebuild -project Brixie.xcodeproj \
-                     -scheme Brixie \
-                     -configuration Debug \
-                     -destination "${{ matrix.destination }}" \
-                     build \
-                     CODE_SIGNING_ALLOWED=NO \
-                     -quiet \
-                     | xcpretty --color --simple
-
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ ${{ matrix.platform }} build completed successfully!"
+          echo "🧪 Running ${{ matrix.platform }} tests using Fastlane..."
+          bundle exec fastlane ios ${{ matrix.lane }}
