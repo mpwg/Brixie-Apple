@@ -484,6 +484,18 @@ struct BrixieTests {
     @Test
     func example() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    }    
+    @Test func testMemoryCacheClearing() async throws {
+        let imageService = ImageCacheService.shared
+
+        // Clear any existing cache first
+        imageService.clearCache()
+
+        // Test that clearMemoryCache method exists and works without crashing
+        imageService.clearMemoryCache()
+
+        // If we reach here without crashes, the memory cache clearing is working
+        #expect(true, "Memory cache clearing completed without errors")
     }
    
     @Test

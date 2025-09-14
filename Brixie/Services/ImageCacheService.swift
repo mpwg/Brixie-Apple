@@ -35,8 +35,10 @@ final class ImageCacheService: @unchecked Sendable {
         
         // Configure memory cache for image data
         cache.countLimit = 100
-        cache.totalCostLimit = 50 * 1_024 * 1_024 // 50MB
+        cache.totalCostLimit = 50 * 1024 * 1024 // 50MB
+        
     }
+    
     
     func loadImageData(from urlString: String) async -> Data? {
         // Check memory cache first
@@ -110,6 +112,10 @@ final class ImageCacheService: @unchecked Sendable {
         }
         
         return false
+    }
+        
+    func clearMemoryCache() {
+        cache.removeAllObjects()
     }
     
     func clearCache() {
