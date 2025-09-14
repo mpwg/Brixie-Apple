@@ -210,8 +210,6 @@ platform :ios do
 
   desc "Update certificates and push to git"
   lane :update_certificates do
-    configure_app_store_connect
-    UI.success("DEBUG: Before updating certificates")
 
     match(
       type: "development",
@@ -254,14 +252,6 @@ platform :ios do
     }
   end
 
-  private_lane :configure_app_store_connect do
-    if ENV["FASTLANE_SESSION"]
-      UI.message("🔑 Using FASTLANE_SESSION for App Store Connect authentication")
-    else
-      UI.message("⚠️  FASTLANE_SESSION not configured - some operations may require manual authentication")
-    end
-  end
-
   private_lane :sync_certificates do |options|
     type = options[:type]
 
@@ -274,9 +264,6 @@ platform :ios do
       UI.error("💡 Please check your .env file or environment configuration")
       raise "Missing required environment variables for code signing"
     end
-
-    # Configure App Store Connect authentication if available (required for creating new certificates)
-    configure_app_store_connect
 
     UI.message("🔐 Syncing #{type} certificates and provisioning profiles with fastlane match")
     UI.message("🚧 Ensuring Fastlane handles code signing (not Xcode automatic signing)")
