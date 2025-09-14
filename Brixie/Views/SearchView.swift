@@ -9,16 +9,24 @@ import SwiftUI
 import SwiftData
 
 struct SearchView: View {
-    @Environment(\.diContainer) private var diContainer
+    @Environment(\.diContainer)
+    private var diContainer
     @State private var viewModel: SearchViewModel?
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.brixieBackground
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
+                    // Error banner for search failures  
+                    if let vm = viewModel, let error = vm.error, !vm.searchText.isEmpty {
+                        errorBannerView(for: error)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 8)
+                    }
+                    
                     if viewModel != nil {
                         searchContentView
                     } else {
@@ -34,31 +42,24 @@ struct SearchView: View {
                         .font(.brixieTitle)
                         .foregroundStyle(Color.brixieText)
                 }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if let vm = viewModel {
+                        OfflineIndicatorBadge(
+                            lastSyncTimestamp: vm.lastSyncTimestamp,
+                            variant: .compact
+                        )
+                    }
+                }
             }
             .searchable(text: Binding(
                 get: { viewModel?.searchText ?? "" },
                 set: { viewModel?.searchText = $0 }
             ), prompt: "Search LEGO sets...") {
-                if let vm = viewModel, !vm.recentSearches.isEmpty {
-                    Section("Recent Searches") {
-                        ForEach(vm.recentSearches, id: \.self) { search in
-                            Button {
-                                vm.searchText = search
-                                Task {
-                                    await vm.performSearch()
-                                }
-                            } label: {
-                                HStack {
-                                    Image(systemName: "clock.arrow.circlepath")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(Color.brixieAccent)
-                                    Text(search)
-                                        .foregroundStyle(Color.brixieText)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 4)
-                            }
-                        }
+                if let vm = viewModel {
+                    BrixieSearchSuggestions(recentSearches: vm.recentSearches) { selection in
+                        vm.searchText = selection
+                        Task { await vm.performSearch() }
                     }
                 }
             }
@@ -79,15 +80,14 @@ struct SearchView: View {
             }
         }
     }
-    
-    
+
     private var searchContentView: some View {
         Group {
             if let vm = viewModel {
                 if vm.searchText.isEmpty {
                     recentSearchesView
                 } else if vm.isSearching {
-                    modernLoadingView
+                    searchSkeletonView
                 } else if vm.searchResults.isEmpty && vm.showingNoResults {
                     modernNoResultsView
                 } else {
@@ -96,7 +96,7 @@ struct SearchView: View {
             }
         }
     }
-    
+
     private var recentSearchesView: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -107,9 +107,9 @@ struct SearchView: View {
                                 .font(.brixieHeadline)
                                 .foregroundStyle(Color.brixieText)
                             Spacer()
-                        }
+                            }
                         .padding(.horizontal, 20)
-                        
+
                         ScrollView(.horizontal, showsIndicators: false) {
                             LazyHStack(spacing: 12) {
                                 ForEach(vm.recentSearches, id: \.self) { search in
@@ -144,10 +144,11 @@ struct SearchView: View {
                         }
                     }
                 }
-                
+
                 BrixieHeroSection(
                     title: "Discover LEGO Sets",
-                    subtitle: "Search through thousands of LEGO sets by name, number, or theme to find your next build.",
+                    subtitle: "Search through thousands of LEGO sets by name, number, or theme " +
+                              "to find your next build.",
                     icon: "magnifyingglass"
                 ) {
                     EmptyView()
@@ -156,7 +157,25 @@ struct SearchView: View {
             .padding(.top, 20)
         }
     }
-    
+
+    private var searchSkeletonView: some View {
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                HStack {
+                    SkeletonTextLine(width: 100, height: 16)
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+
+                ForEach(0..<6, id: \.self) { _ in
+                    SetRowSkeleton()
+                }
+            }
+            .padding(.horizontal, 20)
+        }
+    }
+
     private var modernLoadingView: some View {
         BrixieHeroSection(
             title: "Searching...",
@@ -166,11 +185,17 @@ struct SearchView: View {
             BrixieLoadingView()
         }
     }
-    
+
     private var modernNoResultsView: some View {
         BrixieHeroSection(
             title: "No Results Found",
-            subtitle: String(format: NSLocalizedString("No sets found for '%@'. Try a different search term.", comment: "No results message"), viewModel?.searchText ?? ""),
+            subtitle: String(
+                format: NSLocalizedString(
+                    "No sets found for '%@'. Try a different search term.",
+                    comment: "No results message"
+                ),
+                viewModel?.searchText ?? ""
+            ),
             icon: "magnifyingglass"
         ) {
             Button("Clear Search") {
@@ -179,7 +204,7 @@ struct SearchView: View {
             .buttonStyle(BrixieButtonStyle(variant: .secondary))
         }
     }
-    
+
     private var modernSearchResultsView: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
@@ -192,14 +217,14 @@ struct SearchView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
-                    
+
                     ForEach(vm.searchResults) { set in
                         NavigationLink(destination: SetDetailView(set: set)) {
-                            SetRowView(set: set, onFavoriteToggle: { set in
+                            SetRowView(set: set) { set in
                                 Task {
                                     await vm.toggleFavorite(for: set)
                                 }
-                            })
+                            }
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -208,9 +233,44 @@ struct SearchView: View {
             .padding(.horizontal, 20)
         }
     }
+    
+    @ViewBuilder
+    private func errorBannerView(for error: BrixieError) -> some View {
+        switch error {
+        case .networkError:
+            BrixieBannerView.networkError(onRetry: {
+                Task {
+                    await viewModel?.retrySearch()
+                }
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        case .apiKeyMissing, .unauthorized:
+            BrixieBannerView.apiKeyError(onRetry: {
+                // Navigate to settings - for now just clear error
+                viewModel?.error = nil
+            }, onDismiss: {
+                viewModel?.error = nil
+            })
+            
+        default:
+            BrixieBannerView.generalError(
+                error,
+                onRetry: {
+                    Task {
+                        await viewModel?.retrySearch()
+                    }
+                },
+                onDismiss: {
+                    viewModel?.error = nil
+                }
+            )
+        }
+    }
 }
 
 #Preview {
     SearchView()
-        .modelContainer(for: LegoSet.self, inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

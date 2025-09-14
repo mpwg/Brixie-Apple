@@ -72,7 +72,6 @@ final class ImageCacheService: @unchecked Sendable {
         return await downloadAndCacheImageData(from: urlString)
     }
     
-    
     private func downloadAndCacheImageData(from urlString: String) async -> Data? {
         guard let url = URL(string: urlString) else { return nil }
         
@@ -92,7 +91,6 @@ final class ImageCacheService: @unchecked Sendable {
             try data.write(to: fileURL)
             
             return data
-            
         } catch {
             print("Failed to download image: \(error)")
             return nil
@@ -127,8 +125,7 @@ final class ImageCacheService: @unchecked Sendable {
         
         return false
     }
-    
-    
+        
     func clearMemoryCache() {
         cache.removeAllObjects()
     }
@@ -153,7 +150,8 @@ final class ImageCacheService: @unchecked Sendable {
             let totalSize = files.compactMap { url -> Int64? in
                 let resources = try? url.resourceValues(forKeys: [.fileSizeKey])
                 return Int64(resources?.fileSize ?? 0)
-            }.reduce(0, +)
+            }
+            .reduce(0, +)
             
             return ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
         } catch {

@@ -13,9 +13,16 @@ import SwiftData
 @MainActor
 final class LegoSetService {
     private let modelContext: ModelContext
+    private let errorReporter = ErrorReporter.shared
     
     var isLoading = false
-    var errorMessage: String?
+    var error: BrixieError? {
+        didSet {
+            if let error = error {
+                errorReporter.report(error)
+            }
+        }
+    }
     
     init(modelContext: ModelContext, apiKey: String) {
         RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKey
@@ -24,7 +31,7 @@ final class LegoSetService {
     
     func fetchSets(page: Int = 1, pageSize: Int = 20) async throws -> [LegoSet] {
         isLoading = true
-        errorMessage = nil
+        error = nil
         
         defer { isLoading = false }
         
@@ -40,7 +47,7 @@ final class LegoSetService {
                     setNum: apiSet.setNum ?? "",
                     name: apiSet.name ?? "",
                     year: apiSet.year ?? 0,
-                    themeId: apiSet.themeId ?? 301, //other
+                    themeId: apiSet.themeId ?? 301, // other
                     numParts: apiSet.numParts ?? 0,
                     imageURL: apiSet.setImgUrl
                 )
@@ -53,16 +60,15 @@ final class LegoSetService {
             
             try modelContext.save()
             return legoSets
-            
         } catch {
-            errorMessage = "Failed to fetch sets: \(error.localizedDescription)"
-            throw error
+            self.error = mapToBrixieError(error)
+            throw self.error!
         }
     }
     
     func searchSets(query: String, page: Int = 1, pageSize: Int = 20) async throws -> [LegoSet] {
         isLoading = true
-        errorMessage = nil
+        error = nil
         
         defer { isLoading = false }
         
@@ -79,23 +85,22 @@ final class LegoSetService {
                     setNum: apiSet.setNum ?? "",
                     name: apiSet.name ?? "",
                     year: apiSet.year ?? 0,
-                    themeId: apiSet.themeId ?? 301, //other
+                    themeId: apiSet.themeId ?? 301, // other
                     numParts: apiSet.numParts ?? 0,
                     imageURL: apiSet.setImgUrl
                 )
             }
             
             return legoSets
-            
         } catch {
-            errorMessage = "Failed to search sets: \(error.localizedDescription)"
-            throw error
+            self.error = mapToBrixieError(error)
+            throw self.error!
         }
     }
     
     func getSetDetails(setNum: String) async throws -> LegoSet? {
         isLoading = true
-        errorMessage = nil
+        error = nil
         
         defer { isLoading = false }
         
@@ -104,18 +109,17 @@ final class LegoSetService {
             
             let legoSet = LegoSet(
                 setNum: apiSet.setNum ?? "",
-                name: apiSet.name   ?? "",
+                name: apiSet.name ?? "",
                 year: apiSet.year ?? 0,
-                themeId: apiSet.themeId ?? 301, //other
+                themeId: apiSet.themeId ?? 301, // other
                 numParts: apiSet.numParts ?? 0,
                 imageURL: apiSet.setImgUrl
             )
             
             return legoSet
-            
         } catch {
-            errorMessage = "Failed to get set details: \(error.localizedDescription)"
-            throw error
+            self.error = mapToBrixieError(error)
+            throw self.error!
         }
     }
     
@@ -127,7 +131,7 @@ final class LegoSetService {
         do {
             return try modelContext.fetch(descriptor)
         } catch {
-            errorMessage = "Failed to fetch cached sets: \(error.localizedDescription)"
+            self.error = BrixieError.cacheError(underlying: error)
             return []
         }
     }
@@ -138,7 +142,7 @@ final class LegoSetService {
         do {
             try modelContext.save()
         } catch {
-            errorMessage = "Failed to update favorite: \(error.localizedDescription)"
+            self.error = BrixieError.persistenceError(underlying: error)
         }
     }
     
@@ -148,7 +152,32 @@ final class LegoSetService {
         do {
             try modelContext.save()
         } catch {
-            errorMessage = "Failed to update view date: \(error.localizedDescription)"
+            self.error = BrixieError.persistenceError(underlying: error)
         }
+    }
+    
+    // MARK: Error Mapping
+    
+    private func mapToBrixieError(_ error: Error) -> BrixieError {
+        if let brixieError = error as? BrixieError {
+            return brixieError
+        }
+        
+        // Map common error types
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .notConnectedToInternet, .networkConnectionLost:
+                return .networkError(underlying: error)
+            case .timedOut:
+                return .networkError(underlying: error)
+            case .badURL:
+                return .invalidURL(urlError.localizedDescription)
+            default:
+                return .networkError(underlying: error)
+            }
+        }
+        
+        // Default mapping
+        return .networkError(underlying: error)
     }
 }

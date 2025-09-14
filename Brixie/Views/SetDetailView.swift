@@ -10,7 +10,8 @@ import SwiftData
 
 struct SetDetailView: View {
     let set: LegoSet
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.modelContext)
+    private var modelContext
     @State private var isFavorite: Bool
     @State private var showingFullScreenImage = false
     
@@ -40,12 +41,7 @@ struct SetDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    toggleFavorite()
-                } label: {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundStyle(isFavorite ? .red : .primary)
-                }
+                FavoriteButton(isFavorite: isFavorite, action: { toggleFavorite() }, prominent: false)
             }
         }
         .onAppear {
@@ -58,19 +54,14 @@ struct SetDetailView: View {
     
     private var heroImageView: some View {
         VStack {
-            AsyncCachedImage(urlString: set.imageURL)
-                .aspectRatio(contentMode: .fit)
-                .frame(maxHeight: 300)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(.gray.opacity(0.1))
-                )
-                .onTapGesture {
-                    if set.imageURL != nil {
-                        showingFullScreenImage = true
-                    }
+            CachedImageCard(urlString: set.imageURL, maxHeight: 300) {
+                EmptyView()
+            }
+            .onTapGesture {
+                if set.imageURL != nil {
+                    showingFullScreenImage = true
                 }
+            }
             
             if set.imageURL != nil {
                 Text(NSLocalizedString("Tap to view full size", comment: "Hint for image tap"))
@@ -146,15 +137,22 @@ struct SetDetailView: View {
             Button {
                 toggleFavorite()
             } label: {
-                                Label(isFavorite ? NSLocalizedString("Remove from Favorites", comment: "Remove favorite action") : NSLocalizedString("Add to Favorites", comment: "Add favorite action"),
-                                            systemImage: isFavorite ? "heart.slash" : "heart")
+                Label(
+                    isFavorite ?
+                        NSLocalizedString("Remove from Favorites", comment: "Remove favorite action") :
+                        NSLocalizedString("Add to Favorites", comment: "Add favorite action"),
+                    systemImage: isFavorite ? "heart.slash" : "heart"
+                )
             }
             .buttonStyle(.borderedProminent)
             .tint(isFavorite ? .red : .blue)
             
             if let imageURL = set.imageURL {
                 ShareLink(item: URL(string: imageURL)!) {
-                                        Label(NSLocalizedString("Share Image", comment: "Share image action"), systemImage: "square.and.arrow.up")
+                    Label(
+                        NSLocalizedString("Share Image", comment: "Share image action"),
+                        systemImage: "square.and.arrow.up"
+                    )
                 }
                 .buttonStyle(.bordered)
             }
@@ -228,7 +226,8 @@ struct StatCard: View {
 
 struct FullScreenImageView: View {
     let imageURL: String?
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss)
+    private var dismiss
     
     var body: some View {
         NavigationStack {
@@ -258,15 +257,15 @@ struct FullScreenImageView: View {
     let sampleSet = LegoSet(
         setNum: "10294-1",
         name: "Titanic",
-        year: 2021,
+        year: 2_021,
         themeId: 1,
-        numParts: 9090
+        numParts: 9_090
     )
     
     NavigationStack {
         SetDetailView(set: sampleSet)
     }
-    .modelContainer(for: LegoSet.self, inMemory: true)
+    .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
 
 #Preview {

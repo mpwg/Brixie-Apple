@@ -9,9 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(ThemeManager.self) private var themeManager
+    @Environment(\.modelContext)
+    private var modelContext
+    @Environment(\.colorScheme)
+    private var colorScheme
+    @Environment(ThemeManager.self)
+    private var themeManager
     @State private var selectedTab = 0
     
     var body: some View {
@@ -22,19 +25,28 @@ struct ContentView: View {
             TabView(selection: $selectedTab) {
                 CategoriesView()
                     .tabItem {
-                        Label(NSLocalizedString("Categories", comment: "Tab label for categories"), systemImage: "folder")
+                        Label(
+                            NSLocalizedString("Categories", comment: "Tab label for categories"),
+                            systemImage: "folder"
+                        )
                     }
                     .tag(0)
                 
                 SetsListView()
                     .tabItem {
-                        Label(NSLocalizedString("Sets", comment: "Tab label for sets"), systemImage: "building.2")
+                        Label(
+                            NSLocalizedString("Sets", comment: "Tab label for sets"),
+                            systemImage: "building.2"
+                        )
                     }
                     .tag(1)
                 
                 SearchView()
                     .tabItem {
-                        Label(NSLocalizedString("Search", comment: "Tab label for search"), systemImage: "magnifyingglass")
+                        Label(
+                            NSLocalizedString("Search", comment: "Tab label for search"),
+                            systemImage: "magnifyingglass"
+                        )
                     }
                     .tag(2)
                 
@@ -57,5 +69,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [LegoSet.self, LegoTheme.self], inMemory: true)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

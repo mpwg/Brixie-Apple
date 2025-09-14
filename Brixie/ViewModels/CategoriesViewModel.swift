@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class CategoriesViewModel {
+final class CategoriesViewModel: ViewModelErrorHandling {
     private let legoThemeRepository: LegoThemeRepository
     
     var themes: [LegoTheme] = []
@@ -21,6 +21,7 @@ final class CategoriesViewModel {
     }
     var isLoading = false
     var error: BrixieError?
+    var lastSyncTimestamp: SyncTimestamp?
     
     init(legoThemeRepository: LegoThemeRepository) {
         self.legoThemeRepository = legoThemeRepository
@@ -30,17 +31,16 @@ final class CategoriesViewModel {
         isLoading = true
         error = nil
         
-        defer { isLoading = false }
+        defer { 
+            isLoading = false
+            updateLastSyncTimestamp()
+        }
         
         do {
             themes = try await legoThemeRepository.fetchThemes(page: 1, pageSize: 100)
             updateFilteredThemes()
-        } catch let brixieError as BrixieError {
-            error = brixieError
-            themes = await legoThemeRepository.getCachedThemes()
-            updateFilteredThemes()
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
             themes = await legoThemeRepository.getCachedThemes()
             updateFilteredThemes()
         }
@@ -79,8 +79,13 @@ final class CategoriesViewModel {
         }
     }
     
-    
     var cachedThemesAvailable: Bool {
         !themes.isEmpty
+    }
+    
+    private func updateLastSyncTimestamp() {
+        Task {
+            lastSyncTimestamp = await legoThemeRepository.getLastSyncTimestamp(for: .themes)
+        }
     }
 }
