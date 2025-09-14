@@ -5,3 +5,5 @@ Brixie/Configuration/Generated/
 
 # Environment files with API keys
 .env
+GeneratedConfiguration.swift
+fastlane/report.xml
