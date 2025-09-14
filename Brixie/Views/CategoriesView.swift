@@ -112,12 +112,6 @@ struct CategoriesView: View {
                                     .padding(6)
                                     .background(Circle().fill(Color.brixieCard))
                             }
-                    } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle.fill")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.brixieAccent)
-                            .padding(6)
-                            .background(Circle().fill(Color.brixieCard))
                     }
                 }
             }

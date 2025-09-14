@@ -114,11 +114,7 @@ final class SetsListViewModel: ViewModelErrorHandling {
             self.error = BrixieError.networkError(underlying: error)
         }
     }
-    
-    var cachedSetsAvailable: Bool {
-        !sets.isEmpty
-    }
-    
+
     private func updateLastSyncTimestamp() {
         Task {
             lastSyncTimestamp = await legoSetRepository.getLastSyncTimestamp(for: .sets)
