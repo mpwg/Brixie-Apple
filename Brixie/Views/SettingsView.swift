@@ -8,11 +8,16 @@
 import SwiftUI
 import SwiftData
 
+// swiftlint:disable:next type_body_length
 struct SettingsView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(ThemeManager.self) private var themeManager
-    @Environment(DIContainer.self) private var diContainer
+    @Environment(\.modelContext)
+    private var modelContext
+    @Environment(\.colorScheme)
+    private var colorScheme
+    @Environment(ThemeManager.self)
+    private var themeManager
+    @Environment(DIContainer.self)
+    private var diContainer
     @State private var showingClearCacheAlert = false
     @State private var cacheSize = "Calculating..."
     @State private var showingAPIKeySheet = false
@@ -76,12 +81,20 @@ struct SettingsView: View {
                     HStack(spacing: 16) {
                         ZStack {
                             Circle()
-                                .fill(apiConfigurationService.hasValidAPIKey ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
+                                .fill(
+                                    apiConfigurationService.hasValidAPIKey ?
+                                    Color.green.opacity(0.1) : Color.orange.opacity(0.1)
+                                )
                                 .frame(width: 48, height: 48)
                             
-                            Image(systemName: apiConfigurationService.hasValidAPIKey ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                            Image(
+                                systemName: apiConfigurationService.hasValidAPIKey ?
+                                "checkmark.circle.fill" : "exclamationmark.triangle.fill"
+                            )
                                 .font(.system(size: 20, weight: .medium))
-                                .foregroundStyle(apiConfigurationService.hasValidAPIKey ? Color.green : Color.orange)
+                                .foregroundStyle(
+                                    apiConfigurationService.hasValidAPIKey ? Color.green : Color.orange
+                                )
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
@@ -105,7 +118,10 @@ struct SettingsView: View {
                 .padding(20)
             }
             
-            Text("Configure your Rebrickable API key to access LEGO set data. Get your free API key from rebrickable.com/api/")
+            Text(
+                "Configure your Rebrickable API key to access LEGO set data. " +
+                "Get your free API key from rebrickable.com/api/"
+            )
                 .font(.brixieCaption)
                 .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)
@@ -157,12 +173,18 @@ struct SettingsView: View {
                                 HStack(spacing: 12) {
                                     Image(systemName: theme.iconName)
                                         .font(.system(size: 16, weight: .medium))
-                                        .foregroundStyle(themeManager.selectedTheme == theme ? Color.brixieAccent : Color.brixieTextSecondary)
+                                        .foregroundStyle(
+                                            themeManager.selectedTheme == theme ?
+                                            Color.brixieAccent : Color.brixieTextSecondary
+                                        )
                                         .frame(width: 20)
                                     
                                     Text(theme.displayName)
                                         .font(.brixieBody)
-                                        .foregroundStyle(themeManager.selectedTheme == theme ? Color.brixieAccent : Color.brixieText)
+                                        .foregroundStyle(
+                                            themeManager.selectedTheme == theme ?
+                                            Color.brixieAccent : Color.brixieText
+                                        )
                                     
                                     Spacer()
                                     
@@ -331,7 +353,10 @@ struct SettingsView: View {
                 .padding(20)
             }
             
-            Text("Brixie uses the Rebrickable API to provide comprehensive LEGO set information and enhance your building experience.")
+            Text(
+                "Brixie uses the Rebrickable API to provide comprehensive LEGO set " +
+                "information and enhance your building experience."
+            )
                 .font(.brixieCaption)
                 .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)

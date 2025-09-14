@@ -132,7 +132,8 @@ final class ImageCacheService: @unchecked Sendable {
             let totalSize = files.compactMap { url -> Int64? in
                 let resources = try? url.resourceValues(forKeys: [.fileSizeKey])
                 return Int64(resources?.fileSize ?? 0)
-            }.reduce(0, +)
+            }
+            .reduce(0, +)
             
             return ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
         } catch {

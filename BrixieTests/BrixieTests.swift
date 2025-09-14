@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  BrixieTests.swift
 //  BrixieTests
@@ -10,7 +11,7 @@ import Foundation
 import SwiftData
 @testable import Brixie
 
-// MARK: - Mock Data Sources
+// MARK: Mock Data Sources
 
 @MainActor
 final class MockLegoSetRemoteDataSource: LegoSetRemoteDataSource {
@@ -67,6 +68,7 @@ final class MockLocalDataSource: LocalDataSource {
         }
         
         if T.self == LegoSet.self {
+            // swiftlint:disable:next force_cast
             return fetchLegoSets as! [T]
         }
         
@@ -87,6 +89,7 @@ final class MockLocalDataSource: LocalDataSource {
                 results = results.filter { $0.isFavorite }
             }
             
+            // swiftlint:disable:next force_cast
             return results as! [T]
         }
         
@@ -116,7 +119,7 @@ final class MockLocalDataSource: LocalDataSource {
     }
 }
 
-// MARK: - Test Data Helpers
+// MARK: Test Data Helpers
 
 extension LegoSet {
     static func mockSet(setNum: String = "123-1", name: String = "Test Set", year: Int = 2_023) -> LegoSet {
@@ -124,10 +127,10 @@ extension LegoSet {
     }
 }
 
-// MARK: - Repository Fallback Tests
+// MARK: Repository Fallback Tests
 
 struct RepositoryFallbackTests {
-    // MARK: - fetchSets Tests
+    // MARK: fetchSets Tests
     
     @Test("fetchSets success case - returns remote data and saves locally")
     func fetchSetsSuccessCase() async throws {
@@ -246,7 +249,7 @@ struct RepositoryFallbackTests {
         }
     }
     
-    // MARK: - searchSets Tests
+    // MARK: searchSets Tests
     
     @Test("searchSets success case - returns remote search results")
     func searchSetsSuccessCase() async throws {
@@ -331,7 +334,7 @@ struct RepositoryFallbackTests {
         #expect(result.isEmpty)
     }
     
-    // MARK: - getSetDetails Tests
+    // MARK: getSetDetails Tests
     
     @Test("getSetDetails success case - returns remote data and saves locally")
     func getSetDetailsSuccessCase() async throws {
@@ -428,7 +431,7 @@ struct RepositoryFallbackTests {
         #expect(result == nil)
     }
     
-    // MARK: - Additional Repository Tests
+    // MARK: Additional Repository Tests
     
     @Test("getCachedSets fallback - returns empty array on error")
     func getCachedSetsFallback() async throws {
@@ -474,14 +477,16 @@ struct RepositoryFallbackTests {
     }
 }
 
-// MARK: - Legacy Test
+// MARK: Legacy Test
 
 struct BrixieTests {
-    @Test func example() async throws {
+    @Test
+    func example() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
     }
    
-    @Test func errorReporter_mapsURLErrorToNetworkError() async throws {
+    @Test
+    func errorReporter_mapsURLErrorToNetworkError() async throws {
         let errorReporter = ErrorReporter.shared
         let urlError = URLError(.notConnectedToInternet)
         
@@ -496,7 +501,8 @@ struct BrixieTests {
         }
     }
     
-    @Test func errorReporter_preservesBrixieError() async throws {
+    @Test
+    func errorReporter_preservesBrixieError() async throws {
         let errorReporter = ErrorReporter.shared
         let brixieError = BrixieError.apiKeyMissing
         
@@ -505,7 +511,8 @@ struct BrixieTests {
         #expect(errorReporter.currentError == .apiKeyMissing)
     }
     
-    @Test func errorReporter_handlesRecoveryActions() async throws {
+    @Test
+    func errorReporter_handlesRecoveryActions() async throws {
         let errorReporter = ErrorReporter.shared
         
         let networkErrorAction = errorReporter.handle(.networkError(underlying: URLError(.notConnectedToInternet)))
@@ -716,7 +723,8 @@ struct ThemeNamePopulationTests {
         }
     }
     
-    @Test func testLegoSetInitializerWithThemeName() async throws {
+    @Test
+    func testLegoSetInitializerWithThemeName() async throws {
         // Test that LegoSet can be initialized with a theme name
         let set = LegoSet(
             setNum: "75192",
@@ -737,7 +745,8 @@ struct ThemeNamePopulationTests {
         #expect(set.themeName == "Star Wars")
     }
     
-    @Test func testLegoSetInitializerWithoutThemeName() async throws {
+    @Test
+    func testLegoSetInitializerWithoutThemeName() async throws {
         // Test that LegoSet can be initialized without a theme name (backwards compatibility)
         let set = LegoSet(
             setNum: "75192",
@@ -757,7 +766,8 @@ struct ThemeNamePopulationTests {
         #expect(set.themeName == nil)
     }
     
-    @Test func testThemeNamePopulationWithCachedThemes() async throws {
+    @Test
+    func testThemeNamePopulationWithCachedThemes() async throws {
         // Test theme name population using cached themes
         let container = createInMemoryContainer()
         let localDataSource = SwiftDataSource(modelContext: container.mainContext)
@@ -795,7 +805,8 @@ struct ThemeNamePopulationTests {
         #expect(sets[1].themeName == "City")
     }
     
-    @Test func testThemeNamePopulationWithMissingTheme() async throws {
+    @Test
+    func testThemeNamePopulationWithMissingTheme() async throws {
         // Test theme name population when theme is not cached
         let container = createInMemoryContainer()
         let localDataSource = SwiftDataSource(modelContext: container.mainContext)
@@ -832,7 +843,8 @@ struct ThemeNamePopulationTests {
         #expect(sets[1].themeName == nil) // Theme not found
     }
     
-    @Test func testBackfillThemeNames() async throws {
+    @Test
+    func testBackfillThemeNames() async throws {
         // Test backfilling existing sets with theme names
         let container = createInMemoryContainer()
         let localDataSource = SwiftDataSource(modelContext: container.mainContext)
@@ -880,7 +892,7 @@ struct ThemeNamePopulationTests {
     }
 }
 
-// MARK: - Mock Data Sources
+// MARK: Mock Data Sources
 
 final class MockLegoSetRemoteDataSource: LegoSetRemoteDataSource {
     var mockSets: [LegoSet] = []
@@ -987,7 +999,7 @@ struct RecentSearchesStorageTests {
         let testStorage = TestRecentSearchesStorage()
         
         // Simulate corrupted data by setting invalid JSON
-        testStorage.userDefaults.set("invalid json data".data(using: .utf8), forKey: testStorage.storageKey)
+        testStorage.userDefaults.set(Data("invalid json data".utf8), forKey: testStorage.storageKey)
         
         // Should return empty array and clear corrupted data
         let loadedSearches = testStorage.loadRecentSearches()
@@ -1183,7 +1195,7 @@ final class MockLegoThemeRepository: LegoThemeRepository {
     }
 }
 
-// MARK: - Pagination Hardening Tests
+// MARK: Pagination Hardening Tests
 
 struct PaginationHardeningTests {
     @Test("SetsListViewModel prevents overlapping loadMore calls") 
@@ -1300,7 +1312,7 @@ struct PaginationHardeningTests {
     }
 }
 
-// MARK: - Mock Implementations
+// MARK: Mock Implementations
 
 @MainActor
 final class MockLegoSetRepository: LegoSetRepository {
@@ -1350,7 +1362,7 @@ final class MockSlowLegoSetRepository: MockLegoSetRepository {
     }
 }
 
-// MARK: - API Configuration Tests
+// MARK: API Configuration Tests
 
 struct APIConfigurationTests {
     @Test("API Configuration Service initialization")
@@ -1436,7 +1448,7 @@ struct APIConfigurationTests {
     }
 }
 
-// MARK: - DI Container Tests
+// MARK: DI Container Tests
 
 struct DIContainerTests {
     @Test("DI Container provides API Configuration Service")
@@ -1494,7 +1506,7 @@ struct DIContainerTests {
     }
 }
 
-// MARK: - Remote Data Source Tests
+// MARK: Remote Data Source Tests
 
 struct RemoteDataSourceTests {
     @Test("LegoSetRemoteDataSource handles missing API key")

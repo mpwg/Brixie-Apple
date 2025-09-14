@@ -52,7 +52,7 @@ struct RetryFunctionalityTests {
     }
 }
 
-// MARK: - Mock Repositories
+// MARK: Mock Repositories
 
 class MockLegoSetRepository: LegoSetRepository {
     var fetchSetsCallCount = 0

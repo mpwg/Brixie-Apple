@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-// MARK: - Error Banner
+// MARK: Error Banner
 
 struct BrixieErrorBanner: View {
     let error: BrixieError
@@ -129,7 +129,7 @@ struct BrixieErrorBanner: View {
     }
 }
 
-// MARK: - Error Toast
+// MARK: Error Toast
 
 struct BrixieErrorToast: View {
     let error: BrixieError
@@ -187,7 +187,7 @@ struct BrixieErrorToast: View {
     }
 }
 
-// MARK: - Error View Modifier
+// MARK: Error View Modifier
 
 struct ErrorHandlingViewModifier: ViewModifier {
     let error: BrixieError?
@@ -218,7 +218,7 @@ enum ErrorDisplayStyle {
     case toast
 }
 
-// MARK: - View Extension
+// MARK: View Extension
 
 extension View {
     func errorHandling(

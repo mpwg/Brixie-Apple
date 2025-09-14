@@ -23,7 +23,11 @@ final class SearchViewModel: ViewModelErrorHandling {
     var showingNoResults = false
     var lastSyncTimestamp: SyncTimestamp?
     
-    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository, recentSearchesStorage: RecentSearchesStorage = .shared) {
+    init(
+        legoSetRepository: LegoSetRepository,
+        legoThemeRepository: LegoThemeRepository,
+        recentSearchesStorage: RecentSearchesStorage = .shared
+    ) {
         self.legoSetRepository = legoSetRepository
         self.legoThemeRepository = legoThemeRepository
         self.recentSearchesStorage = recentSearchesStorage
@@ -132,9 +136,9 @@ final class SearchViewModel: ViewModelErrorHandling {
 }
 
 enum SearchFilter: String, CaseIterable, Identifiable {
-    case all = "all"
-    case sets = "sets"
-    case themes = "themes"
+    case all
+    case sets
+    case themes
     
     var id: String { rawValue }
     

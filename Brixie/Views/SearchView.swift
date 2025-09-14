@@ -9,7 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct SearchView: View {
-    @Environment(\.diContainer) private var diContainer
+    @Environment(\.diContainer)
+    private var diContainer
     @State private var viewModel: SearchViewModel?
     
     var body: some View {
@@ -146,7 +147,8 @@ struct SearchView: View {
                 
                 BrixieHeroSection(
                     title: "Discover LEGO Sets",
-                    subtitle: "Search through thousands of LEGO sets by name, number, or theme to find your next build.",
+                    subtitle: "Search through thousands of LEGO sets by name, number, or theme " +
+                              "to find your next build.",
                     icon: "magnifyingglass"
                 ) {
                     EmptyView()
@@ -169,7 +171,13 @@ struct SearchView: View {
     private var modernNoResultsView: some View {
         BrixieHeroSection(
             title: "No Results Found",
-            subtitle: String(format: NSLocalizedString("No sets found for '%@'. Try a different search term.", comment: "No results message"), viewModel?.searchText ?? ""),
+            subtitle: String(
+                format: NSLocalizedString(
+                    "No sets found for '%@'. Try a different search term.",
+                    comment: "No results message"
+                ),
+                viewModel?.searchText ?? ""
+            ),
             icon: "magnifyingglass"
         ) {
             Button("Clear Search") {
@@ -229,13 +237,17 @@ struct SearchView: View {
             })
             
         default:
-            BrixieBannerView.generalError(error, onRetry: {
-                Task {
-                    await viewModel?.retrySearch()
+            BrixieBannerView.generalError(
+                error,
+                onRetry: {
+                    Task {
+                        await viewModel?.retrySearch()
+                    }
+                },
+                onDismiss: {
+                    viewModel?.error = nil
                 }
-            }, onDismiss: {
-                viewModel?.error = nil
-            })
+            )
         }
     }
 }

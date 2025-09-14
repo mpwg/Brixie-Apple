@@ -13,7 +13,11 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
     private let localDataSource: LocalDataSource
     private let themeRepository: LegoThemeRepository
 
-    init(remoteDataSource: LegoSetRemoteDataSource, localDataSource: LocalDataSource, themeRepository: LegoThemeRepository) {
+    init(
+        remoteDataSource: LegoSetRemoteDataSource,
+        localDataSource: LocalDataSource,
+        themeRepository: LegoThemeRepository
+    ) {
         self.remoteDataSource = remoteDataSource
         self.localDataSource = localDataSource
         self.themeRepository = themeRepository
@@ -172,8 +176,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
         }
     }
     
-    // MARK: - Theme Name Population
-    
+    // MARK: - Theme Name Population    
     /// Populate theme names for sets using cached themes
     private func populateThemeNames(for sets: [LegoSet]) async -> [LegoSet] {
         let cachedThemes = await themeRepository.getCachedThemes()
@@ -205,10 +208,8 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
         let setsWithThemeNames = await populateThemeNames(for: setsNeedingThemeNames)
         
         // Update existing sets with theme names
-        for (index, set) in setsNeedingThemeNames.enumerated() {
-            if index < setsWithThemeNames.count {
-                set.themeName = setsWithThemeNames[index].themeName
-            }
+        for (index, set) in setsNeedingThemeNames.enumerated() where index < setsWithThemeNames.count {
+            set.themeName = setsWithThemeNames[index].themeName
         }
         
         try localDataSource.save(setsNeedingThemeNames)

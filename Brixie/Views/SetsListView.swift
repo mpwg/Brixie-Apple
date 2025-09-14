@@ -9,8 +9,10 @@ import SwiftUI
 import SwiftData
 
 struct SetsListView: View {
-    @Environment(\.diContainer) private var diContainer
-    @Query(sort: \LegoSet.year, order: .reverse) private var cachedSets: [LegoSet]
+    @Environment(\.diContainer)
+    private var diContainer
+    @Query(sort: \LegoSet.year, order: .reverse)
+    private var cachedSets: [LegoSet]
     
     @State private var viewModel: SetsListViewModel?
     
@@ -151,13 +153,17 @@ struct SetsListView: View {
             })
             
         default:
-            BrixieBannerView.generalError(error, onRetry: {
-                Task {
-                    await viewModel?.retryLoad()
+            BrixieBannerView.generalError(
+                error,
+                onRetry: {
+                    Task {
+                        await viewModel?.retryLoad()
+                    }
+                },
+                onDismiss: {
+                    viewModel?.error = nil
                 }
-            }, onDismiss: {
-                viewModel?.error = nil
-            })
+            )
         }
     }
 }
