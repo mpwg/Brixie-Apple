@@ -66,6 +66,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				40A6F9522E77365D00BB686A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				406072EC2E772AFC00F6FAC7 /* Brixie */,
@@ -137,6 +138,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		40A6F9522E77365D00BB686A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 40A6F9512E77365D00BB686A /* OpenAPIGenerator */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		406072F32E772B0300F6FAC7 /* Debug */ = {
@@ -295,7 +303,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
@@ -341,7 +349,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
@@ -407,6 +415,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 40A6F9442E7735FE00BB686A /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
 			productName = OpenAPIURLSession;
+		};
+		40A6F9512E77365D00BB686A /* OpenAPIGenerator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 40A6F93F2E7735A100BB686A /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
+			productName = "plugin:OpenAPIGenerator";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
