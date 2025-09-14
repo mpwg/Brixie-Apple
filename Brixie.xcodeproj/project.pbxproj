@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		403092C52E772EAD0056DF9D /* RebrickableLegoAPIClient in Frameworks */ = {isa = PBXBuildFile; productRef = 403092C42E772EAD0056DF9D /* RebrickableLegoAPIClient */; };
+		40A6F9432E7735F100BB686A /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 40A6F9422E7735F100BB686A /* OpenAPIRuntime */; };
+		40A6F9462E7735FE00BB686A /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 40A6F9452E7735FE00BB686A /* OpenAPIURLSession */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,7 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				403092C52E772EAD0056DF9D /* RebrickableLegoAPIClient in Frameworks */,
+				40A6F9462E7735FE00BB686A /* OpenAPIURLSession in Frameworks */,
+				40A6F9432E7735F100BB686A /* OpenAPIRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,7 +72,8 @@
 			);
 			name = Brixie;
 			packageProductDependencies = (
-				403092C42E772EAD0056DF9D /* RebrickableLegoAPIClient */,
+				40A6F9422E7735F100BB686A /* OpenAPIRuntime */,
+				40A6F9452E7735FE00BB686A /* OpenAPIURLSession */,
 			);
 			productName = Brixie;
 			productReference = 406072EA2E772AFC00F6FAC7 /* Brixie.app */;
@@ -101,7 +104,9 @@
 			mainGroup = 406072E12E772AFC00F6FAC7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				403092C32E772EAD0056DF9D /* XCRemoteSwiftPackageReference "Rebrickable-swift" */,
+				40A6F93F2E7735A100BB686A /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
+				40A6F9412E7735F100BB686A /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
+				40A6F9442E7735FE00BB686A /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 406072EB2E772AFC00F6FAC7 /* Products */;
@@ -366,21 +371,42 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		403092C32E772EAD0056DF9D /* XCRemoteSwiftPackageReference "Rebrickable-swift" */ = {
+		40A6F93F2E7735A100BB686A /* XCRemoteSwiftPackageReference "swift-openapi-generator" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mpwg/Rebrickable-swift";
+			repositoryURL = "https://github.com/apple/swift-openapi-generator";
 			requirement = {
-				kind = exactVersion;
-				version = 1.0.1;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.10.2;
+			};
+		};
+		40A6F9412E7735F100BB686A /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-runtime";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.2;
+			};
+		};
+		40A6F9442E7735FE00BB686A /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-urlsession";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		403092C42E772EAD0056DF9D /* RebrickableLegoAPIClient */ = {
+		40A6F9422E7735F100BB686A /* OpenAPIRuntime */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 403092C32E772EAD0056DF9D /* XCRemoteSwiftPackageReference "Rebrickable-swift" */;
-			productName = RebrickableLegoAPIClient;
+			package = 40A6F9412E7735F100BB686A /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
+			productName = OpenAPIRuntime;
+		};
+		40A6F9452E7735FE00BB686A /* OpenAPIURLSession */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 40A6F9442E7735FE00BB686A /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
+			productName = OpenAPIURLSession;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

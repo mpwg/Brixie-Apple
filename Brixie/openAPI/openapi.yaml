@@ -1,0 +1,1174 @@
+openapi: 3.0.1
+info:
+  title: "Rebrickable LEGO API"
+  description: "Swift API client for Rebrickable's LEGO database API - a comprehensive database of LEGO sets, parts, colors, and themes."
+  version: "1.0.0"
+servers:
+- url: https://rebrickable.com
+  description: Rebrickable API server
+security:
+- ApiKeyAuth: []
+paths:
+  /api/v3/lego/colors/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of all Colors.
+      description: Get a list of all Colors.
+      operationId: lego_colors_list
+      parameters:
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/colorsList'
+  /api/v3/lego/colors/{id}/:
+    get:
+      tags:
+      - lego
+      summary: Get details about a specific Color.
+      description: Get details about a specific Color.
+      operationId: lego_colors_read
+      parameters:
+      - name: id
+        in: path
+        description: A unique value identifying this color.
+        required: true
+        schema:
+          type: string
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/color'
+  /api/v3/lego/elements/{element_id}/:
+    get:
+      tags:
+      - lego
+      summary: Get details about a specific Element ID.
+      description: Get details about a specific Element ID.
+      operationId: lego_elements_read
+      parameters:
+      - name: element_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/element'
+  /api/v3/lego/minifigs/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of Minifigs.
+      description: Get a list of Minifigs.
+      operationId: lego_minifigs_list
+      parameters:
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: min_parts
+        in: query
+        schema:
+          type: number
+      - name: max_parts
+        in: query
+        schema:
+          type: number
+      - name: in_set_num
+        in: query
+        schema:
+          type: string
+      - name: in_theme_id
+        in: query
+        schema:
+          type: string
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/setList'
+  /api/v3/lego/minifigs/{set_num}/:
+    get:
+      tags:
+      - lego
+      summary: Get details for a specific Minifig.
+      description: Get details for a specific Minifig.
+      operationId: lego_minifigs_read
+      parameters:
+      - name: set_num
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/set'
+  /api/v3/lego/minifigs/{set_num}/parts/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of all Inventory Parts in this Minifig.
+      description: |-
+        Get a list of all Inventory Parts in this Minifig.
+
+        Optional parameter inc_part_details=1 can be used to return additional part fields, the same as for a single part lookup.
+      operationId: lego_minifigs_parts_list
+      parameters:
+      - name: set_num
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: inc_part_details
+        in: query
+        description: Return additional part's fields.
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/setPartsList'
+  /api/v3/lego/minifigs/{set_num}/sets/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of Sets a Minifig has appeared in.
+      description: Get a list of Sets a Minifig has appeared in.
+      operationId: lego_minifigs_sets_list
+      parameters:
+      - name: set_num
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/setList'
+  /api/v3/lego/part_categories/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of all Part Categories.
+      description: Get a list of all Part Categories.
+      operationId: lego_part_categories_list
+      parameters:
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/partCategoriesList'
+  /api/v3/lego/part_categories/{id}/:
+    get:
+      tags:
+      - lego
+      summary: Get details about a specific Part Category.
+      description: Get details about a specific Part Category.
+      operationId: lego_part_categories_read
+      parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this part category.
+        required: true
+        schema:
+          type: integer
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/partCategory'
+  /api/v3/lego/parts/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of Parts.
+      description: |-
+        Get a list of Parts.
+
+        Optional parameter inc_part_details=1 can be used to return additional fields, the same as for a single part lookup.
+
+        The optional part_nums filter parameter should be a comma separated list of part_num without spaces.
+
+        Optionally filter by one or more of the below query parameters.
+      operationId: lego_parts_list
+      parameters:
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: part_num
+        in: query
+        description: Rebrickable part_num (part number) to lookup.
+        schema:
+          type: string
+      - name: part_nums
+        in: query
+        description: Comma separated list of part_num.
+        schema:
+          type: string
+      - name: part_cat_id
+        in: query
+        description: Part category id
+        schema:
+          type: string
+      - name: color_id
+        in: query
+        description: Color id.
+        schema:
+          type: string
+      - name: bricklink_id
+        in: query
+        description: Bricklink specific id.
+        schema:
+          type: string
+      - name: brickowl_id
+        in: query
+        description: Brickowl specific id.
+        schema:
+          type: string
+      - name: lego_id
+        in: query
+        schema:
+          type: string
+      - name: ldraw_id
+        in: query
+        schema:
+          type: string
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: inc_part_details
+        in: query
+        description: Return additional part's fields.
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/partsList'
+  /api/v3/lego/parts/{part_num}/:
+    get:
+      tags:
+      - lego
+      summary: Get details about a specific Part.
+      description: Get details about a specific Part.
+      operationId: lego_parts_read
+      parameters:
+      - name: part_num
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/part'
+  /api/v3/lego/parts/{part_num}/colors/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of all Colors a Part has appeared in.
+      description: Get a list of all Colors a Part has appeared in.
+      operationId: lego_parts_colors_list
+      parameters:
+      - name: part_num
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: List of all colors a part has appeared in
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/partColorsList'
+  /api/v3/lego/parts/{part_num}/colors/{color_id}/:
+    get:
+      tags:
+      - lego
+      summary: Get details about a specific Part/Color combination.
+      description: Get details about a specific Part/Color combination.
+      operationId: lego_parts_colors_read
+      parameters:
+      - name: part_num
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: color_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Details about a specific Part/Color combination
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/partColor'
+  /api/v3/lego/parts/{part_num}/colors/{color_id}/sets/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of all Sets the Part/Color combination has appeard in.
+      description: Get a list of all Sets the Part/Color combination has appeared
+        in.
+      operationId: lego_parts_colors_sets_list
+      parameters:
+      - name: part_num
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: color_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/setList'
+  /api/v3/lego/sets/:
+    get:
+      tags:
+      - lego
+      summary: "Get a list of Sets, optionally filtered by any of the below parameters."
+      description: "Get a list of Sets, optionally filtered by any of the below parameters."
+      operationId: lego_sets_list
+      parameters:
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: theme_id
+        in: query
+        schema:
+          type: string
+      - name: min_year
+        in: query
+        schema:
+          type: number
+      - name: max_year
+        in: query
+        schema:
+          type: number
+      - name: min_parts
+        in: query
+        schema:
+          type: number
+      - name: max_parts
+        in: query
+        schema:
+          type: number
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/setList'
+  /api/v3/lego/sets/{set_num}/:
+    get:
+      tags:
+      - lego
+      summary: Get details for a specific Set.
+      description: Get details for a specific Set.
+      operationId: lego_sets_read
+      parameters:
+      - name: set_num
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/set'
+  /api/v3/lego/sets/{set_num}/alternates/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of MOCs which are Alternate Builds of a specific Set - i.e.
+        all parts in the MOC can
+      description: |-
+        Get a list of MOCs which are Alternate Builds of a specific Set - i.e. all parts in the MOC can
+        be found in the Set.
+      operationId: lego_sets_alternates_list
+      parameters:
+      - name: set_num
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/mocList'
+  /api/v3/lego/sets/{set_num}/minifigs/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of all Inventory Minifigs in this Set.
+      description: Get a list of all Inventory Minifigs in this Set.
+      operationId: lego_sets_minifigs_list
+      parameters:
+      - name: set_num
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/setMinifigsList'
+  /api/v3/lego/sets/{set_num}/parts/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of all Inventory Parts in this Set.
+      description: |-
+        Get a list of all Inventory Parts in this Set.
+
+        Optional parameter inc_part_details=1 can be used to return additional part fields, the same as for a single part lookup.
+        Optional parameter inc_minifig_parts=1 can be used to include minifig parts in this call.
+        Optional parameter inc_color_details=0 can be used to prevent color field expansion and reduce response sizes.
+      operationId: lego_sets_parts_list
+      parameters:
+      - name: set_num
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: inc_part_details
+        in: query
+        description: Return additional part's fields.
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/setPartsList'
+  /api/v3/lego/sets/{set_num}/sets/:
+    get:
+      tags:
+      - lego
+      summary: Get a list of all Inventory Sets in this Set.
+      description: Get a list of all Inventory Sets in this Set.
+      operationId: lego_sets_sets_list
+      parameters:
+      - name: set_num
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/setList'
+  /api/v3/lego/themes/:
+    get:
+      tags:
+      - lego
+      summary: Return all Themes
+      description: Return all Themes
+      operationId: lego_themes_list
+      parameters:
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/themesList'
+  /api/v3/lego/themes/{id}/:
+    get:
+      tags:
+      - lego
+      summary: Return details for a specific Theme
+      description: Return details for a specific Theme
+      operationId: lego_themes_read
+      parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this theme.
+        required: true
+        schema:
+          type: integer
+      - name: ordering
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/theme'
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: authorization
+  schemas:
+    listBase:
+      required:
+      - count
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+        previous:
+          type: string
+    colorExternalProvider:
+      required:
+      - ext_descrs
+      - ext_ids
+      type: object
+      properties:
+        ext_descrs:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        ext_ids:
+          type: array
+          items:
+            type: integer
+    colorsList:
+      allOf:
+      - $ref: '#/components/schemas/listBase'
+      - required:
+        - results
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/color'
+    color:
+      required:
+      - external_ids
+      - id
+      - is_trans
+      - name
+      - rgb
+      type: object
+      properties:
+        external_ids:
+          $ref: '#/components/schemas/colorExternalIds'
+        id:
+          type: integer
+        is_trans:
+          type: boolean
+        name:
+          type: string
+        rgb:
+          type: string
+    colorExternalIds:
+      required:
+      - BrickLink
+      - BrickOwl
+      - LDraw
+      - LEGO
+      - Peeron
+      type: object
+      properties:
+        BrickLink:
+          $ref: '#/components/schemas/colorExternalProvider'
+        BrickOwl:
+          $ref: '#/components/schemas/colorExternalProvider'
+        LDraw:
+          $ref: '#/components/schemas/colorExternalProvider'
+        LEGO:
+          $ref: '#/components/schemas/colorExternalProvider'
+        Peeron:
+          $ref: '#/components/schemas/colorExternalProvider'
+    part:
+      required:
+      - external_ids
+      - name
+      - part_cat_id
+      - part_num
+      - part_url
+      type: object
+      properties:
+        part_num:
+          type: string
+        name:
+          type: string
+        part_cat_id:
+          type: integer
+        year_from:
+          type: integer
+        year_to:
+          type: integer
+        part_url:
+          type: string
+        part_img_url:
+          type: string
+          nullable: true
+        prints:
+          type: array
+          items:
+            type: string
+        molds:
+          type: array
+          items:
+            type: string
+        alternates:
+          type: array
+          items:
+            type: string
+        print_of:
+          type: string
+          nullable: true
+        external_ids:
+          required:
+          - BrickLink
+          - BrickOwl
+          type: object
+          properties:
+            BrickLink:
+              type: array
+              items:
+                type: string
+            BrickOwl:
+              type: array
+              items:
+                type: string
+            Brickset:
+              type: array
+              items:
+                type: string
+            LDraw:
+              type: array
+              items:
+                type: string
+            LEGO:
+              type: array
+              items:
+                type: string
+    partColor:
+      required:
+      - elements
+      - num_set_parts
+      - num_sets
+      - part_img_url
+      - color_id
+      - color_name
+      type: object
+      properties:
+        color_id:
+          type: integer
+        color_name:
+          type: string
+        year_from:
+          type: integer
+        year_to:
+          type: integer
+        num_sets:
+          type: integer
+        num_set_parts:
+          type: integer
+        part_img_url:
+          type: string
+        elements:
+          type: array
+          items:
+            type: string
+    partColorsList:
+      allOf:
+      - $ref: '#/components/schemas/listBase'
+      - required:
+        - results
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/partColor'
+    partsList:
+      allOf:
+      - $ref: '#/components/schemas/listBase'
+      - required:
+        - results
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/part'
+    element:
+      required:
+      - color
+      - design_id
+      - element_id
+      - element_img_url
+      - part
+      - part_img_url
+      type: object
+      properties:
+        part:
+          $ref: '#/components/schemas/part'
+        color:
+          $ref: '#/components/schemas/color'
+        element_id:
+          type: string
+        design_id:
+          type: string
+        element_img_url:
+          type: string
+        part_img_url:
+          type: string
+    setBase:
+      required:
+      - name
+      - num_parts
+      - set_num
+      type: object
+      properties:
+        set_num:
+          type: string
+        name:
+          type: string
+        year:
+          type: integer
+        theme_id:
+          type: integer
+        num_parts:
+          type: integer
+    set:
+      allOf:
+      - $ref: '#/components/schemas/setBase'
+      - required:
+        - last_modified_dt
+        - set_img_url
+        - set_url
+        type: object
+        properties:
+          set_img_url:
+            type: string
+          set_url:
+            type: string
+          last_modified_dt:
+            type: string
+            format: date-time
+    setPart:
+      required:
+      - color
+      - element_id
+      - id
+      - inv_part_id
+      - is_spare
+      - num_sets
+      - part
+      - quantity
+      - set_num
+      type: object
+      properties:
+        id:
+          type: integer
+        inv_part_id:
+          type: integer
+        part:
+          $ref: '#/components/schemas/part'
+        color:
+          $ref: '#/components/schemas/color'
+        set_num:
+          type: string
+        quantity:
+          type: integer
+        is_spare:
+          type: boolean
+        element_id:
+          type: string
+        num_sets:
+          type: integer
+    setPartMinifig:
+      required:
+      - id
+      - quantity
+      - set_num
+      type: object
+      properties:
+        id:
+          type: integer
+        set_num:
+          type: string
+        set_name:
+          type: string
+        quantity:
+          type: integer
+        set_img_url:
+          type: string
+    setPartsList:
+      allOf:
+      - $ref: '#/components/schemas/listBase'
+      - required:
+        - results
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/setPart'
+    setMinifigsList:
+      allOf:
+      - $ref: '#/components/schemas/listBase'
+      - required:
+        - results
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/setPartMinifig'
+    setList:
+      allOf:
+      - $ref: '#/components/schemas/listBase'
+      - required:
+        - results
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/set'
+    partCategory:
+      required:
+      - id
+      - name
+      - part_count
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        part_count:
+          type: integer
+    partCategoriesList:
+      allOf:
+      - $ref: '#/components/schemas/listBase'
+      - required:
+        - results
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/partCategory'
+    moc:
+      allOf:
+      - $ref: '#/components/schemas/setBase'
+      - required:
+        - designer_name
+        - designer_url
+        - moc_img_url
+        - moc_url
+        type: object
+        properties:
+          moc_img_url:
+            type: string
+          moc_url:
+            type: string
+          designer_name:
+            type: string
+          designer_url:
+            type: string
+    mocList:
+      allOf:
+      - $ref: '#/components/schemas/listBase'
+      - required:
+        - results
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/moc'
+    theme:
+      required:
+      - id
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+        parent_id:
+          type: integer
+          nullable: true
+        name:
+          type: string
+    themesList:
+      allOf:
+      - $ref: '#/components/schemas/listBase'
+      - required:
+        - results
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/theme'
+x-original-swagger-version: "2.0"
