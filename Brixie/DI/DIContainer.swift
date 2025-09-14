@@ -13,9 +13,9 @@ import SwiftUI
 @MainActor
 final class DIContainer: @unchecked Sendable {
     static let shared = DIContainer()
-    
+
     let modelContainer: ModelContainer
-    
+
     init(modelContainer: ModelContainer? = nil) {
         if let modelContainer = modelContainer {
             self.modelContainer = modelContainer
@@ -27,33 +27,33 @@ final class DIContainer: @unchecked Sendable {
             }
         }
     }
-    
+
     // MARK: Managers
-    
+
     var themeManager: ThemeManager = ThemeManager.shared
     var networkMonitorService: NetworkMonitorService = NetworkMonitorService.shared
-    
+
     // MARK: Services
-    
+
     var imageCacheService = ImageCacheService.shared
     var apiConfigurationService = APIConfigurationService()
-    
+
     // MARK: Data Sources
-    
+
     func makeLocalDataSource() -> LocalDataSource {
         SwiftDataSource(modelContext: modelContainer.mainContext)
     }
-    
+
     func makeLegoSetRemoteDataSource() -> LegoSetRemoteDataSource {
         LegoSetRemoteDataSourceImpl(apiConfiguration: apiConfigurationService)
     }
-    
+
     func makeLegoThemeRemoteDataSource() -> LegoThemeRemoteDataSource {
         LegoThemeRemoteDataSourceImpl(apiConfiguration: apiConfigurationService)
     }
-    
+
     // MARK: Repositories
-    
+
     func makeLegoSetRepository() -> LegoSetRepository {
         LegoSetRepositoryImpl(
             remoteDataSource: makeLegoSetRemoteDataSource(),
@@ -61,39 +61,11 @@ final class DIContainer: @unchecked Sendable {
             themeRepository: makeLegoThemeRepository()
         )
     }
-    
+
     func makeLegoThemeRepository() -> LegoThemeRepository {
         LegoThemeRepositoryImpl(
             remoteDataSource: makeLegoThemeRemoteDataSource(),
             localDataSource: makeLocalDataSource()
-        )
-    }
-    
-    // MARK: ViewModels
-    
-    func makeSetsListViewModel() -> SetsListViewModel {
-        SetsListViewModel(
-            legoSetRepository: makeLegoSetRepository(),
-        )
-    }
-    
-    func makeCategoriesViewModel() -> CategoriesViewModel {
-        CategoriesViewModel(
-            legoThemeRepository: makeLegoThemeRepository(),
-        )
-    }
-    
-    func makeSetDetailViewModel(set: LegoSet) -> SetDetailViewModel {
-        SetDetailViewModel(
-            set: set,
-            legoSetRepository: makeLegoSetRepository()
-        )
-    }
-    
-    func makeSearchViewModel() -> SearchViewModel {
-        SearchViewModel(
-            legoSetRepository: makeLegoSetRepository(),
-            legoThemeRepository: makeLegoThemeRepository(),
         )
     }
 }
