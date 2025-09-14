@@ -424,11 +424,11 @@ struct RangeSlider: View {
             }
         }
         .frame(height: 32)
-        .brixieAccessibility(
-            label: String(format: NSLocalizedString("Year range slider, from %d to %d", comment: "Range slider accessibility"), range.lowerBound, range.upperBound),
-            hint: NSLocalizedString("Use the handles to adjust the year range for filtering", comment: "Range slider hint"),
-            traits: .adjustable
-        )
+        
+        
+        
+        
+        
     }
 }
 
