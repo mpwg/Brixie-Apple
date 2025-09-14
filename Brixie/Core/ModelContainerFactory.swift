@@ -14,7 +14,8 @@ struct ModelContainerFactory {
     /// Centralized schema definition for all SwiftData models
     static let schema = Schema([
         LegoSet.self,
-        LegoTheme.self
+        LegoTheme.self,
+        SyncTimestamp.self
     ])
     
     /// Creates a production ModelContainer with persistent storage

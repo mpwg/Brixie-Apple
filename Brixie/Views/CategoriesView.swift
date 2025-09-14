@@ -90,19 +90,28 @@ struct CategoriesView: View {
                 }
 
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Menu {
-                            Picker(NSLocalizedString("Sort by", comment: "Sort picker label"), selection: $sortOrder) {
-                                ForEach(SortOrder.allCases, id: \.self) { order in
-                                    Label(order.localizedString, systemImage: sortOrder == order ? "checkmark" : "")
-                                        .tag(order)
+                    HStack(spacing: 8) {
+                        if let vm = viewModel {
+                            OfflineIndicatorBadge(
+                                lastSyncTimestamp: vm.lastSyncTimestamp,
+                                variant: .iconOnly
+                            )
+                        }
+                        
+                        Menu {
+                                Picker(NSLocalizedString("Sort by", comment: "Sort picker label"), selection: $sortOrder) {
+                                    ForEach(SortOrder.allCases, id: \.self) { order in
+                                        Label(order.localizedString, systemImage: sortOrder == order ? "checkmark" : "")
+                                            .tag(order)
+                                    }
                                 }
+                            } label: {
+                                Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(Color.brixieAccent)
+                                    .padding(6)
+                                    .background(Circle().fill(Color.brixieCard))
                             }
-                    } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle.fill")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(Color.brixieAccent)
-                            .padding(6)
-                            .background(Circle().fill(Color.brixieCard))
                     }
                 }
             }

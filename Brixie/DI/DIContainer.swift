@@ -30,7 +30,8 @@ final class DIContainer: @unchecked Sendable {
     
     // MARK: Managers
     
-    var themeManager = ThemeManager.shared
+    var themeManager: ThemeManager = ThemeManager.shared
+    var networkMonitorService: NetworkMonitorService = NetworkMonitorService.shared
     
     // MARK: Services
     

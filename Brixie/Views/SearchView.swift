@@ -12,13 +12,13 @@ struct SearchView: View {
     @Environment(\.diContainer)
     private var diContainer
     @State private var viewModel: SearchViewModel?
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.brixieBackground
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
                     // Error banner for search failures  
                     if let vm = viewModel, let error = vm.error, !vm.searchText.isEmpty {
@@ -41,6 +41,15 @@ struct SearchView: View {
                     Text("Search Sets")
                         .font(.brixieTitle)
                         .foregroundStyle(Color.brixieText)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if let vm = viewModel {
+                        OfflineIndicatorBadge(
+                            lastSyncTimestamp: vm.lastSyncTimestamp,
+                            variant: .compact
+                        )
+                    }
                 }
             }
             .searchable(text: Binding(
@@ -73,14 +82,14 @@ struct SearchView: View {
             }
         }
     }
-    
+
     private var searchContentView: some View {
         Group {
             if let vm = viewModel {
                 if vm.searchText.isEmpty {
                     recentSearchesView
                 } else if vm.isSearching {
-                    modernLoadingView
+                    searchSkeletonView
                 } else if vm.searchResults.isEmpty && vm.showingNoResults {
                     modernNoResultsView
                 } else {
@@ -89,7 +98,7 @@ struct SearchView: View {
             }
         }
     }
-    
+
     private var recentSearchesView: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -102,7 +111,7 @@ struct SearchView: View {
                             Spacer()
                             }
                         .padding(.horizontal, 20)
-                        
+
                         ScrollView(.horizontal, showsIndicators: false) {
                             LazyHStack(spacing: 12) {
                                 ForEach(vm.recentSearches, id: \.self) { search in
@@ -137,7 +146,7 @@ struct SearchView: View {
                         }
                     }
                 }
-                
+
                 BrixieHeroSection(
                     title: "Discover LEGO Sets",
                     subtitle: "Search through thousands of LEGO sets by name, number, or theme " +
@@ -150,7 +159,25 @@ struct SearchView: View {
             .padding(.top, 20)
         }
     }
-    
+
+    private var searchSkeletonView: some View {
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                HStack {
+                    SkeletonTextLine(width: 100, height: 16)
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+
+                ForEach(0..<6, id: \.self) { _ in
+                    SetRowSkeleton()
+                }
+            }
+            .padding(.horizontal, 20)
+        }
+    }
+
     private var modernLoadingView: some View {
         BrixieHeroSection(
             title: "Searching...",
@@ -160,7 +187,7 @@ struct SearchView: View {
             BrixieLoadingView()
         }
     }
-    
+
     private var modernNoResultsView: some View {
         BrixieHeroSection(
             title: "No Results Found",
@@ -179,7 +206,7 @@ struct SearchView: View {
             .buttonStyle(BrixieButtonStyle(variant: .secondary))
         }
     }
-    
+
     private var modernSearchResultsView: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
@@ -192,7 +219,7 @@ struct SearchView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
-                    
+
                     ForEach(vm.searchResults) { set in
                         NavigationLink(destination: SetDetailView(set: set)) {
                             SetRowView(set: set) { set in
