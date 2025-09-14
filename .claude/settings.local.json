@@ -37,7 +37,9 @@
       "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" bundle exec fastlane ios build)",
       "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" bundle exec fastlane ios show_help)",
       "Bash(gh pr view:*)",
-      "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane build)"
+      "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane build)",
+      "Bash(REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios build)",
+      "Bash(CI=true REBRICKABLE_API_KEY=\"test-api-key-12345\" fastlane ios build)"
     ],
     "deny": [],
     "ask": []

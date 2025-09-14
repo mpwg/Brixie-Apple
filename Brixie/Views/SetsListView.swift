@@ -25,18 +25,23 @@ struct SetsListView: View {
                     } else if vm.sets.isEmpty && !vm.isLoading {
                         emptyStateView
                     } else if vm.isLoading && vm.sets.isEmpty {
-                        SkeletonListView()
-
+                        loadingView
                     } else {
-                        ProgressView("Loading...")
+                        setsListView
                     }
                 } else {
-                    SkeletonListView()
+                    loadingView
                 }
             }
-            .navigationTitle("LEGO Sets")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    Text(NSLocalizedString("LEGO Sets", comment: "Navigation title"))
+                        .font(.brixieTitle)
+                        .foregroundStyle(Color.brixieText)
+                }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if let vm = viewModel {
                         OfflineIndicatorBadge(
@@ -73,21 +78,29 @@ struct SetsListView: View {
         }
     }
 
-    private var emptyStateView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "building.2")
-                .font(.system(size: 60))
-                .foregroundStyle(.blue)
-
-            Text("No Sets Found")
-                .font(.title2)
-                .fontWeight(.semibold)
-
-            Text("Pull to refresh or check your internet connection")
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+    private var loadingView: some View {
+        BrixieHeroSection(
+            title: NSLocalizedString("Loading Sets", comment: "Loading title"),
+            subtitle: NSLocalizedString("Discovering amazing LEGO sets for you...", comment: "Loading subtitle"),
+            icon: "building.2"
+        ) {
+            BrixieLoadingView()
         }
-        .padding()
+    }
+
+    private var emptyStateView: some View {
+        BrixieHeroSection(
+            title: NSLocalizedString("No Sets Found", comment: "Empty state title"),
+            subtitle: NSLocalizedString("Pull to refresh or check your internet connection", comment: "Empty state subtitle"),
+            icon: "building.2"
+        ) {
+            Button(NSLocalizedString("Refresh", comment: "Refresh button")) {
+                Task {
+                    await viewModel?.loadSets()
+                }
+            }
+            .buttonStyle(BrixieButtonStyle(variant: .primary))
+        }
     }
 
     private var setsListView: some View {
@@ -164,6 +177,7 @@ struct SetsListView: View {
 struct SetRowView: View {
     let set: LegoSet
     let onFavoriteToggle: ((LegoSet) -> Void)?
+    @Environment(\.colorScheme) private var colorScheme
 
     init(set: LegoSet, onFavoriteToggle: ((LegoSet) -> Void)? = nil) {
         self.set = set
@@ -177,56 +191,55 @@ struct SetRowView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(.gray.opacity(0.1))
+                        .fill(Color.brixieSecondary(for: colorScheme))
                 )
+                .accessibilityLabel(Text("LEGO set image for \(set.name)"))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(set.name)
-                    .font(.headline)
+                    .font(.brixieHeadline)
                     .lineLimit(2)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.brixieText(for: colorScheme))
 
                 Text(String(format: NSLocalizedString("Set #%@", comment: "Set number display"), set.setNum))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.brixieBody)
+                    .foregroundStyle(Color.brixieTextSecondary(for: colorScheme))
 
                 HStack {
                     Text("\(set.year)")
-                        .font(.caption)
+                        .font(.brixieCaption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
-                        .background(.blue.opacity(0.2))
-                        .foregroundStyle(.blue)
+                        .background(Color.brixieAccent.opacity(0.2))
+                        .foregroundStyle(Color.brixieAccent)
                         .clipShape(Capsule())
-                    
+
                     if let themeName = set.themeName {
                         Text(themeName)
-                            .font(.caption)
+                            .font(.brixieCaption)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
-                            .background(.green.opacity(0.2))
-                            .foregroundStyle(.green)
+                            .background(Color.brixieSuccess.opacity(0.2))
+                            .foregroundStyle(Color.brixieSuccess)
                             .clipShape(Capsule())
                     }
-                    
+
                     Text(String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.brixieCaption)
+                        .foregroundStyle(Color.brixieTextSecondary(for: colorScheme))
                 }
             }
 
             Spacer()
 
-            Button(action: {
-                onFavoriteToggle?(set)
-            }) {
-                Image(systemName: set.isFavorite ? "heart.fill" : "heart")
-                    .foregroundStyle(set.isFavorite ? .red : .gray)
-            }
-            .buttonStyle(.plain)            
             FavoriteButton(isFavorite: set.isFavorite) { onFavoriteToggle?(set) }
+                .accessibilityLabel(Text(set.isFavorite ? "Remove from favorites" : "Add to favorites"))
+                .accessibilityHint(Text("Double tap to toggle favorite status"))
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text("\(set.name), set number \(set.setNum), from \(set.year), \(set.numParts) pieces\(set.themeName != nil ? ", \(set.themeName!)" : ""), \(set.isFavorite ? "favorited" : "not favorited")"))
+        .accessibilityHint(Text("Double tap to view details"))
     }
 }
 

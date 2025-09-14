@@ -159,6 +159,9 @@ struct CategoriesView: View {
             .padding(.top, 8)
         }
         .refreshable {
+            if let vm = viewModel {
+                await vm.loadThemes()
+            }
         }
     }
 }
@@ -174,12 +177,13 @@ struct ModernCategoryRowView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.brixieAccent.opacity(0.1))
                         .frame(width: 60, height: 60)
-                    
+
                     Image(systemName: categoryIcon(for: theme.name))
                         .font(.system(size: 24, weight: .medium))
                         .foregroundStyle(Color.brixieAccent)
                 }
                 .brixieGlow(color: Color.brixieAccent.opacity(0.4))
+                .accessibilityLabel(Text("Category icon for \(theme.name)"))
                 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(theme.name)
@@ -232,6 +236,9 @@ struct ModernCategoryRowView: View {
         }
         .scaleEffect(isHovered ? 1.02 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isHovered)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text("\(theme.name) category with \(theme.setCount) sets"))
+        .accessibilityHint(Text("Double tap to view sets in this category"))
     }
     
     private func categoryIcon(for name: String) -> String {

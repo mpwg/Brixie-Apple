@@ -12,6 +12,8 @@ struct SetDetailView: View {
     let set: LegoSet
     @Environment(\.modelContext)
     private var modelContext
+    @Environment(\.colorScheme)
+    private var colorScheme
     @State private var isFavorite: Bool
     @State private var showingFullScreenImage = false
     
@@ -65,8 +67,8 @@ struct SetDetailView: View {
             
             if set.imageURL != nil {
                 Text(NSLocalizedString("Tap to view full size", comment: "Hint for image tap"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.brixieCaption)
+                    .foregroundStyle(Color.brixieTextSecondary(for: colorScheme))
             }
         }
     }
@@ -74,59 +76,59 @@ struct SetDetailView: View {
     private var setInfoView: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("Set Information", comment: "Set information heading"))
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            VStack(spacing: 12) {
-                InfoRow(label: "Set Number", value: set.setNum)
-                InfoRow(label: "Name", value: set.name)
-                InfoRow(label: "Year", value: String(set.year))
-                InfoRow(label: "Pieces", value: String(set.numParts))
-                if let themeName = set.themeName {
-                    InfoRow(label: "Theme", value: themeName)
+                .font(.brixieHeadline)
+                .foregroundStyle(Color.brixieText(for: colorScheme))
+
+            BrixieCard {
+                VStack(spacing: 12) {
+                    InfoRow(label: NSLocalizedString("Set Number", comment: "Set number label"), value: set.setNum)
+                    InfoRow(label: NSLocalizedString("Name", comment: "Name label"), value: set.name)
+                    InfoRow(label: NSLocalizedString("Year", comment: "Year label"), value: String(set.year))
+                    InfoRow(label: NSLocalizedString("Pieces", comment: "Pieces label"), value: String(set.numParts))
+                    if let themeName = set.themeName {
+                        InfoRow(label: NSLocalizedString("Theme", comment: "Theme label"), value: themeName)
+                    }
                 }
+                .padding()
             }
-            .padding()
-            .background(.gray.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
     
     private var statisticsView: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("Statistics", comment: "Statistics heading"))
-                .font(.title2)
-                .fontWeight(.semibold)
-            
+                .font(.brixieHeadline)
+                .foregroundStyle(Color.brixieText(for: colorScheme))
+
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
                 StatCard(
-                    title: "Pieces",
+                    title: NSLocalizedString("Pieces", comment: "Pieces stat title"),
                     value: String(set.numParts),
                     icon: "cube.box",
-                    color: .blue
+                    color: Color.brixieAccent
                 )
-                
+
                 StatCard(
-                    title: "Year",
+                    title: NSLocalizedString("Year", comment: "Year stat title"),
                     value: String(set.year),
                     icon: "calendar",
-                    color: .green
+                    color: Color.brixieSuccess
                 )
 
                 if let lastViewed = set.lastViewed {
                     StatCard(
-                        title: "Last Viewed",
+                        title: NSLocalizedString("Last Viewed", comment: "Last viewed stat title"),
                         value: RelativeDateTimeFormatter().localizedString(for: lastViewed, relativeTo: Date()),
                         icon: "eye",
-                        color: .purple
+                        color: Color.brixieWarning
                     )
                 }
-                
+
                 StatCard(
-                    title: "Favorite",
-                    value: isFavorite ? "Yes" : "No",
+                    title: NSLocalizedString("Favorite", comment: "Favorite stat title"),
+                    value: isFavorite ? NSLocalizedString("Yes", comment: "Yes") : NSLocalizedString("No", comment: "No"),
                     icon: isFavorite ? "heart.fill" : "heart",
-                    color: .red
+                    color: isFavorite ? Color.brixieSuccess : Color.brixieTextSecondary(for: colorScheme)
                 )
             }
         }
@@ -144,9 +146,8 @@ struct SetDetailView: View {
                     systemImage: isFavorite ? "heart.slash" : "heart"
                 )
             }
-            .buttonStyle(.borderedProminent)
-            .tint(isFavorite ? .red : .blue)
-            
+            .buttonStyle(BrixieButtonStyle(variant: .primary))
+
             if let imageURL = set.imageURL {
                 ShareLink(item: URL(string: imageURL)!) {
                     Label(
@@ -154,7 +155,7 @@ struct SetDetailView: View {
                         systemImage: "square.and.arrow.up"
                     )
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(BrixieButtonStyle(variant: .secondary))
             }
         }
     }
@@ -184,15 +185,17 @@ struct SetDetailView: View {
 struct InfoRow: View {
     let label: String
     let value: String
-    
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         HStack {
             Text(label)
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
+                .font(.brixieBody)
+                .foregroundStyle(Color.brixieTextSecondary(for: colorScheme))
             Spacer()
             Text(value)
-                .fontWeight(.semibold)
+                .font(.brixieSubhead)
+                .foregroundStyle(Color.brixieText(for: colorScheme))
         }
     }
 }
@@ -202,25 +205,26 @@ struct StatCard: View {
     let value: String
     let icon: String
     let color: Color
-    
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(color)
-            
-            Text(value)
-                .font(.headline)
-                .fontWeight(.bold)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        BrixieCard {
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundStyle(color)
+
+                Text(value)
+                    .font(.brixieHeadline)
+                    .foregroundStyle(Color.brixieText(for: colorScheme))
+
+                Text(title)
+                    .font(.brixieCaption)
+                    .foregroundStyle(Color.brixieTextSecondary(for: colorScheme))
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(color.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -242,7 +246,7 @@ struct FullScreenImageView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button(NSLocalizedString("Done", comment: "Done button")) {
                         dismiss()
                     }
                     .foregroundStyle(.white)
