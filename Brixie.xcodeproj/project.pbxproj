@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		403092C52E772EAD0056DF9D /* RebrickableLegoAPIClient in Frameworks */ = {isa = PBXBuildFile; productRef = 403092C42E772EAD0056DF9D /* RebrickableLegoAPIClient */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		406072EA2E772AFC00F6FAC7 /* Brixie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Brixie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				403092C52E772EAD0056DF9D /* RebrickableLegoAPIClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = Brixie;
 			packageProductDependencies = (
+				403092C42E772EAD0056DF9D /* RebrickableLegoAPIClient */,
 			);
 			productName = Brixie;
 			productReference = 406072EA2E772AFC00F6FAC7 /* Brixie.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 406072E12E772AFC00F6FAC7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				403092C32E772EAD0056DF9D /* XCRemoteSwiftPackageReference "Rebrickable-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 406072EB2E772AFC00F6FAC7 /* Products */;
 			projectDirPath = "";
@@ -274,13 +283,15 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
@@ -318,13 +329,15 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
@@ -351,6 +364,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		403092C32E772EAD0056DF9D /* XCRemoteSwiftPackageReference "Rebrickable-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mpwg/Rebrickable-swift";
+			requirement = {
+				kind = exactVersion;
+				version = 1.0.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		403092C42E772EAD0056DF9D /* RebrickableLegoAPIClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 403092C32E772EAD0056DF9D /* XCRemoteSwiftPackageReference "Rebrickable-swift" */;
+			productName = RebrickableLegoAPIClient;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 406072E22E772AFC00F6FAC7 /* Project object */;
 }
