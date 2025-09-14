@@ -42,6 +42,16 @@ struct SetsListView: View {
             }
             .navigationTitle("LEGO Sets")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if let vm = viewModel {
+                        OfflineIndicatorBadge(
+                            lastSyncTimestamp: vm.lastSyncTimestamp,
+                            variant: .compact
+                        )
+                    }
+                }
+            }
         }
         .onAppear {
             if viewModel == nil {

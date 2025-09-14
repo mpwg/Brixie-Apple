@@ -34,6 +34,7 @@ struct SettingsView: View {
                 
                 ScrollView {
                     VStack(spacing: 24) {
+                        syncStatusSection
                         apiSection
                         themeSection
                         cacheSection
@@ -359,6 +360,100 @@ struct SettingsView: View {
                 .font(.brixieCaption)
                 .foregroundStyle(Color.brixieTextSecondary)
                 .padding(.leading, 4)
+        }
+    }
+    
+    private var syncStatusSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Sync Status")
+                .font(.brixieHeadline)
+                .foregroundStyle(Color.brixieText)
+            
+            BrixieCard {
+                VStack(spacing: 16) {
+                    syncStatusRow(for: .sets, title: "LEGO Sets")
+                    Divider().background(Color.brixieSecondary.opacity(0.3))
+                    syncStatusRow(for: .themes, title: "Themes")
+                    Divider().background(Color.brixieSecondary.opacity(0.3))
+                    syncStatusRow(for: .search, title: "Search")
+                    Divider().background(Color.brixieSecondary.opacity(0.3))
+                    syncStatusRow(for: .setDetails, title: "Set Details")
+                }
+                .padding(20)
+            }
+            
+            Text("Sync status shows when data was last updated from the Rebrickable API.")
+                .font(.brixieCaption)
+                .foregroundStyle(Color.brixieTextSecondary)
+                .padding(.leading, 4)
+        }
+    }
+    
+    @ViewBuilder
+    private func syncStatusRow(for syncType: SyncType, title: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "arrow.clockwise")
+                .font(.system(size: 16))
+                .foregroundStyle(Color.brixieAccent)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.brixieSubhead)
+                    .foregroundStyle(Color.brixieText)
+                
+                if let timestamp = getSyncTimestamp(for: syncType) {
+                    HStack(spacing: 8) {
+                        Text(formatSyncTime(timestamp.lastSync))
+                            .font(.brixieCaption)
+                            .foregroundStyle(Color.brixieTextSecondary)
+                        
+                        Image(systemName: timestamp.isSuccessful ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(timestamp.isSuccessful ? Color.brixieSuccess : Color.brixieWarning)
+                    }
+                } else {
+                    Text("Never synced")
+                        .font(.brixieCaption)
+                        .foregroundStyle(Color.brixieTextSecondary)
+                }
+            }
+            
+            Spacer()
+            
+            if let timestamp = getSyncTimestamp(for: syncType), timestamp.itemCount > 0 {
+                Text("\(timestamp.itemCount)")
+                    .font(.brixieCaption)
+                    .foregroundStyle(Color.brixieTextSecondary)
+            }
+        }
+    }
+    
+    private func getSyncTimestamp(for syncType: SyncType) -> SyncTimestamp? {
+        do {
+            let localDataSource = diContainer.makeLocalDataSource()
+            return try localDataSource.getLastSyncTimestamp(for: syncType)
+        } catch {
+            return nil
+        }
+    }
+    
+    private func formatSyncTime(_ date: Date) -> String {
+        let now = Date()
+        let timeInterval = now.timeIntervalSince(date)
+        
+        if timeInterval < 60 {
+            return "Just now"
+        } else if timeInterval < 3600 {
+            let minutes = Int(timeInterval / 60)
+            return "\(minutes)m ago"
+        } else if timeInterval < 86400 {
+            let hours = Int(timeInterval / 3600)
+            return "\(hours)h ago"
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            return formatter.string(from: date)
         }
     }
     

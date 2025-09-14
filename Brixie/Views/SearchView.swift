@@ -42,6 +42,15 @@ struct SearchView: View {
                         .font(.brixieTitle)
                         .foregroundStyle(Color.brixieText)
                 }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if let vm = viewModel {
+                        OfflineIndicatorBadge(
+                            lastSyncTimestamp: vm.lastSyncTimestamp,
+                            variant: .compact
+                        )
+                    }
+                }
             }
             .searchable(text: Binding(
                 get: { viewModel?.searchText ?? "" },
