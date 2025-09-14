@@ -16,51 +16,49 @@ final class DIContainer: @unchecked Sendable {
     
     let modelContainer: ModelContainer
     
-    nonisolated init(modelContainer: ModelContainer? = nil) {
+    init(modelContainer: ModelContainer? = nil) {
         if let modelContainer = modelContainer {
             self.modelContainer = modelContainer
         } else {
             do {
-                let schema = Schema([
-                    LegoSet.self,
-                    LegoTheme.self
-                ])
-                let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-                self.modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
+                self.modelContainer = try ModelContainerFactory.createProductionContainer()
             } catch {
                 fatalError("Could not create ModelContainer: \(error)")
             }
         }
     }
     
-    // MARK: - Managers
+    // MARK: Managers
     
     var themeManager: ThemeManager = ThemeManager.shared
+    var networkMonitorService: NetworkMonitorService = NetworkMonitorService.shared
     
-    // MARK: - Services
+    // MARK: Services
     
-    var imageCacheService: ImageCacheService = ImageCacheService.shared
+    var imageCacheService = ImageCacheService.shared
+    var apiConfigurationService = APIConfigurationService()
     
-    // MARK: - Data Sources
+    // MARK: Data Sources
     
     func makeLocalDataSource() -> LocalDataSource {
         SwiftDataSource(modelContext: modelContainer.mainContext)
     }
     
     func makeLegoSetRemoteDataSource() -> LegoSetRemoteDataSource {
-        LegoSetRemoteDataSourceImpl()
+        LegoSetRemoteDataSourceImpl(apiConfiguration: apiConfigurationService)
     }
     
     func makeLegoThemeRemoteDataSource() -> LegoThemeRemoteDataSource {
-        LegoThemeRemoteDataSourceImpl()
+        LegoThemeRemoteDataSourceImpl(apiConfiguration: apiConfigurationService)
     }
     
-    // MARK: - Repositories
+    // MARK: Repositories
     
     func makeLegoSetRepository() -> LegoSetRepository {
         LegoSetRepositoryImpl(
             remoteDataSource: makeLegoSetRemoteDataSource(),
-            localDataSource: makeLocalDataSource()
+            localDataSource: makeLocalDataSource(),
+            themeRepository: makeLegoThemeRepository()
         )
     }
     
@@ -71,7 +69,7 @@ final class DIContainer: @unchecked Sendable {
         )
     }
     
-    // MARK: - ViewModels
+    // MARK: ViewModels
     
     func makeSetsListViewModel() -> SetsListViewModel {
         SetsListViewModel(
@@ -100,7 +98,7 @@ final class DIContainer: @unchecked Sendable {
     }
 }
 
-// MARK: - Environment Key
+// MARK: Environment Key
 
 struct DIContainerKey: EnvironmentKey {
     // Provide a lazily-evaluated container; EnvironmentKey requires nonisolated static.

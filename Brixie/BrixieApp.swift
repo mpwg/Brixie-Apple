@@ -14,14 +14,8 @@ struct BrixieApp: App {
     private let diContainer: DIContainer
     
     init() {
-        let schema = Schema([
-            LegoSet.self,
-            LegoTheme.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
         do {
-            let modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let modelContainer = try ModelContainerFactory.createProductionContainer()
             self.diContainer = DIContainer(modelContainer: modelContainer)
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
@@ -33,6 +27,7 @@ struct BrixieApp: App {
             ContentView()
                 .environment(diContainer)
                 .environment(diContainer.themeManager)
+                .environment(diContainer.networkMonitorService)
                 .preferredColorScheme(diContainer.themeManager.colorScheme)
         }
         .modelContainer(diContainer.modelContainer)

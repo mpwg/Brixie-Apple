@@ -21,11 +21,20 @@ final class LegoSet {
     var lastViewed: Date?
     var cachedImageData: Data?
     
-    init(setNum: String, name: String, year: Int, themeId: Int, numParts: Int, imageURL: String? = nil) {
+    init(
+        setNum: String,
+        name: String,
+        year: Int,
+        themeId: Int,
+        numParts: Int,
+        imageURL: String? = nil,
+        themeName: String? = nil
+    ) {
         self.setNum = setNum
         self.name = name
         self.year = year
         self.themeId = themeId
+        self.themeName = themeName
         self.numParts = numParts
         self.imageURL = imageURL
         self.isFavorite = false

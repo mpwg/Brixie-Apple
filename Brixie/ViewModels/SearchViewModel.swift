@@ -9,9 +9,10 @@ import Foundation
 
 @Observable
 @MainActor
-final class SearchViewModel {
+final class SearchViewModel: ViewModelErrorHandling {
     private let legoSetRepository: LegoSetRepository
     private let legoThemeRepository: LegoThemeRepository
+    private let recentSearchesStorage: RecentSearchesStorage
     
     var searchText = ""
     var searchResults: [LegoSet] = []
@@ -20,10 +21,19 @@ final class SearchViewModel {
     var selectedFilter: SearchFilter = .all
     var recentSearches: [String] = []
     var showingNoResults = false
+    var lastSyncTimestamp: SyncTimestamp?
     
-    init(legoSetRepository: LegoSetRepository, legoThemeRepository: LegoThemeRepository) {
+    init(
+        legoSetRepository: LegoSetRepository,
+        legoThemeRepository: LegoThemeRepository,
+        recentSearchesStorage: RecentSearchesStorage = .shared
+    ) {
         self.legoSetRepository = legoSetRepository
         self.legoThemeRepository = legoThemeRepository
+        self.recentSearchesStorage = recentSearchesStorage
+        
+        // Load recent searches from storage
+        self.recentSearches = recentSearchesStorage.loadRecentSearches()
     }
     
     func performSearch() async {
@@ -34,19 +44,18 @@ final class SearchViewModel {
         
         let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Add to recent searches
-        if !recentSearches.contains(trimmedSearch) {
-            recentSearches.insert(trimmedSearch, at: 0)
-            if recentSearches.count > 5 {
-                recentSearches = Array(recentSearches.prefix(5))
-            }
-        }
+        // Add to recent searches and persist
+        recentSearchesStorage.addSearch(trimmedSearch)
+        recentSearches = recentSearchesStorage.loadRecentSearches()
         
         isSearching = true
         showingNoResults = false
         error = nil
         
-        defer { isSearching = false }
+        defer { 
+            isSearching = false
+            updateLastSyncTimestamp()
+        }
         
         do {
             let results = try await legoSetRepository.searchSets(
@@ -56,12 +65,8 @@ final class SearchViewModel {
             )
             searchResults = results
             showingNoResults = results.isEmpty
-        } catch let brixieError as BrixieError {
-            error = brixieError
-            searchResults = []
-            showingNoResults = true
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
             searchResults = []
             showingNoResults = true
         }
@@ -84,24 +89,32 @@ final class SearchViewModel {
         error = nil
     }
     
+    // Method for manually testing persistence
+    func addManualSearch(_ search: String) {
+        recentSearchesStorage.addSearch(search)
+        recentSearches = recentSearchesStorage.loadRecentSearches()
+    }
+    
+    // Method to clear recent searches for testing
+    func clearRecentSearches() {
+        recentSearchesStorage.clearRecentSearches()
+        recentSearches = []
+    }
+    
     func toggleFavorite(for set: LegoSet) async {
         do {
-            if set.isFavorite {
-                try await legoSetRepository.removeFromFavorites(set)
-            } else {
-                try await legoSetRepository.markAsFavorite(set)
-            }
-            
+            try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
             if let index = searchResults.firstIndex(where: { $0.id == set.id }) {
                 searchResults[index].isFavorite.toggle()
             }
-        } catch let brixieError as BrixieError {
-            error = brixieError
         } catch {
-            self.error = BrixieError.networkError(underlying: error)
+            handleError(error)
         }
     }
     
+    func retrySearch() async {
+        await performSearch()
+    }
     
     var hasResults: Bool {
         !searchResults.isEmpty
@@ -114,12 +127,18 @@ final class SearchViewModel {
     var showNoResults: Bool {
         !isSearching && !searchText.isEmpty && searchResults.isEmpty
     }
+    
+    private func updateLastSyncTimestamp() {
+        Task {
+            lastSyncTimestamp = await legoSetRepository.getLastSyncTimestamp(for: .search)
+        }
+    }
 }
 
 enum SearchFilter: String, CaseIterable, Identifiable {
-    case all = "all"
-    case sets = "sets"
-    case themes = "themes"
+    case all
+    case sets
+    case themes
     
     var id: String { rawValue }
     

@@ -41,7 +41,8 @@ struct FavoritesView: View {
     private var emptyFavoritesView: some View {
         BrixieHeroSection(
             title: "No Favorites Yet",
-            subtitle: "Sets you favorite will appear here for quick access. Start exploring to find your perfect builds!",
+            subtitle: "Sets you favorite will appear here for quick access. " +
+                      "Start exploring to find your perfect builds!",
             icon: "heart.fill"
         ) {
             EmptyView()
@@ -70,6 +71,6 @@ struct FavoritesView: View {
             .ignoresSafeArea()
         
         FavoritesView()
-            .modelContainer(for: LegoSet.self, inMemory: true)
+            .modelContainer(ModelContainerFactory.createPreviewContainer())
     }
 }

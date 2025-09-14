@@ -13,53 +13,81 @@ Brixie is a multi-platform iOS/macOS SwiftUI application that integrates with th
 - **Data Model**: `Item.swift` - SwiftData model with timestamp property
 - **External Dependencies**: Uses `RebrickableLegoAPIClient` package from https://github.com/mpwg/Rebrickable-swift (v2.0.0+)
 
+## Branching Strategy
+
+This project follows a Git Flow branching model with the following branches:
+
+- **main** - Production releases (builds with Release configuration)
+- **develop** - Development integration branch (builds with Debug configuration)
+- **feature/** - Feature development branches (builds with Debug configuration)
+- **release/** - Release preparation branches (builds with Release configuration)
+- **hotfix/** - Production hotfix branches (builds with Release configuration)
+
 ## Development Commands
 
-This project uses a Makefile for build automation with API key injection:
+This project uses Fastlane for build automation and testing. All commands require the `REBRICKABLE_API_KEY` environment variable. The build configuration (Debug/Release) is automatically determined based on the current branch.
 
-### Building
+### Fastlane Lanes
+
+#### Building
 ```bash
-# Build iOS app with API key
-REBRICKABLE_API_KEY="your_key" make build-ios
+# Build iOS app for simulator
+REBRICKABLE_API_KEY="your_key" fastlane ios build_ios
 
-# Build macOS app with API key  
-REBRICKABLE_API_KEY="your_key" make build-macos
+# Build macOS app (Mac Catalyst)
+REBRICKABLE_API_KEY="your_key" fastlane ios build_macos
 
 # Build both platforms
-REBRICKABLE_API_KEY="your_key" make build-all
-
-# Direct xcodebuild (without API key injection)
-xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug build
+REBRICKABLE_API_KEY="your_key" fastlane ios build_all
 ```
 
-### Testing
+#### Testing
 ```bash
 # Run iOS tests
-make test-ios
+REBRICKABLE_API_KEY="your_key" fastlane ios test_ios
 
 # Run macOS tests
-make test-macos
+REBRICKABLE_API_KEY="your_key" fastlane ios test_macos
 
-# Run all tests
-make test-all
-
-# Run unit tests directly
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 16'
+# Run tests on both platforms
+REBRICKABLE_API_KEY="your_key" fastlane ios test_all
 ```
 
-### Configuration Management
+#### Utilities
 ```bash
-# Generate API configuration
-make generate-config
+# Sync code signing certificates and profiles
+REBRICKABLE_API_KEY="your_key" fastlane ios certificates
 
-# Clean generated files
-make clean-config
+# Clean build artifacts and generated files
+REBRICKABLE_API_KEY="your_key" fastlane ios clean
 
-# Full clean
-make clean
+# Show available lanes and help
+fastlane ios show_help
+```
 
-# Show all available targets
-make help
+#### Branch Management
+```bash
+# Create a new release branch from develop
+REBRICKABLE_API_KEY="your_key" fastlane ios create_release version:1.0.0
+
+# Finish a release (merge to main and develop, create tag)
+REBRICKABLE_API_KEY="your_key" fastlane ios finish_release version:1.0.0
+
+# Create a hotfix branch from main
+REBRICKABLE_API_KEY="your_key" fastlane ios create_hotfix version:1.0.1
+```
+
+### Direct xcodebuild (legacy)
+If needed, you can still use direct xcodebuild commands:
+
+```bash
+# Generate config and build iOS app
+REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
+xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16' build
+
+# Generate config and build macOS app
+REBRICKABLE_API_KEY="your_key" ./Scripts/generate-api-config.sh
+xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug -destination 'platform=macOS,variant=Mac Catalyst' build
 ```
 
 ## Platform Support

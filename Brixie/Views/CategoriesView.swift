@@ -9,8 +9,10 @@ import SwiftUI
 import SwiftData
 
 struct CategoriesView: View {
-    @Environment(\.diContainer) private var diContainer
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.diContainer)
+    private var diContainer
+    @Environment(\.colorScheme)
+    private var colorScheme
     @State private var viewModel: CategoriesViewModel?
     @State private var searchText = ""
     @State private var sortOrder: SortOrder = .name
@@ -20,7 +22,12 @@ struct CategoriesView: View {
         case setCount = "Set Count"
         
         var localizedString: String {
-            NSLocalizedString(self.rawValue, comment: "Sort order")
+            switch self {
+            case .name:
+                return NSLocalizedString("Name", comment: "Sort order")
+            case .setCount:
+                return NSLocalizedString("Set Count", comment: "Sort order")
+            }
         }
     }
     
@@ -60,7 +67,13 @@ struct CategoriesView: View {
                         }
                         
                         if let error = vm.error {
-                            errorView(error.localizedDescription)
+                            BrixieErrorBanner(
+                                error: error,
+                                onDismiss: { vm.error = nil },
+                                onRetry: { 
+                                    Task { await vm.loadThemes() }
+                                }
+                            )
                         }
                     } else {
                         initializingView
@@ -77,24 +90,32 @@ struct CategoriesView: View {
                 }
 
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Menu {
-                            Picker(NSLocalizedString("Sort by", comment: "Sort picker label"), selection: $sortOrder) {
-                                ForEach(SortOrder.allCases, id: \.self) { order in
-                                    Label(order.localizedString, systemImage: sortOrder == order ? "checkmark" : "")
-                                        .tag(order)
-                                }
-                            }
-                        } label: {
-                            Image(systemName: "line.3.horizontal.decrease.circle.fill")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.brixieAccent)
-                                .padding(6)
-                                .background(Circle().fill(Color.brixieCard))
+                    HStack(spacing: 8) {
+                        if let vm = viewModel {
+                            OfflineIndicatorBadge(
+                                lastSyncTimestamp: vm.lastSyncTimestamp,
+                                variant: .iconOnly
+                            )
                         }
+                        
+                        Menu {
+                                Picker(NSLocalizedString("Sort by", comment: "Sort picker label"), selection: $sortOrder) {
+                                    ForEach(SortOrder.allCases, id: \.self) { order in
+                                        Label(order.localizedString, systemImage: sortOrder == order ? "checkmark" : "")
+                                            .tag(order)
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(Color.brixieAccent)
+                                    .padding(6)
+                                    .background(Circle().fill(Color.brixieCard))
+                            }
+                    }
                 }
             }
             .searchable(text: $searchText, prompt: NSLocalizedString("Search categories", comment: "Search prompt"))
-
         }
         .task {
             if viewModel == nil {
@@ -103,7 +124,6 @@ struct CategoriesView: View {
             }
         }
     }
-    
     
     private var loadingView: some View {
         BrixieHeroSection(
@@ -123,31 +143,6 @@ struct CategoriesView: View {
         ) {
             BrixieLoadingView()
         }
-    }
-    
-    private func errorView(_ message: String) -> some View {
-        BrixieCard {
-            HStack(spacing: 12) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Color.brixieWarning)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Connection Issue")
-                        .font(.brixieSubhead)
-                        .foregroundStyle(Color.brixieText)
-                    
-                    Text(message)
-                        .font(.brixieBody)
-                        .foregroundStyle(Color.brixieTextSecondary)
-                        .lineLimit(3)
-                }
-                
-                Spacer()
-            }
-            .padding(16)
-        }
-        .padding(.horizontal, 20)
     }
     
     private var modernCategoriesView: some View {
@@ -242,6 +237,18 @@ struct ModernCategoryRowView: View {
     private func categoryIcon(for name: String) -> String {
         let lowercased = name.lowercased()
         
+        if let icon = getSpecialCategoryIcon(lowercased) {
+            return icon
+        }
+        
+        if let icon = getVehicleCategoryIcon(lowercased) {
+            return icon
+        }
+        
+        return "square.grid.3x3"
+    }
+    
+    private func getSpecialCategoryIcon(_ lowercased: String) -> String? {
         switch lowercased {
         case let x where x.contains("city"):
             return "building.2.crop.circle"
@@ -259,16 +266,23 @@ struct ModernCategoryRowView: View {
             return "sparkles"
         case let x where x.contains("ninjago"):
             return "figure.martial.arts"
+        case let x where x.contains("animal") || x.contains("pet"):
+            return "pawprint"
+        default:
+            return nil
+        }
+    }
+    
+    private func getVehicleCategoryIcon(_ lowercased: String) -> String? {
+        switch lowercased {
         case let x where x.contains("vehicle") || x.contains("car") || x.contains("truck"):
             return "car"
         case let x where x.contains("train"):
             return "tram"
         case let x where x.contains("boat") || x.contains("ship"):
             return "ferry"
-        case let x where x.contains("animal") || x.contains("pet"):
-            return "pawprint"
         default:
-            return "square.grid.3x3"
+            return nil
         }
     }
 }
@@ -279,7 +293,6 @@ struct ModernCategoryRowView: View {
             .ignoresSafeArea()
         
         CategoriesView()
-            .modelContainer(for: [LegoTheme.self, LegoSet.self], inMemory: true)
+            .modelContainer(ModelContainerFactory.createPreviewContainer())
     }
 }
-
