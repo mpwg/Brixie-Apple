@@ -11,13 +11,13 @@ import SwiftData
 struct SearchView: View {
     @Environment(\.diContainer) private var diContainer
     @State private var viewModel: SearchViewModel?
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.brixieBackground
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
                     if viewModel != nil {
                         searchContentView
@@ -79,8 +79,8 @@ struct SearchView: View {
             }
         }
     }
-    
-    
+
+
     private var searchContentView: some View {
         Group {
             if let vm = viewModel {
@@ -96,7 +96,7 @@ struct SearchView: View {
             }
         }
     }
-    
+
     private var recentSearchesView: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -109,7 +109,7 @@ struct SearchView: View {
                             Spacer()
                         }
                         .padding(.horizontal, 20)
-                        
+
                         ScrollView(.horizontal, showsIndicators: false) {
                             LazyHStack(spacing: 12) {
                                 ForEach(vm.recentSearches, id: \.self) { search in
@@ -144,7 +144,7 @@ struct SearchView: View {
                         }
                     }
                 }
-                
+
                 BrixieHeroSection(
                     title: "Discover LEGO Sets",
                     subtitle: "Search through thousands of LEGO sets by name, number, or theme to find your next build.",
@@ -156,7 +156,7 @@ struct SearchView: View {
             .padding(.top, 20)
         }
     }
-    
+
     private var searchSkeletonView: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
@@ -166,7 +166,7 @@ struct SearchView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
-                
+
                 ForEach(0..<6, id: \.self) { _ in
                     SetRowSkeleton()
                 }
@@ -174,7 +174,7 @@ struct SearchView: View {
             .padding(.horizontal, 20)
         }
     }
-    
+
     private var modernLoadingView: some View {
         BrixieHeroSection(
             title: "Searching...",
@@ -184,7 +184,7 @@ struct SearchView: View {
             BrixieLoadingView()
         }
     }
-    
+
     private var modernNoResultsView: some View {
         BrixieHeroSection(
             title: "No Results Found",
@@ -197,7 +197,7 @@ struct SearchView: View {
             .buttonStyle(BrixieButtonStyle(variant: .secondary))
         }
     }
-    
+
     private var modernSearchResultsView: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
@@ -210,7 +210,7 @@ struct SearchView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
-                    
+
                     ForEach(vm.searchResults) { set in
                         NavigationLink(destination: SetDetailView(set: set)) {
                             SetRowView(set: set, onFavoriteToggle: { set in

@@ -11,9 +11,9 @@ import SwiftData
 struct SetsListView: View {
     @Environment(\.diContainer) private var diContainer
     @Query(sort: \LegoSet.year, order: .reverse) private var cachedSets: [LegoSet]
-    
+
     @State private var viewModel: SetsListViewModel?
-    
+
     var body: some View {
         NavigationStack {
             Group {
@@ -43,8 +43,8 @@ struct SetsListView: View {
             }
         }
     }
-    
-    
+
+
     private var cachedSetsView: some View {
         List {
             ForEach(cachedSets) { set in
@@ -61,24 +61,24 @@ struct SetsListView: View {
             await viewModel?.loadSets()
         }
     }
-    
+
     private var emptyStateView: some View {
         VStack(spacing: 20) {
             Image(systemName: "building.2")
                 .font(.system(size: 60))
                 .foregroundStyle(.blue)
-            
+
             Text("No Sets Found")
                 .font(.title2)
                 .fontWeight(.semibold)
-            
+
             Text("Pull to refresh or check your internet connection")
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding()
     }
-    
+
     private var setsListView: some View {
         List {
             if let vm = viewModel {
@@ -98,7 +98,7 @@ struct SetsListView: View {
                         }
                     }
                 }
-                
+
                 if vm.isLoadingMore {
                     HStack {
                         Spacer()
@@ -118,12 +118,12 @@ struct SetsListView: View {
 struct SetRowView: View {
     let set: LegoSet
     let onFavoriteToggle: ((LegoSet) -> Void)?
-    
+
     init(set: LegoSet, onFavoriteToggle: ((LegoSet) -> Void)? = nil) {
         self.set = set
         self.onFavoriteToggle = onFavoriteToggle
     }
-    
+
     var body: some View {
         HStack {
             AsyncCachedImage(urlString: set.imageURL)
@@ -134,17 +134,17 @@ struct SetRowView: View {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(.gray.opacity(0.1))
                 )
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(set.name)
                     .font(.headline)
                     .lineLimit(2)
                     .foregroundStyle(.primary)
-                
+
                 Text(String(format: NSLocalizedString("Set #%@", comment: "Set number display"), set.setNum))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                
+
                 HStack {
                     Text("\(set.year)")
                         .font(.caption)
@@ -153,15 +153,15 @@ struct SetRowView: View {
                         .background(.blue.opacity(0.2))
                         .foregroundStyle(.blue)
                         .clipShape(Capsule())
-                    
+
                     Text(String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
-            
+
             Spacer()
-            
+
             Button(action: {
                 onFavoriteToggle?(set)
             }) {
@@ -179,27 +179,27 @@ struct SetRowSkeleton: View {
         HStack {
             // Image skeleton
             SkeletonImage(width: 60, height: 60, cornerRadius: 8)
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 // Title skeleton - two lines
                 SkeletonTextLine(width: 200, height: 18)
                 SkeletonTextLine(width: 150, height: 18)
-                
+
                 // Set number skeleton
                 SkeletonTextLine(width: 100, height: 14)
-                
+
                 HStack {
                     // Year badge skeleton
                     SkeletonTextLine(width: 40, height: 20)
                         .clipShape(Capsule())
-                    
+
                     // Pieces text skeleton
                     SkeletonTextLine(width: 80, height: 12)
                 }
             }
-            
+
             Spacer()
-            
+
             // Heart button skeleton
             SkeletonTextLine(width: 24, height: 24)
                 .clipShape(Circle())
@@ -210,11 +210,11 @@ struct SetRowSkeleton: View {
 
 struct SkeletonListView: View {
     let itemCount: Int
-    
+
     init(itemCount: Int = 8) {
         self.itemCount = itemCount
     }
-    
+
     var body: some View {
         List {
             ForEach(0..<itemCount, id: \.self) { _ in
