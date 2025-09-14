@@ -17,6 +17,7 @@ final class SetsListViewModel: ViewModelErrorHandling {
     var isLoadingMore = false
     var error: BrixieError?
     var currentPage = 1
+    var lastSyncTimestamp: SyncTimestamp?
     
     private let pageSize = 20
     private var loadMoreTask: Task<Void, Never>?
@@ -30,7 +31,10 @@ final class SetsListViewModel: ViewModelErrorHandling {
         isLoading = true
         error = nil
         
-        defer { isLoading = false }
+        defer { 
+            isLoading = false
+            updateLastSyncTimestamp()
+        }
         
         do {
             sets = try await legoSetRepository.fetchSets(page: currentPage, pageSize: pageSize)
@@ -108,6 +112,12 @@ final class SetsListViewModel: ViewModelErrorHandling {
             error = brixieError
         } catch {
             self.error = BrixieError.networkError(underlying: error)
+        }
+    }
+
+    private func updateLastSyncTimestamp() {
+        Task {
+            lastSyncTimestamp = await legoSetRepository.getLastSyncTimestamp(for: .sets)
         }
     }
 }

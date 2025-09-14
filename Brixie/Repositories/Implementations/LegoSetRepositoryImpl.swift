@@ -33,8 +33,29 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             }
             
             try localDataSource.save(setsWithThemeNames)
+            
+            // Save successful sync timestamp
+            let syncTimestamp = SyncTimestamp(
+                id: "sets-sync",
+                lastSync: Date(),
+                syncType: .sets,
+                isSuccessful: true,
+                itemCount: setsWithThemeNames.count
+            )
+            try localDataSource.saveSyncTimestamp(syncTimestamp)
+            
             return setsWithThemeNames
         } catch {
+            // Save failed sync timestamp
+            let syncTimestamp = SyncTimestamp(
+                id: "sets-sync",
+                lastSync: Date(),
+                syncType: .sets,
+                isSuccessful: false,
+                itemCount: 0
+            )
+            try? localDataSource.saveSyncTimestamp(syncTimestamp)
+            
             if case BrixieError.networkError = error {
                 let cachedSets = await getCachedSets()
                 if !cachedSets.isEmpty {
@@ -48,8 +69,30 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
     func searchSets(query: String, page: Int, pageSize: Int) async throws -> [LegoSet] {
         do {
             let remoteSets = try await remoteDataSource.searchSets(query: query, page: page, pageSize: pageSize)
-            return await populateThemeNames(for: remoteSets)
+            let setsWithThemeNames = await populateThemeNames(for: remoteSets)
+            
+            // Save successful search sync timestamp
+            let syncTimestamp = SyncTimestamp(
+                id: "search-sync",
+                lastSync: Date(),
+                syncType: .search,
+                isSuccessful: true,
+                itemCount: setsWithThemeNames.count
+            )
+            try? localDataSource.saveSyncTimestamp(syncTimestamp)
+            
+            return setsWithThemeNames
         } catch {
+            // Save failed search sync timestamp
+            let syncTimestamp = SyncTimestamp(
+                id: "search-sync",
+                lastSync: Date(),
+                syncType: .search,
+                isSuccessful: false,
+                itemCount: 0
+            )
+            try? localDataSource.saveSyncTimestamp(syncTimestamp)
+            
             let cachedSets = await getCachedSets()
             return cachedSets.filter { set in
                 set.name.localizedCaseInsensitiveContains(query) ||
@@ -66,10 +109,31 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
                 if let setWithThemeName = setWithThemeName {
                     try localDataSource.save([setWithThemeName])
                 }
+                
+                // Save successful set details sync timestamp
+                let syncTimestamp = SyncTimestamp(
+                    id: "setDetails-sync",
+                    lastSync: Date(),
+                    syncType: .setDetails,
+                    isSuccessful: true,
+                    itemCount: 1
+                )
+                try? localDataSource.saveSyncTimestamp(syncTimestamp)
+                
                 return setWithThemeName
             }
             return nil
         } catch {
+            // Save failed set details sync timestamp
+            let syncTimestamp = SyncTimestamp(
+                id: "setDetails-sync",
+                lastSync: Date(),
+                syncType: .setDetails,
+                isSuccessful: false,
+                itemCount: 0
+            )
+            try? localDataSource.saveSyncTimestamp(syncTimestamp)
+            
             let cachedSets = await getCachedSets()
             return cachedSets.first { $0.setNum == setNum }
         }
@@ -104,8 +168,15 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
         }
     }
     
-    // MARK: Theme Name Population
+    func getLastSyncTimestamp(for syncType: SyncType) async -> SyncTimestamp? {
+        do {
+            return try localDataSource.getLastSyncTimestamp(for: syncType)
+        } catch {
+            return nil
+        }
+    }
     
+    // MARK: - Theme Name Population    
     /// Populate theme names for sets using cached themes
     private func populateThemeNames(for sets: [LegoSet]) async -> [LegoSet] {
         let cachedThemes = await themeRepository.getCachedThemes()
