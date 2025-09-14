@@ -131,8 +131,6 @@ struct BrixieCard<Content: View>: View {
     let content: Content
     let gradient: Bool
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.colorScheme) 
-    private var colorScheme
     
     init(gradient: Bool = false, @ViewBuilder content: () -> Content) {
         self.gradient = gradient
