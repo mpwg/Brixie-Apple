@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import UIKit
 
 // Wrapper class for Data to use with NSCache
 final class CachedImageData: Sendable {
@@ -38,19 +37,8 @@ final class ImageCacheService: @unchecked Sendable {
         cache.countLimit = 100
         cache.totalCostLimit = 50 * 1024 * 1024 // 50MB
         
-        // Observe memory warnings to clear in-memory cache
-        NotificationCenter.default.addObserver(
-            forName: UIApplication.didReceiveMemoryWarningNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.clearMemoryCache()
-        }
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self, name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
-    }
     
     func loadImageData(from urlString: String) async -> Data? {
         // Check memory cache first
