@@ -11,6 +11,9 @@ import SwiftUI
 
 struct ThemeSelectionView: View {
     @Environment(\.diContainer) private var di: DIContainer
+    /// NOTE: In iOS 17+, using @State for Observable view models is correct and replaces @StateObject.
+    /// This pattern change allows SwiftUI to manage the observable's lifecycle automatically.
+    /// See: https://developer.apple.com/documentation/swiftui/state for details.
     @State private var viewModel: ThemeSelectionViewModel
 
     /// - Parameters:
