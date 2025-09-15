@@ -1,13 +1,13 @@
-import Combine
 import Foundation
 import SwiftData
 import SwiftUI
 
+@Observable
 @MainActor
-final class SetListViewModel: ObservableObject {
-    @Published var sets: [LegoSet] = []
-    @Published var isLoading: Bool = false
-    @Published var error: BrixieError?
+final class SetListViewModel {
+    var sets: [LegoSet] = []
+    var isLoading: Bool = false
+    var error: BrixieError?
 
     private let repository: LegoSetRepository
     static let pageSizeDefault: Int = 100

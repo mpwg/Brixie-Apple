@@ -5,7 +5,6 @@
 //  Created by Matthias Wallner-Géhri on 01.09.25.
 //
 
-import Combine
 import Foundation
 import RebrickableLegoAPIClient
 import SwiftData
@@ -30,89 +29,12 @@ final class LegoThemeService {
     var currentError: BrixieError?
     var loadingState = false
 
-    private var cancellables = Set<AnyCancellable>()
-
     init(modelContext: ModelContext, apiKey: String) {
         RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKey
         self.modelContext = modelContext
     }
 
-    // MARK: - Combine Publishers
-
-    func themesPublisher() -> AnyPublisher<[LegoTheme], Never> {
-        return Just(themes)
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-
-    func errorPublisher() -> AnyPublisher<BrixieError?, Never> {
-        return Just(currentError)
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-
-    var isLoadingPublisher: AnyPublisher<Bool, Never> {
-        Just(loadingState)
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-
-    func fetchThemesPublisher(page: Int = 1, pageSize: Int = 100) -> AnyPublisher<
-        [LegoTheme], BrixieError
-    > {
-        Future<[LegoTheme], BrixieError> { [weak self] promise in
-            guard let self = self else {
-                promise(
-                    .failure(.networkError(underlying: NSError(domain: "ServiceError", code: -1))))
-                return
-            }
-
-            Task {
-                do {
-                    let themes = try await self.fetchThemes(page: page, pageSize: pageSize)
-                    promise(.success(themes))
-                } catch {
-                    if let brixieError = error as? BrixieError {
-                        promise(.failure(brixieError))
-                    } else {
-                        promise(.failure(self.mapToBrixieError(error)))
-                    }
-                }
-            }
-        }
-        .receive(on: DispatchQueue.main)
-        .eraseToAnyPublisher()
-    }
-
-    func fetchSetsForThemePublisher(themeId: Int, page: Int = 1, pageSize: Int = 20)
-        -> AnyPublisher<[LegoSet], BrixieError>
-    {
-        Future<[LegoSet], BrixieError> { [weak self] promise in
-            guard let self = self else {
-                promise(
-                    .failure(.networkError(underlying: NSError(domain: "ServiceError", code: -1))))
-                return
-            }
-
-            Task {
-                do {
-                    let sets = try await self.getSetsForTheme(
-                        themeId: themeId, page: page, pageSize: pageSize)
-                    promise(.success(sets))
-                } catch {
-                    if let brixieError = error as? BrixieError {
-                        promise(.failure(brixieError))
-                    } else {
-                        promise(.failure(self.mapToBrixieError(error)))
-                    }
-                }
-            }
-        }
-        .receive(on: DispatchQueue.main)
-        .eraseToAnyPublisher()
-    }
-
-    // MARK: - Legacy async/await methods (for backward compatibility)
+    // MARK: - Theme Data Management
 
     func fetchThemes(page: Int = 1, pageSize: Int = 100) async throws -> [LegoTheme] {
         isLoading = true

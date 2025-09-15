@@ -11,7 +11,7 @@ import SwiftUI
 
 struct ThemeSelectionView: View {
     @Environment(\.diContainer) private var di: DIContainer
-    @StateObject private var viewModel: ThemeSelectionViewModel
+    @State private var viewModel: ThemeSelectionViewModel
 
     /// - Parameters:
     ///   - previewThemes: supply for SwiftUI previews
@@ -19,8 +19,8 @@ struct ThemeSelectionView: View {
     ///   - di: optional DI container (injected via environment by callers)
     init(previewThemes: [LegoTheme]? = nil, parentId: Int? = nil, di: DIContainer? = nil) {
         let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
-        _viewModel = StateObject(
-            wrappedValue: ThemeSelectionViewModel(
+        _viewModel = State(
+            initialValue: ThemeSelectionViewModel(
                 di: container,
                 parentId: parentId
             )

@@ -1,4 +1,3 @@
-import Combine
 import Foundation
 import SwiftData
 import SwiftUI
@@ -18,12 +17,13 @@ struct ThemeDisplayItem: Identifiable {
 
 // MARK: - View Model
 
+@Observable
 @MainActor
-final class ThemeSelectionViewModel: ObservableObject {
-    @Published var themes: [LegoTheme] = []
-    @Published var isLoading: Bool = false
-    @Published var lastError: BrixieError?
-    @Published var expanded: Set<Int> = []
+final class ThemeSelectionViewModel {
+    var themes: [LegoTheme] = []
+    var isLoading: Bool = false
+    var lastError: BrixieError?
+    var expanded: Set<Int> = []
 
     private let di: DIContainer
     private let pageSize: Int

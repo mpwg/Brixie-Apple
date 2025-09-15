@@ -1,13 +1,13 @@
-import Combine
 import Foundation
 import SwiftData
 import SwiftUI
 
+@Observable
 @MainActor
-final class SetDetailViewModel: ObservableObject {
-    @Published var legoSet: LegoSet?
-    @Published var isLoading: Bool = false
-    @Published var error: BrixieError?
+final class SetDetailViewModel {
+    var legoSet: LegoSet?
+    var isLoading: Bool = false
+    var error: BrixieError?
 
     private let di: DIContainer
     private var setNum: String

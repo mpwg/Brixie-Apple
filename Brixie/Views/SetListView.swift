@@ -3,15 +3,15 @@ import SwiftUI
 
 struct SetListView: View {
     @Environment(\.diContainer) private var di: DIContainer
-    @StateObject private var viewModel: SetListViewModel
+    @State private var viewModel: SetListViewModel
     private let theme: LegoTheme
 
     init(theme: LegoTheme, di: DIContainer? = nil) {
         self.theme = theme
         let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
         let repository = container.makeLegoSetRepository()
-        _viewModel = StateObject(
-            wrappedValue: SetListViewModel(repository: repository, themeId: theme.id))
+        _viewModel = State(
+            initialValue: SetListViewModel(repository: repository, themeId: theme.id))
     }
 
     var body: some View {

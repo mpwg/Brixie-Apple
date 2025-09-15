@@ -3,12 +3,12 @@ import SwiftUI
 
 struct SetDetailView: View {
     @Environment(\.diContainer) private var di: DIContainer
-    @StateObject private var viewModel: SetDetailViewModel
+    @State private var viewModel: SetDetailViewModel
 
     init(setNum: String, di: DIContainer? = nil) {
         let container: DIContainer? = di
-        self._viewModel = StateObject(
-            wrappedValue: SetDetailViewModel(
+        self._viewModel = State(
+            initialValue: SetDetailViewModel(
                 di: container ?? MainActor.assumeIsolated { DIContainer.shared },
                 setNum: setNum
             )
