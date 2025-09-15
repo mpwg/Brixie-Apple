@@ -30,13 +30,17 @@ struct ThemeDetailView: View {
 
             List {
                 ForEach(viewModel.sets, id: \.setNum) { set in
-                    VStack(alignment: .leading) {
-                        Text(set.name)
-                            .font(.headline)
-                        Text(set.setNum)
-                            .foregroundStyle(.secondary)
+                    NavigationLink {
+                        SetDetailView(setNum: set.setNum)
+                    } label: {
+                        VStack(alignment: .leading) {
+                            Text(set.name)
+                                .font(.headline)
+                            Text(set.setNum)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
                     .task {
                         await viewModel.loadMoreIfNeeded(currentItem: set)
                     }
