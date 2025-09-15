@@ -1,9 +1,9 @@
 import SwiftData
 import SwiftUI
 
-struct ThemeDetailView: View {
+struct SetListView: View {
     @Environment(\.diContainer) private var di: DIContainer
-    @StateObject private var viewModel: ThemeDetailViewModel
+    @StateObject private var viewModel: SetListViewModel
     private let theme: LegoTheme
 
     // Accept a DIContainer for easier injection and previews. The caller can
@@ -19,7 +19,7 @@ struct ThemeDetailView: View {
             container = MainActor.assumeIsolated { DIContainer.shared }
         }
         _viewModel = StateObject(
-            wrappedValue: ThemeDetailViewModel(di: container, themeId: theme.id))
+            wrappedValue: SetListViewModel(di: container, themeId: theme.id))
     }
 
     var body: some View {
@@ -81,5 +81,5 @@ struct ThemeDetailView: View {
 
 #Preview {
     let t = LegoTheme(id: 1, name: "Preview", parentId: nil, setCount: 10)
-    ThemeDetailView(theme: t)
+    SetListView(theme: t)
 }

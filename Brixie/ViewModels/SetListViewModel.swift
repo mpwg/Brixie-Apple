@@ -4,7 +4,7 @@ import SwiftData
 import SwiftUI
 
 @MainActor
-final class ThemeDetailViewModel: ObservableObject {
+final class SetListViewModel: ObservableObject {
     @Published var sets: [LegoSet] = []
     @Published var isLoading: Bool = false
     @Published var error: BrixieError?

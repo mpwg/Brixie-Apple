@@ -55,7 +55,7 @@ struct ThemeSelectionView: View {
             } else {
                 ForEach(viewModel.themes, id: \.id) { theme in
                     NavigationLink {
-                        ThemeDetailView(theme: theme, di: di)
+                        SetListView(theme: theme, di: di)
                     } label: {
                         Text(theme.name)
                     }
