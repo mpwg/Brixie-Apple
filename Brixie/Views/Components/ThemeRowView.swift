@@ -15,9 +15,8 @@ struct ThemeRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                // Indentation
-                Spacer()
-                    .frame(width: displayItem.indentationWidth)
+                // Theme content is padded for indentation instead of using a Spacer with fixed frame.
+                // Using padding(.leading:) is more efficient in lists than Spacer().frame(width:).
 
                 // Expansion indicator
                 if displayItem.hasChildren {
@@ -56,6 +55,7 @@ struct ThemeRowView: View {
                     }
                 }
             }
+            .padding(.leading, displayItem.indentationWidth)
         }
     }
 }
