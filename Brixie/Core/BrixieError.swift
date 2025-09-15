@@ -22,7 +22,7 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
     var errorDescription: String? {
         switch self {
         case .networkError(let error):
-            return String(
+            return unsafe String(
                 format: NSLocalizedString("Network error: %@", comment: "Network error description"),
                 error.localizedDescription
             )
@@ -31,19 +31,19 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
         case .parsingError:
             return NSLocalizedString("Failed to parse response", comment: "Parsing error description")
         case .cacheError(let error):
-            return String(
+            return unsafe String(
                 format: NSLocalizedString("Cache operation failed: %@", comment: "Cache error description"),
                 error.localizedDescription
             )
         case .invalidURL(let url):
-            return String(
+            return unsafe String(
                 format: NSLocalizedString("Invalid URL: %@", comment: "Invalid URL error"),
                 url
             )
         case .dataNotFound:
             return NSLocalizedString("Requested data not found", comment: "Data not found error")
         case .persistenceError(let error):
-            return String(
+            return unsafe String(
                 format: NSLocalizedString("Data persistence failed: %@", comment: "Persistence error description"),
                 error.localizedDescription
             )
@@ -52,7 +52,7 @@ enum BrixieError: LocalizedError, Sendable, Equatable {
         case .unauthorized:
             return NSLocalizedString("Unauthorized. Please check your API key", comment: "Unauthorized error")
         case .serverError(let statusCode):
-            return String(
+            return unsafe String(
                 format: NSLocalizedString("Server error (status: %d)", comment: "Server error description"),
                 statusCode
             )
