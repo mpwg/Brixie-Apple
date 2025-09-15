@@ -18,15 +18,15 @@ struct ThemeSelectionView: View {
 
     /// - Parameters:
     ///   - previewThemes: supply for SwiftUI previews
-    ///   - parentId: optional parent id to show child themes
+    ///   - parentid: optional parent id to show child themes
     ///   - di: optional DI container (injected via environment by callers)
-    init(previewThemes: [LegoTheme]? = nil, parentId: Int? = nil, di: DIContainer? = nil) {
+    init(previewThemes: [LegoTheme]? = nil, parentid: Int? = nil, di: DIContainer? = nil) {
         let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
         _viewModel = State(
-            initialValue: ThemeSelectionViewModel(
-                di: container,
-                parentId: parentId
-            )
+                initialValue: ThemeSelectionViewModel(
+                    di: container,
+                    parentid: parentid
+                )
         )
 
         // Set preview themes if provided

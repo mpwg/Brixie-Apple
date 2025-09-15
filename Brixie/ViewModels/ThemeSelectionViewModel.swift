@@ -27,7 +27,7 @@ final class ThemeSelectionViewModel {
 
     private let di: DIContainer
     private let pageSize: Int
-    private let parentId: Int?
+    private let parentid: Int?
     private var isPreviewMode: Bool = false
     // Keep a copy of all fetched themes so callers can determine child relationships
     private var allFetchedThemes: [LegoTheme] = []
@@ -46,9 +46,9 @@ final class ThemeSelectionViewModel {
         !isLoading && !hasError && !themes.isEmpty
     }
 
-    init(di: DIContainer, parentId: Int? = nil, pageSize: Int = 1000) {
+    init(di: DIContainer, parentid: Int? = nil, pageSize: Int = 1000) {
         self.di = di
-        self.parentId = parentId
+        self.parentid = parentid
         self.pageSize = pageSize
     }
 
@@ -58,7 +58,7 @@ final class ThemeSelectionViewModel {
     func setPreviewThemes(_ themes: [LegoTheme]) {
         isPreviewMode = true
         allFetchedThemes = themes
-        self.themes = allFetchedThemes.filter { $0.parentId == parentId }
+        self.themes = allFetchedThemes.filter { $0.parentid == parentid }
     }
 
     // MARK: - Theme Hierarchy Management
@@ -123,8 +123,8 @@ final class ThemeSelectionViewModel {
             let fetched = try await repo.fetchThemes(page: 1, pageSize: pageSize)
             // Preserve the full list so we can determine child relationships
             allFetchedThemes = fetched
-            // Show only themes matching this view model's parentId
-            themes = allFetchedThemes.filter { $0.parentId == parentId }
+            // Show only themes matching this view model's parentid
+            themes = allFetchedThemes.filter { $0.parentid == parentid }
         } catch {
             if let b = error as? BrixieError {
                 lastError = b
@@ -138,11 +138,11 @@ final class ThemeSelectionViewModel {
     // MARK: - Theme Queries
 
     func hasChildren(themeId: Int) -> Bool {
-        return allFetchedThemes.contains { $0.parentId == themeId }
+        return allFetchedThemes.contains { $0.parentid == themeId }
     }
 
     /// Return child themes for a given parent id.
-    func children(of parentId: Int) -> [LegoTheme] {
-        return allFetchedThemes.filter { $0.parentId == parentId }
+    func children(of parentid: Int) -> [LegoTheme] {
+        return allFetchedThemes.filter { $0.parentid == parentid }
     }
 }
