@@ -12,18 +12,22 @@ import SwiftUI
 struct MainView: View {
     @Environment(\.diContainer) private var di: DIContainer
 
-    @State private var themes: [LegoTheme]
-    @State private var isLoading: Bool = false
-    @State private var lastError: BrixieError?
-
+    @StateObject private var viewModel: ThemeSelectionViewModel
     private let previewMode: Bool
 
-    init(previewThemes: [LegoTheme]? = nil) {
+    init(previewThemes: [LegoTheme]? = nil, di: DIContainer? = nil) {
+        // Allow injecting DI for previews; otherwise use environment's container.
+        let container: DIContainer? = di
         if let previewThemes = previewThemes {
-            _themes = State(initialValue: previewThemes)
+            _viewModel = StateObject(
+                wrappedValue: ThemeSelectionViewModel(
+                    di: container ?? MainActor.assumeIsolated { DIContainer.shared }))
+            _viewModel.wrappedValue.themes = previewThemes
             previewMode = true
         } else {
-            _themes = State(initialValue: [])
+            _viewModel = StateObject(
+                wrappedValue: ThemeSelectionViewModel(
+                    di: container ?? MainActor.assumeIsolated { DIContainer.shared }))
             previewMode = false
         }
     }
@@ -31,12 +35,12 @@ struct MainView: View {
     var body: some View {
         NavigationSplitView {
             List {
-                if isLoading {
+                if viewModel.isLoading {
                     HStack {
                         ProgressView()
                         Text("Loading themes…")
                     }
-                } else if let error = lastError {
+                } else if let error = viewModel.lastError {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Failed to load themes")
                             .font(.headline)
@@ -44,15 +48,15 @@ struct MainView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         Button("Retry") {
-                            Task { await loadThemes() }
+                            Task { await viewModel.reloadThemes() }
                         }
                     }
                     .padding(.vertical, 8)
-                } else if themes.isEmpty {
+                } else if viewModel.themes.isEmpty {
                     Text("No themes available")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(themes, id: \.id) { theme in
+                    ForEach(viewModel.themes, id: \.id) { theme in
                         NavigationLink {
                             ThemeDetailView(theme: theme, di: di)
                         } label: {
@@ -63,8 +67,8 @@ struct MainView: View {
             }
             .navigationTitle("Themes")
             .task {
-                if !previewMode && themes.isEmpty {
-                    await loadThemes()
+                if !previewMode {
+                    await viewModel.loadThemesIfNeeded()
                 }
             }
         } content: {
@@ -80,23 +84,7 @@ struct MainView: View {
         }
     }
 
-    @MainActor
-    private func loadThemes() async {
-        isLoading = true
-        lastError = nil
-        do {
-            let repo = di.makeLegoThemeRepository()
-            let fetched = try await repo.fetchThemes(page: 1, pageSize: 200)
-            themes = fetched
-        } catch {
-            if let b = error as? BrixieError {
-                lastError = b
-            } else {
-                lastError = .networkError(underlying: error)
-            }
-        }
-        isLoading = false
-    }
+    // Themes loading handled by ThemeSelectionViewModel
 }
 
 // MARK: - Preview
