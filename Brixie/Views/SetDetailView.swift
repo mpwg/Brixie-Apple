@@ -87,6 +87,9 @@ struct SetDetailView: View {
         .task {
             await loadDetails()
         }
+        .onChange(of: setNum) { _, _ in
+            Task { await loadDetails() }
+        }
     }
 
     @MainActor
