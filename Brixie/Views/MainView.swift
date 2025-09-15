@@ -54,15 +54,7 @@ struct MainView: View {
                 } else {
                     ForEach(themes, id: \.id) { theme in
                         NavigationLink {
-                            // Simple destination for now: show theme name and id
-                            VStack(alignment: .leading) {
-                                Text(theme.name)
-                                    .font(.title)
-                                Text("ID: \(theme.id)")
-                                    .foregroundStyle(.secondary)
-
-                            }
-                            .padding()
+                            ThemeDetailView(theme: theme, di: di)
                         } label: {
                             Text(theme.name)
                         }
