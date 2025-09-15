@@ -23,10 +23,10 @@ struct ThemeSelectionView: View {
     init(previewThemes: [LegoTheme]? = nil, parentid: Int? = nil, di: DIContainer? = nil) {
         let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
         _viewModel = State(
-                initialValue: ThemeSelectionViewModel(
-                    di: container,
-                    parentid: parentid
-                )
+            initialValue: ThemeSelectionViewModel(
+                di: container,
+                parentid: parentid
+            )
         )
 
         // Set preview themes if provided
