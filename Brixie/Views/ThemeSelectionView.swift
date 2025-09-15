@@ -9,11 +9,13 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+// Types from local project files
+
 struct ThemeSelectionView: View {
     @Environment(\.diContainer) private var di: DIContainer
     @StateObject private var viewModel: ThemeSelectionViewModel
     private let previewMode: Bool
-    @State private var expanded: Set<Int> = []
+    // Expansion state is now managed by the view model
 
     /// - Parameters:
     ///   - previewThemes: supply for SwiftUI previews
@@ -90,14 +92,10 @@ struct ThemeSelectionView: View {
 
                     if viewModel.hasChildren(themeId: theme.id) {
                         Button(action: {
-                            if expanded.contains(theme.id) {
-                                expanded.remove(theme.id)
-                            } else {
-                                expanded.insert(theme.id)
-                            }
+                            viewModel.toggleExpanded(theme.id)
                         }) {
                             Image(
-                                systemName: expanded.contains(theme.id)
+                                systemName: viewModel.expanded.contains(theme.id)
                                     ? "chevron.down" : "chevron.right"
                             )
                             .foregroundStyle(.secondary)
@@ -131,7 +129,7 @@ struct ThemeSelectionView: View {
                 }
 
                 // Children
-                if expanded.contains(theme.id) {
+                if viewModel.expanded.contains(theme.id) {
                     ForEach(viewModel.children(of: theme.id), id: \.id) { child in
                         themeRow(child, level: level + 1)
                     }
@@ -140,4 +138,3 @@ struct ThemeSelectionView: View {
         )
     }
 }
-

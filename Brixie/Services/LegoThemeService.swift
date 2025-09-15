@@ -5,6 +5,7 @@
 //  Created by Matthias Wallner-Géhri on 01.09.25.
 //
 
+import Combine
 import Foundation
 import RebrickableLegoAPIClient
 import SwiftData
@@ -14,7 +15,7 @@ import SwiftData
 final class LegoThemeService {
     private let modelContext: ModelContext
     private let errorReporter = ErrorReporter.shared
-    
+
     var isLoading = false
     var error: BrixieError? {
         didSet {
@@ -23,39 +24,123 @@ final class LegoThemeService {
             }
         }
     }
-    
+
+    // Observable state for SwiftUI
+    var themes: [LegoTheme] = []
+    var currentError: BrixieError?
+    var loadingState = false
+
+    private var cancellables = Set<AnyCancellable>()
+
     init(modelContext: ModelContext, apiKey: String) {
         RebrickableLegoAPIClientAPIConfiguration.shared.apiKey = apiKey
         self.modelContext = modelContext
     }
-    
+
+    // MARK: - Combine Publishers
+
+    func themesPublisher() -> AnyPublisher<[LegoTheme], Never> {
+        return Just(themes)
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
+    }
+
+    func errorPublisher() -> AnyPublisher<BrixieError?, Never> {
+        return Just(currentError)
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
+    }
+
+    var isLoadingPublisher: AnyPublisher<Bool, Never> {
+        $loadingState
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
+    }
+
+    func fetchThemesPublisher(page: Int = 1, pageSize: Int = 100) -> AnyPublisher<
+        [LegoTheme], BrixieError
+    > {
+        Future<[LegoTheme], BrixieError> { [weak self] promise in
+            guard let self = self else {
+                promise(
+                    .failure(.networkError(underlying: NSError(domain: "ServiceError", code: -1))))
+                return
+            }
+
+            Task {
+                do {
+                    let themes = try await self.fetchThemes(page: page, pageSize: pageSize)
+                    promise(.success(themes))
+                } catch {
+                    if let brixieError = error as? BrixieError {
+                        promise(.failure(brixieError))
+                    } else {
+                        promise(.failure(self.mapToBrixieError(error)))
+                    }
+                }
+            }
+        }
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
+    }
+
+    func fetchSetsForThemePublisher(themeId: Int, page: Int = 1, pageSize: Int = 20)
+        -> AnyPublisher<[LegoSet], BrixieError>
+    {
+        Future<[LegoSet], BrixieError> { [weak self] promise in
+            guard let self = self else {
+                promise(
+                    .failure(.networkError(underlying: NSError(domain: "ServiceError", code: -1))))
+                return
+            }
+
+            Task {
+                do {
+                    let sets = try await self.fetchSetsForTheme(
+                        themeId: themeId, page: page, pageSize: pageSize)
+                    promise(.success(sets))
+                } catch {
+                    if let brixieError = error as? BrixieError {
+                        promise(.failure(brixieError))
+                    } else {
+                        promise(.failure(self.mapToBrixieError(error)))
+                    }
+                }
+            }
+        }
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
+    }
+
+    // MARK: - Legacy async/await methods (for backward compatibility)
+
     func fetchThemes(page: Int = 1, pageSize: Int = 100) async throws -> [LegoTheme] {
         isLoading = true
         error = nil
-        
+
         defer { isLoading = false }
-        
+
         do {
             let response = try await LegoAPI.legoThemesList(
                 page: page,
                 pageSize: pageSize,
                 ordering: "name"
             )
-            
+
             let themes = response.results.map { apiTheme in
                 LegoTheme(
                     id: apiTheme.id,
                     name: apiTheme.name,
                     parentId: apiTheme.parentId,
-                    setCount: 0 // TODO: FIXME!
+                    setCount: 0  // TODO: FIXME!
                 )
             }
-            
+
             // Save to SwiftData
             for theme in themes {
                 modelContext.insert(theme)
             }
-            
+
             do {
                 try modelContext.save()
             } catch {
@@ -67,12 +152,12 @@ final class LegoThemeService {
             throw self.error!
         }
     }
-    
+
     func getCachedThemes() -> [LegoTheme] {
         let descriptor = FetchDescriptor<LegoTheme>(
             sortBy: [SortDescriptor(\.name)]
         )
-        
+
         do {
             return try modelContext.fetch(descriptor)
         } catch {
@@ -80,13 +165,15 @@ final class LegoThemeService {
             return []
         }
     }
-    
-    func getSetsForTheme(themeId: Int, page: Int = 1, pageSize: Int = 20, ordering: String = "-year") async throws -> [LegoSet] {
+
+    func getSetsForTheme(
+        themeId: Int, page: Int = 1, pageSize: Int = 20, ordering: String = "-year"
+    ) async throws -> [LegoSet] {
         isLoading = true
         error = nil
-        
+
         defer { isLoading = false }
-        
+
         do {
             let response = try await LegoAPI.legoSetsList(
                 page: page,
@@ -94,7 +181,7 @@ final class LegoThemeService {
                 themeId: String(themeId),
                 ordering: ordering
             )
-            
+
             let legoSets = response.results.map { apiSet in
                 LegoSet(
                     setNum: apiSet.setNum ?? "",
@@ -105,21 +192,21 @@ final class LegoThemeService {
                     imageURL: apiSet.setImgUrl
                 )
             }
-            
+
             return legoSets
         } catch {
             self.error = mapToBrixieError(error)
             throw self.error!
         }
     }
-    
+
     // MARK: Error Mapping
-    
+
     private func mapToBrixieError(_ error: Error) -> BrixieError {
         if let brixieError = error as? BrixieError {
             return brixieError
         }
-        
+
         // Map common error types
         if let urlError = error as? URLError {
             switch urlError.code {
@@ -133,7 +220,7 @@ final class LegoThemeService {
                 return .networkError(underlying: error)
             }
         }
-        
+
         // Default mapping
         return .networkError(underlying: error)
     }
