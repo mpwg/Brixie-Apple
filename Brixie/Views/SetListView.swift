@@ -41,8 +41,8 @@ struct SetListView: View {
                         }
                         .padding(.vertical, 4)
                     }
-                    .task {
-                        await viewModel.loadMoreIfNeeded(currentItem: set)
+                    .onAppear {
+                        Task { await viewModel.loadMoreIfNeeded(currentItem: set) }
                     }
                 }
 
@@ -52,6 +52,17 @@ struct SetListView: View {
                         ProgressView()
                         Spacer()
                     }
+                } else {
+                    // An invisible sentinel at the end of the list that will
+                    // trigger loading the next page when it appears. Using an
+                    // explicit sentinel avoids relying solely on the last
+                    // visible row's onAppear which can be flaky on fast
+                    // scrolls or when cells are reused.
+                    Color.clear
+                        .frame(height: 1)
+                        .onAppear {
+                            Task { await viewModel.loadMoreIfNeeded(currentItem: nil) }
+                        }
                 }
 
                 if let error = viewModel.error {

@@ -11,10 +11,20 @@ final class ThemeSelectionViewModel: ObservableObject {
 
     private let di: DIContainer
     private let pageSize: Int
+    private let parentId: Int?
+    // Keep a copy of all fetched themes so callers can determine child existence
+    private var allFetchedThemes: [LegoTheme] = []
 
-    init(di: DIContainer, pageSize: Int = 200) {
+    init(di: DIContainer, parentId: Int? = nil, pageSize: Int = 1000) {
         self.di = di
+        self.parentId = parentId
         self.pageSize = pageSize
+    }
+
+    /// Populate the view model with preview themes (used by SwiftUI previews)
+    func setPreviewThemes(_ themes: [LegoTheme]) {
+        allFetchedThemes = themes
+        self.themes = allFetchedThemes.filter { $0.parentid == parentId }
     }
 
     func loadThemesIfNeeded() async {
@@ -32,7 +42,10 @@ final class ThemeSelectionViewModel: ObservableObject {
         do {
             let repo = di.makeLegoThemeRepository()
             let fetched = try await repo.fetchThemes(page: 1, pageSize: pageSize)
-            themes = fetched
+            // Preserve the full list so we can determine child relationships
+            allFetchedThemes = fetched
+            // Show only themes matching this view model's parentId
+            themes = allFetchedThemes.filter { $0.parentid == parentId }
         } catch {
             if let b = error as? BrixieError {
                 lastError = b
@@ -41,5 +54,14 @@ final class ThemeSelectionViewModel: ObservableObject {
             }
         }
         isLoading = false
+    }
+
+    func hasChildren(themeId: Int) -> Bool {
+        return allFetchedThemes.contains { $0.parentid == themeId }
+    }
+
+    /// Return child themes for a given parent id.
+    func children(of parentId: Int) -> [LegoTheme] {
+        return allFetchedThemes.filter { $0.parentid == parentId }
     }
 }

@@ -10,12 +10,13 @@ final class SetListViewModel: ObservableObject {
     @Published var error: BrixieError?
 
     private let di: DIContainer
+    static let pageSizeDefault: Int = 100
     private var themeId: Int
     private var currentPage: Int = 1
     private let pageSize: Int
     private var isLastPage: Bool = false
 
-    init(di: DIContainer, themeId: Int, pageSize: Int = 20) {
+    init(di: DIContainer, themeId: Int, pageSize: Int = pageSizeDefault) {
         self.di = di
         self.themeId = themeId
         self.pageSize = pageSize
