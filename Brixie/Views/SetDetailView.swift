@@ -3,25 +3,27 @@ import SwiftUI
 
 struct SetDetailView: View {
     @Environment(\.diContainer) private var di: DIContainer
-    @State private var legoSet: LegoSet?
-    @State private var isLoading: Bool = false
-    @State private var error: BrixieError?
+    @State private var viewModel: SetDetailViewModel
 
-    let setNum: String
-
-    init(setNum: String) {
-        self.setNum = setNum
+    init(setNum: String, di: DIContainer? = nil) {
+        let container: DIContainer? = di
+        self._viewModel = State(
+            initialValue: SetDetailViewModel(
+                di: container ?? MainActor.assumeIsolated { DIContainer.shared },
+                setNum: setNum
+            )
+        )
     }
 
     var body: some View {
         Group {
-            if isLoading {
+            if viewModel.isLoading {
                 HStack {
                     Spacer()
                     ProgressView()
                     Spacer()
                 }
-            } else if let legoSet = legoSet {
+            } else if let legoSet = viewModel.legoSet {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(legoSet.name)
@@ -67,14 +69,14 @@ struct SetDetailView: View {
                     }
                     .padding()
                 }
-            } else if let error = error {
+            } else if let error = viewModel.error {
                 VStack(alignment: .leading) {
                     Text("Failed to load set details")
                         .font(.headline)
                     Text(error.errorDescription ?? "Unknown error")
                         .foregroundStyle(.secondary)
                     Button("Retry") {
-                        Task { await loadDetails() }
+                        Task { await viewModel.retry() }
                     }
                 }
                 .padding()
@@ -83,31 +85,10 @@ struct SetDetailView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .navigationTitle(setNum)
+        .navigationTitle(viewModel.legoSet?.setNum ?? "Set Details")
         .task {
-            await loadDetails()
+            await viewModel.loadDetails()
         }
-        .onChange(of: setNum) { _, _ in
-            Task { await loadDetails() }
-        }
-    }
-
-    @MainActor
-    private func loadDetails() async {
-        isLoading = true
-        error = nil
-        do {
-            let repo = di.makeLegoSetRepository()
-            let fetched = try await repo.getSetDetails(setNum: setNum)
-            legoSet = fetched
-        } catch {
-            if let b = error as? BrixieError {
-                self.error = b
-            } else {
-                self.error = .networkError(underlying: error)
-            }
-        }
-        isLoading = false
     }
 }
 

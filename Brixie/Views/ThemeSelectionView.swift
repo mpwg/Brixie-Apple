@@ -11,29 +11,27 @@ import SwiftUI
 
 struct ThemeSelectionView: View {
     @Environment(\.diContainer) private var di: DIContainer
-    @StateObject private var viewModel: ThemeSelectionViewModel
-    private let previewMode: Bool
-    @State private var expanded: Set<Int> = []
+    /// NOTE: In iOS 17+, using @State for Observable view models is correct and replaces @StateObject.
+    /// This pattern change allows SwiftUI to manage the observable's lifecycle automatically.
+    /// See: https://developer.apple.com/documentation/swiftui/state for details.
+    @State private var viewModel: ThemeSelectionViewModel
 
     /// - Parameters:
     ///   - previewThemes: supply for SwiftUI previews
-    ///   - parentId: optional parent id to show child themes
+    ///   - parentid: optional parent id to show child themes
     ///   - di: optional DI container (injected via environment by callers)
-    init(previewThemes: [LegoTheme]? = nil, parentId: Int? = nil, di: DIContainer? = nil) {
-        let container: DIContainer? = di
+    init(previewThemes: [LegoTheme]? = nil, parentid: Int? = nil, di: DIContainer? = nil) {
+        let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
+        _viewModel = State(
+            initialValue: ThemeSelectionViewModel(
+                di: container,
+                parentid: parentid
+            )
+        )
+
+        // Set preview themes if provided
         if let previewThemes = previewThemes {
-            _viewModel = StateObject(
-                wrappedValue: ThemeSelectionViewModel(
-                    di: container ?? MainActor.assumeIsolated { DIContainer.shared },
-                    parentId: parentId))
             _viewModel.wrappedValue.setPreviewThemes(previewThemes)
-            previewMode = true
-        } else {
-            _viewModel = StateObject(
-                wrappedValue: ThemeSelectionViewModel(
-                    di: container ?? MainActor.assumeIsolated { DIContainer.shared },
-                    parentId: parentId))
-            previewMode = false
         }
     }
 
@@ -44,100 +42,62 @@ struct ThemeSelectionView: View {
                     ProgressView()
                     Text("Loading themes…")
                 }
-            } else if let error = viewModel.lastError {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Failed to load themes")
-                        .font(.headline)
-                    Text(error.errorDescription ?? "Unknown error")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Button("Retry") {
+            } else if viewModel.hasError {
+                ErrorView(
+                    title: "Failed to load themes",
+                    error: viewModel.lastError,
+                    retryAction: {
                         Task { await viewModel.reloadThemes() }
                     }
-                }
-                .padding(.vertical, 8)
-            } else if viewModel.themes.isEmpty {
-                Text("No themes available")
-                    .foregroundStyle(.secondary)
-            } else {
-                // Render a hierarchical list inline. Top-level themes are
-                // those the view model populated for this parentId.
-                ForEach(viewModel.themes, id: \.id) { theme in
-                    themeRow(theme, level: 0)
+                )
+            } else if viewModel.isEmpty {
+                EmptyStateView(message: "No themes available")
+            } else if viewModel.shouldShowContent {
+                ForEach(viewModel.flattenedThemes()) { displayItem in
+                    ThemeRowView(
+                        displayItem: displayItem,
+                        onToggleExpanded: { themeId in
+                            viewModel.toggleExpanded(themeId)
+                        },
+                        di: di
+                    )
                 }
             }
         }
         .navigationTitle("Themes")
         .task {
-            if !previewMode {
-                await viewModel.loadThemesIfNeeded()
-            }
-            // For preview mode, ensure preview themes are applied to the VM
-            if previewMode {
-                // viewModel already created with parentId, but wire preview data
-                // if the initializer supplied them.
-                // (The preview code below calls ThemeSelectionView(previewThemes:))
-            }
+            await viewModel.loadThemesIfNeeded()
         }
-    }
-
-    private func themeRow(_ theme: LegoTheme, level: Int) -> AnyView {
-        AnyView(
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    // Indentation
-                    Spacer().frame(width: CGFloat(level) * 14)
-
-                    if viewModel.hasChildren(themeId: theme.id) {
-                        Button(action: {
-                            if expanded.contains(theme.id) {
-                                expanded.remove(theme.id)
-                            } else {
-                                expanded.insert(theme.id)
-                            }
-                        }) {
-                            Image(
-                                systemName: expanded.contains(theme.id)
-                                    ? "chevron.down" : "chevron.right"
-                            )
-                            .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                    } else {
-                        // to align with rows that have a chevron
-                        Spacer().frame(width: 20)
-                    }
-
-                    if viewModel.hasChildren(themeId: theme.id) {
-                        // non-leaf; show label that just expands/collapses
-                        HStack {
-                            Text(theme.name)
-                            Text("ID: \(theme.id)")
-                                .foregroundStyle(.secondary)
-                        }
-                        .contentShape(Rectangle())
-                    } else {
-                        // leaf: navigate to SetListView
-                        NavigationLink {
-                            SetListView(theme: theme, di: di)
-                        } label: {
-                            HStack {
-                                Text(theme.name)
-                                Text("ID: \(theme.id)")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                }
-
-                // Children
-                if expanded.contains(theme.id) {
-                    ForEach(viewModel.children(of: theme.id), id: \.id) { child in
-                        themeRow(child, level: level + 1)
-                    }
-                }
-            }
-        )
     }
 }
 
+// MARK: - Supporting Views
+
+private struct ErrorView: View {
+    let title: String
+    let error: BrixieError?
+    let retryAction: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+            if let error = error {
+                Text(error.errorDescription ?? "Unknown error")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            Button("Retry", action: retryAction)
+        }
+        .padding(.vertical, 8)
+    }
+}
+
+private struct EmptyStateView: View {
+    let message: String
+
+    var body: some View {
+        Text(message)
+            .foregroundStyle(.secondary)
+    }
+}

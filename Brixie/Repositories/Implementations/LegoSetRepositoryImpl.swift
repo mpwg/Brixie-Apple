@@ -22,18 +22,18 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
         self.localDataSource = localDataSource
         self.themeRepository = themeRepository
     }
-    
+
     func fetchSets(page: Int, pageSize: Int) async throws -> [LegoSet] {
         do {
             let remoteSets = try await remoteDataSource.fetchSets(page: page, pageSize: pageSize)
             let setsWithThemeNames = await populateThemeNames(for: remoteSets)
-            
+
             if page == 1 {
                 try localDataSource.deleteAll(LegoSet.self)
             }
-            
+
             try localDataSource.save(setsWithThemeNames)
-            
+
             // Save successful sync timestamp
             let syncTimestamp = SyncTimestamp(
                 id: "sets-sync",
@@ -43,7 +43,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
                 itemCount: setsWithThemeNames.count
             )
             try localDataSource.saveSyncTimestamp(syncTimestamp)
-            
+
             return setsWithThemeNames
         } catch {
             // Save failed sync timestamp
@@ -55,7 +55,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
                 itemCount: 0
             )
             try? localDataSource.saveSyncTimestamp(syncTimestamp)
-            
+
             if case BrixieError.networkError = error {
                 let cachedSets = await getCachedSets()
                 if !cachedSets.isEmpty {
@@ -65,12 +65,13 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             throw error
         }
     }
-    
+
     func searchSets(query: String, page: Int, pageSize: Int) async throws -> [LegoSet] {
         do {
-            let remoteSets = try await remoteDataSource.searchSets(query: query, page: page, pageSize: pageSize)
+            let remoteSets = try await remoteDataSource.searchSets(
+                query: query, page: page, pageSize: pageSize)
             let setsWithThemeNames = await populateThemeNames(for: remoteSets)
-            
+
             // Save successful search sync timestamp
             let syncTimestamp = SyncTimestamp(
                 id: "search-sync",
@@ -80,7 +81,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
                 itemCount: setsWithThemeNames.count
             )
             try? localDataSource.saveSyncTimestamp(syncTimestamp)
-            
+
             return setsWithThemeNames
         } catch {
             // Save failed search sync timestamp
@@ -92,15 +93,48 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
                 itemCount: 0
             )
             try? localDataSource.saveSyncTimestamp(syncTimestamp)
-            
+
             let cachedSets = await getCachedSets()
             return cachedSets.filter { set in
-                set.name.localizedCaseInsensitiveContains(query) ||
-                set.setNum.localizedCaseInsensitiveContains(query)
+                set.name.localizedCaseInsensitiveContains(query)
+                    || set.setNum.localizedCaseInsensitiveContains(query)
             }
         }
     }
-    
+
+    func getSetsForTheme(themeId: Int, page: Int, pageSize: Int) async throws -> [LegoSet] {
+        do {
+            let remoteSets = try await remoteDataSource.getSetsForTheme(
+                themeId: themeId, page: page, pageSize: pageSize)
+            let setsWithThemeNames = await populateThemeNames(for: remoteSets)
+
+            // Save successful theme sets sync timestamp
+            let syncTimestamp = SyncTimestamp(
+                id: "theme-sets-sync-\(themeId)",
+                lastSync: Date(),
+                syncType: .sets,
+                isSuccessful: true,
+                itemCount: setsWithThemeNames.count
+            )
+            try? localDataSource.saveSyncTimestamp(syncTimestamp)
+
+            return setsWithThemeNames
+        } catch {
+            // Save failed theme sets sync timestamp
+            let syncTimestamp = SyncTimestamp(
+                id: "theme-sets-sync-\(themeId)",
+                lastSync: Date(),
+                syncType: .sets,
+                isSuccessful: false,
+                itemCount: 0
+            )
+            try? localDataSource.saveSyncTimestamp(syncTimestamp)
+
+            let cachedSets = await getCachedSets()
+            return cachedSets.filter { $0.themeId == themeId }
+        }
+    }
+
     func getSetDetails(setNum: String) async throws -> LegoSet? {
         do {
             if let remoteSet = try await remoteDataSource.getSetDetails(setNum: setNum) {
@@ -109,7 +143,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
                 if let setWithThemeName = setWithThemeName {
                     try localDataSource.save([setWithThemeName])
                 }
-                
+
                 // Save successful set details sync timestamp
                 let syncTimestamp = SyncTimestamp(
                     id: "setDetails-sync",
@@ -119,7 +153,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
                     itemCount: 1
                 )
                 try? localDataSource.saveSyncTimestamp(syncTimestamp)
-                
+
                 return setWithThemeName
             }
             return nil
@@ -133,12 +167,12 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
                 itemCount: 0
             )
             try? localDataSource.saveSyncTimestamp(syncTimestamp)
-            
+
             let cachedSets = await getCachedSets()
             return cachedSets.first { $0.setNum == setNum }
         }
     }
-    
+
     func getCachedSets() async -> [LegoSet] {
         do {
             return try localDataSource.fetch(LegoSet.self)
@@ -146,17 +180,17 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             return []
         }
     }
-    
+
     func markAsFavorite(_ set: LegoSet) async throws {
         set.isFavorite = true
         try localDataSource.save([set])
     }
-    
+
     func removeFromFavorites(_ set: LegoSet) async throws {
         set.isFavorite = false
         try localDataSource.save([set])
     }
-    
+
     func getFavoriteSets() async -> [LegoSet] {
         do {
             return try localDataSource.fetch(
@@ -167,7 +201,7 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             return []
         }
     }
-    
+
     func getLastSyncTimestamp(for syncType: SyncType) async -> SyncTimestamp? {
         do {
             return try localDataSource.getLastSyncTimestamp(for: syncType)
@@ -175,13 +209,13 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             return nil
         }
     }
-    
-    // MARK: - Theme Name Population    
+
+    // MARK: - Theme Name Population
     /// Populate theme names for sets using cached themes
     private func populateThemeNames(for sets: [LegoSet]) async -> [LegoSet] {
         let cachedThemes = await themeRepository.getCachedThemes()
         let themeNameMap = Dictionary(uniqueKeysWithValues: cachedThemes.map { ($0.id, $0.name) })
-        
+
         return sets.map { set in
             let themeName = themeNameMap[set.themeId]
             return LegoSet(
@@ -195,23 +229,24 @@ final class LegoSetRepositoryImpl: LegoSetRepository {
             )
         }
     }
-    
+
     /// Backfill existing sets with theme names
     func backfillThemeNames() async throws {
         let cachedSets = await getCachedSets()
         let setsNeedingThemeNames = cachedSets.filter { $0.themeName == nil }
-        
+
         if setsNeedingThemeNames.isEmpty {
             return
         }
-        
+
         let setsWithThemeNames = await populateThemeNames(for: setsNeedingThemeNames)
-        
+
         // Update existing sets with theme names
-        for (index, set) in setsNeedingThemeNames.enumerated() where index < setsWithThemeNames.count {
+        for (index, set) in setsNeedingThemeNames.enumerated()
+        where index < setsWithThemeNames.count {
             set.themeName = setsWithThemeNames[index].themeName
         }
-        
+
         try localDataSource.save(setsNeedingThemeNames)
     }
 }
