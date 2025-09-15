@@ -14,25 +14,10 @@ struct ContentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+
+    
     var body: some View {
-        NavigationView {
-            VStack {
-                Spacer()
+        MainView()
 
-                Text("Brixie")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding(.bottom, 8)
-
-                Text("Ready to build something amazing")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-                    .multilineTextAlignment(.center)
-
-                Spacer()
-            }
-            .navigationTitle("Brixie")
-        }
     }
 }
