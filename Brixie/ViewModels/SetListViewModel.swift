@@ -9,15 +9,15 @@ final class SetListViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var error: BrixieError?
 
-    private let di: DIContainer
+    private let repository: LegoSetRepository
     static let pageSizeDefault: Int = 100
     private var themeId: Int
     private var currentPage: Int = 1
     private let pageSize: Int
     private var isLastPage: Bool = false
 
-    init(di: DIContainer, themeId: Int, pageSize: Int = pageSizeDefault) {
-        self.di = di
+    init(repository: LegoSetRepository, themeId: Int, pageSize: Int = pageSizeDefault) {
+        self.repository = repository
         self.themeId = themeId
         self.pageSize = pageSize
     }
@@ -59,11 +59,7 @@ final class SetListViewModel: ObservableObject {
         isLoading = true
         error = nil
         do {
-            // Create a LegoThemeService using the DI container's modelContext and API key
-            let apiKey = di.apiConfigurationService.currentAPIKey ?? ""
-            let service = LegoThemeService(
-                modelContext: di.modelContainer.mainContext, apiKey: apiKey)
-            let fetched = try await service.getSetsForTheme(
+            let fetched = try await repository.getSetsForTheme(
                 themeId: themeId, page: currentPage, pageSize: pageSize)
 
             if currentPage == 1 {

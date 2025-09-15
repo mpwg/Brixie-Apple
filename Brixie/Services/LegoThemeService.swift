@@ -52,7 +52,7 @@ final class LegoThemeService {
     }
 
     var isLoadingPublisher: AnyPublisher<Bool, Never> {
-        $loadingState
+        Just(loadingState)
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
@@ -96,7 +96,7 @@ final class LegoThemeService {
 
             Task {
                 do {
-                    let sets = try await self.fetchSetsForTheme(
+                    let sets = try await self.getSetsForTheme(
                         themeId: themeId, page: page, pageSize: pageSize)
                     promise(.success(sets))
                 } catch {

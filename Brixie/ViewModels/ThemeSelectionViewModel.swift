@@ -8,6 +8,7 @@ final class ThemeSelectionViewModel: ObservableObject {
     @Published var themes: [LegoTheme] = []
     @Published var isLoading: Bool = false
     @Published var lastError: BrixieError?
+    @Published var expanded: Set<Int> = []
 
     private let di: DIContainer
     private let pageSize: Int
@@ -58,6 +59,15 @@ final class ThemeSelectionViewModel: ObservableObject {
 
     func hasChildren(themeId: Int) -> Bool {
         return allFetchedThemes.contains { $0.parentid == themeId }
+    }
+
+    /// Toggle the expansion state for a theme
+    func toggleExpanded(_ themeId: Int) {
+        if expanded.contains(themeId) {
+            expanded.remove(themeId)
+        } else {
+            expanded.insert(themeId)
+        }
     }
 
     /// Return child themes for a given parent id.

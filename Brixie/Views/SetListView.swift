@@ -6,20 +6,12 @@ struct SetListView: View {
     @StateObject private var viewModel: SetListViewModel
     private let theme: LegoTheme
 
-    // Accept a DIContainer for easier injection and previews. The caller can
-    // pass `di` from the environment when building the view, or omit it and
-    // the default will use the environment-provided container.
     init(theme: LegoTheme, di: DIContainer? = nil) {
         self.theme = theme
-        let container: DIContainer
-        if let di = di {
-            container = di
-        } else {
-            // Fallback to the shared instance on the MainActor for compatibility.
-            container = MainActor.assumeIsolated { DIContainer.shared }
-        }
+        let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
+        let repository = container.makeLegoSetRepository()
         _viewModel = StateObject(
-            wrappedValue: SetListViewModel(di: container, themeId: theme.id))
+            wrappedValue: SetListViewModel(repository: repository, themeId: theme.id))
     }
 
     var body: some View {

@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import SwiftData
 
 @MainActor
 protocol LegoSetRepository {
     func fetchSets(page: Int, pageSize: Int) async throws -> [LegoSet]
     func searchSets(query: String, page: Int, pageSize: Int) async throws -> [LegoSet]
+    func getSetsForTheme(themeId: Int, page: Int, pageSize: Int) async throws -> [LegoSet]
     func getSetDetails(setNum: String) async throws -> LegoSet?
     func getCachedSets() async -> [LegoSet]
     func markAsFavorite(_ set: LegoSet) async throws
