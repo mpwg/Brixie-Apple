@@ -10,10 +10,15 @@ import SwiftUI
 
 @main
 struct BrixieApp: App {
+    // Single DI container for the app lifetime
+    private let di = MainActor.assumeIsolated { DIContainer.shared }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.diContainer, di)
         }
-        .modelContainer(for: [])
+        // Use the DI's ModelContainer for all SwiftData operations
+        .modelContainer(di.modelContainer)
     }
 }

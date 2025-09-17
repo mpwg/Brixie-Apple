@@ -22,12 +22,9 @@ struct ThemeSelectionView: View {
     ///   - di: optional DI container (injected via environment by callers)
     init(previewThemes: [LegoTheme]? = nil, parentid: Int? = nil, di: DIContainer? = nil) {
         let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
+        let repository = container.makeLegoThemeRepository()
         _viewModel = State(
-            initialValue: ThemeSelectionViewModel(
-                di: container,
-                parentid: parentid
-            )
-        )
+            initialValue: ThemeSelectionViewModel(repository: repository, parentid: parentid))
 
         // Set preview themes if provided
         if let previewThemes = previewThemes {

@@ -6,13 +6,10 @@ struct SetDetailView: View {
     @State private var viewModel: SetDetailViewModel
 
     init(setNum: String, di: DIContainer? = nil) {
-        let container: DIContainer? = di
+        let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
+        let repository = container.makeLegoSetRepository()
         self._viewModel = State(
-            initialValue: SetDetailViewModel(
-                di: container ?? MainActor.assumeIsolated { DIContainer.shared },
-                setNum: setNum
-            )
-        )
+            initialValue: SetDetailViewModel(repository: repository, setNum: setNum))
     }
 
     var body: some View {
