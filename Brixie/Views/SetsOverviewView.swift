@@ -20,21 +20,29 @@ struct SetsOverviewView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Summary header
+            // Summary header (refactored for compiler performance)
             HStack {
                 Text("LEGO-Sets Übersicht")
                     .font(.largeTitle)
+                    .accessibilityAddTraits(.isHeader)
                 Spacer()
+            }
+            .padding(.top)
+
+            HStack(spacing: 12) {
                 Label("Gesamtanzahl der LEGO-Teile", systemImage: "number")
+                    .accessibilityLabel("Gesamtanzahl der LEGO-Teile")
                 Text("\(viewModel.sets.reduce(0) { $0 + $1.numParts })")
                     .foregroundStyle(.secondary)
-                // Example badge for missing parts
+                    .accessibilityLabel(
+                        "\(viewModel.sets.reduce(0) { $0 + $1.numParts }) Teile insgesamt")
                 let missingCount = viewModel.sets.filter { $0.numParts == 0 }.count
                 if missingCount > 0 {
                     BadgeView(count: missingCount, color: .orange)
+                        .accessibilityLabel("\(missingCount) Sets ohne Teileangabe")
                 }
             }
-            .padding([.top, .horizontal])
+            .padding(.horizontal)
 
             // Search and filter controls
             HStack(spacing: 16) {
@@ -111,12 +119,14 @@ struct SetCardView: View {
                             .scaledToFit()
                             .frame(height: 160)
                             .cornerRadius(12)
+                            .accessibilityLabel("Bild von \(set.name)")
                     case .failure:
                         Image(systemName: "photo")
                             .resizable()
                             .scaledToFit()
                             .frame(height: 160)
                             .foregroundStyle(.secondary)
+                            .accessibilityLabel("Kein Bild verfügbar")
                     @unknown default:
                         EmptyView()
                     }
@@ -127,14 +137,17 @@ struct SetCardView: View {
                     .scaledToFit()
                     .frame(height: 160)
                     .foregroundStyle(.secondary)
+                    .accessibilityLabel("Kein Bild verfügbar")
             }
 
             Text(set.name)
                 .font(.headline)
                 .lineLimit(2)
+                .accessibilityLabel("Set Name: \(set.name)")
             Text("Set-Nummer: \(set.setNum)")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                .accessibilityLabel("Set-Nummer: \(set.setNum)")
             HStack {
                 Text("Jahr: \(set.year)")
                 Spacer()
@@ -142,6 +155,7 @@ struct SetCardView: View {
             }
             .font(.footnote)
             .foregroundStyle(.secondary)
+            .accessibilityElement(children: .combine)
 
             HStack {
                 Button(action: { /* TODO: Add to collection */  }) {
@@ -151,6 +165,8 @@ struct SetCardView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityLabel("Dieses LEGO zu meiner Sammlung hinzufügen")
+                .accessibilityHint("Fügt das Set zu deiner Sammlung hinzu")
 
                 Button(action: { /* TODO: Add to wishlist */  }) {
                     Text("Zur Wunschliste hinzufügen")
@@ -159,12 +175,17 @@ struct SetCardView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
+                .accessibilityLabel("Dieses LEGO zur Wunschliste hinzufügen")
+                .accessibilityHint("Fügt das Set zu deiner Wunschliste hinzu")
             }
         }
         .padding()
-        // For platform-specific backgrounds, use Color(.systemBackground) on iOS, Color(.windowBackgroundColor) on macOS, etc.
         .background(
-            RoundedRectangle(cornerRadius: 16).fill(Color.white).shadow(radius: 2))
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white)
+                .shadow(radius: 2)
+        )
+        .accessibilityElement(children: .contain)
     }
 }
 
