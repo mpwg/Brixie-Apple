@@ -2,9 +2,6 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-// Needed for LegoSetRepository protocol and BrixieError
-// The protocols live under Repositories/Protocols and errors/models under Core/Models
-// Importing Foundation is sufficient for access in the same module, but we add no extra imports.
 
 @Observable
 @MainActor
