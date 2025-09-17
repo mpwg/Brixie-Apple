@@ -25,7 +25,7 @@ final class ThemeSelectionViewModel {
     var lastError: BrixieError?
     var expanded: Set<Int> = []
 
-    private let di: DIContainer
+    private let repository: LegoThemeRepository
     private let pageSize: Int
     private let parentid: Int?
     private var isPreviewMode: Bool = false
@@ -46,8 +46,8 @@ final class ThemeSelectionViewModel {
         !isLoading && !hasError && !themes.isEmpty
     }
 
-    init(di: DIContainer, parentid: Int? = nil, pageSize: Int = 1000) {
-        self.di = di
+    init(repository: LegoThemeRepository, parentid: Int? = nil, pageSize: Int = 1000) {
+        self.repository = repository
         self.parentid = parentid
         self.pageSize = pageSize
     }
@@ -119,8 +119,7 @@ final class ThemeSelectionViewModel {
         isLoading = true
         lastError = nil
         do {
-            let repo = di.makeLegoThemeRepository()
-            let fetched = try await repo.fetchThemes(page: 1, pageSize: pageSize)
+            let fetched = try await repository.fetchThemes(page: 1, pageSize: pageSize)
             // Preserve the full list so we can determine child relationships
             allFetchedThemes = fetched
             // Show only themes matching this view model's parentid

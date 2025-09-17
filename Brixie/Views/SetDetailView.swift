@@ -6,13 +6,10 @@ struct SetDetailView: View {
     @State private var viewModel: SetDetailViewModel
 
     init(setNum: String, di: DIContainer? = nil) {
-        let container: DIContainer? = di
+        let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
+        let repository = container.makeLegoSetRepository()
         self._viewModel = State(
-            initialValue: SetDetailViewModel(
-                di: container ?? MainActor.assumeIsolated { DIContainer.shared },
-                setNum: setNum
-            )
-        )
+            initialValue: SetDetailViewModel(repository: repository, setNum: setNum))
     }
 
     var body: some View {
@@ -69,17 +66,6 @@ struct SetDetailView: View {
                     }
                     .padding()
                 }
-            } else if let error = viewModel.error {
-                VStack(alignment: .leading) {
-                    Text("Failed to load set details")
-                        .font(.headline)
-                    Text(error.errorDescription ?? "Unknown error")
-                        .foregroundStyle(.secondary)
-                    Button("Retry") {
-                        Task { await viewModel.retry() }
-                    }
-                }
-                .padding()
             } else {
                 Text("No details available")
                     .foregroundStyle(.secondary)
@@ -89,6 +75,13 @@ struct SetDetailView: View {
         .task {
             await viewModel.loadDetails()
         }
+        // Unified error handling overlay
+        .errorHandling(
+            error: viewModel.error,
+            onDismiss: { viewModel.error = nil },
+            onRetry: { Task { await viewModel.retry() } },
+            style: .banner
+        )
     }
 }
 

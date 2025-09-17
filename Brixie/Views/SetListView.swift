@@ -57,14 +57,6 @@ struct SetListView: View {
                         }
                 }
 
-                if let error = viewModel.error {
-                    VStack(alignment: .leading) {
-                        Text("Failed to load sets")
-                            .font(.headline)
-                        Text(error.errorDescription ?? "Unknown error")
-                            .foregroundStyle(.secondary)
-                    }
-                }
             }
             .listStyle(.plain)
             .task {
@@ -76,6 +68,13 @@ struct SetListView: View {
             .onChange(of: theme.id) { _, newId in
                 Task { await viewModel.updateForTheme(newId) }
             }
+            // Unified error handling overlay
+            .errorHandling(
+                error: viewModel.error,
+                onDismiss: { viewModel.error = nil },
+                onRetry: { Task { await viewModel.loadInitial() } },
+                style: .banner
+            )
         }
     }
 }

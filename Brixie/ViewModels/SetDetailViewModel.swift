@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+
 @Observable
 @MainActor
 final class SetDetailViewModel {
@@ -9,11 +10,11 @@ final class SetDetailViewModel {
     var isLoading: Bool = false
     var error: BrixieError?
 
-    private let di: DIContainer
+    private let repository: LegoSetRepository
     private var setNum: String
 
-    init(di: DIContainer, setNum: String) {
-        self.di = di
+    init(repository: LegoSetRepository, setNum: String) {
+        self.repository = repository
         self.setNum = setNum
     }
 
@@ -29,8 +30,7 @@ final class SetDetailViewModel {
         legoSet = nil
 
         do {
-            let repo = di.makeLegoSetRepository()
-            let fetched = try await repo.getSetDetails(setNum: setNum)
+            let fetched = try await repository.getSetDetails(setNum: setNum)
             legoSet = fetched
         } catch {
             if let brixieError = error as? BrixieError {
