@@ -5,6 +5,7 @@
 //  Created by automated refactor on 15.09.25.
 //
 
+
 import Foundation
 import SwiftData
 import SwiftUI
@@ -22,11 +23,7 @@ struct ThemeSelectionView: View {
     ///   - di: optional DI container (injected via environment by callers)
     init(previewThemes: [LegoTheme]? = nil, parentid: Int? = nil, di: DIContainer? = nil) {
         let container = di ?? MainActor.assumeIsolated { DIContainer.shared }
-        guard let repository = container.makeLegoThemeRepository() else {
-            // Fallback: handle repository creation failure (e.g., show error, use empty repo, etc.)
-            // For now, we initialize with a fatalError, but you may want to handle this more gracefully.
-            fatalError("Failed to create LegoThemeRepository")
-        }
+        let repository = container.makeLegoThemeRepository()
         _viewModel = State(
             initialValue: ThemeSelectionViewModel(repository: repository, parentid: parentid))
 
