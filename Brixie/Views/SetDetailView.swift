@@ -66,17 +66,6 @@ struct SetDetailView: View {
                     }
                     .padding()
                 }
-            } else if let error = viewModel.error {
-                VStack(alignment: .leading) {
-                    Text("Failed to load set details")
-                        .font(.headline)
-                    Text(error.errorDescription ?? "Unknown error")
-                        .foregroundStyle(.secondary)
-                    Button("Retry") {
-                        Task { await viewModel.retry() }
-                    }
-                }
-                .padding()
             } else {
                 Text("No details available")
                     .foregroundStyle(.secondary)
@@ -86,6 +75,13 @@ struct SetDetailView: View {
         .task {
             await viewModel.loadDetails()
         }
+        // Unified error handling overlay
+        .errorHandling(
+            error: viewModel.error,
+            onDismiss: { viewModel.error = nil },
+            onRetry: { Task { await viewModel.retry() } },
+            style: .banner
+        )
     }
 }
 

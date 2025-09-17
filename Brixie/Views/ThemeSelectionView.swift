@@ -39,14 +39,6 @@ struct ThemeSelectionView: View {
                     ProgressView()
                     Text("Loading themes…")
                 }
-            } else if viewModel.hasError {
-                ErrorView(
-                    title: "Failed to load themes",
-                    error: viewModel.lastError,
-                    retryAction: {
-                        Task { await viewModel.reloadThemes() }
-                    }
-                )
             } else if viewModel.isEmpty {
                 EmptyStateView(message: "No themes available")
             } else if viewModel.shouldShowContent {
@@ -65,28 +57,13 @@ struct ThemeSelectionView: View {
         .task {
             await viewModel.loadThemesIfNeeded()
         }
-    }
-}
-
-// MARK: - Supporting Views
-
-private struct ErrorView: View {
-    let title: String
-    let error: BrixieError?
-    let retryAction: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.headline)
-            if let error = error {
-                Text(error.errorDescription ?? "Unknown error")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            Button("Retry", action: retryAction)
-        }
-        .padding(.vertical, 8)
+        // Unified error handling overlay
+        .errorHandling(
+            error: viewModel.lastError,
+            onDismiss: { viewModel.lastError = nil },
+            onRetry: { Task { await viewModel.reloadThemes() } },
+            style: .banner
+        )
     }
 }
 
