@@ -5,7 +5,6 @@
 //  Created by automated refactor on 15.09.25.
 //
 
-
 import Foundation
 import SwiftData
 import SwiftUI
