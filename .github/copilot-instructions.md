@@ -1,168 +1,68 @@
 # Copilot Instructions for Brixie
 
-## Project Overview
+## Brixie AI Coding Agent Guide
 
-Brixie is a modern multi-platform SwiftUI application for browsing and searching LEGO sets using the Rebrickable API. The app targets iOS 26.0+, macOS 26.0+ (via Mac Catalyst), and visionOS 26.0+ with a focus on modern Swift concurrency and SwiftUI/SwiftData architecture.
+Brixie is a multi-platform SwiftUI app for browsing LEGO sets via the Rebrickable API. It targets iOS 26+, macOS 26+ (Catalyst), and visionOS, using Swift 6+ concurrency and SwiftData for persistence. The codebase is organized for clarity and maintainability.
 
-**Key Technologies:**
-- SwiftUI for user interface
-- SwiftData for local data persistence  
-- RebrickableLegoAPIClient for LEGO set data
-- Swift 6.0+ with modern concurrency
-- Xcode project (not Swift Package Manager)
+### Architecture Overview
 
-## Build Instructions
+- **Entry Point:** `BrixieApp.swift` sets up SwiftData ModelContainer and app state.
+- **Data Model:** `Item.swift` defines the main LegoSet model (`@Model`), used throughout.
+- **UI:** SwiftUI views in `Views/` and `UI/` folders. Main navigation is in `ContentView.swift`.
+- **Services:** API/data logic in `Services/` (e.g., `LegoSetService.swift`, `ImageCacheService.swift`).
+- **Repositories:** Abstraction for data access in `Repositories/` (protocols and implementations).
+- **Managers:** App-wide state/configuration (e.g., `ThemeManager.swift`).
+- **ViewModels:** MVVM pattern for UI logic and state.
 
-### Prerequisites
-- Xcode 15.0+ with iOS 26.0+ SDK
-- macOS 15.0+ for development
-- Valid Rebrickable API key for runtime functionality
+### Developer Workflow
 
-### Building
-**Note**: xcodebuild requires macOS with Xcode installed. In non-macOS environments, validate changes by code review.
+- **Build:**
+  - Use Xcode 15+ on macOS 15+.
+  - Build with:
+    `xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug build`
+- **Test:**
+  - Unit tests use Swift Testing (`#expect()`), not XCTest.
+  - Run with:
+    `xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26'`
+  - UI tests in `BrixieUITests/` use XCTest.
+- **Fastlane:**
+  - Build/release automation via Fastlane (`fastlane/`).
+  - Requires `REBRICKABLE_API_KEY` env var for all builds/tests.
+  - Example: `REBRICKABLE_API_KEY="your_key" fastlane ios create_release version:1.0.0`
 
-```bash
-# Build for debugging
-xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug build
+### Key Conventions & Patterns
 
-# Build for release
-xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Release build
+- **API Key:** Must be set in Settings or via `@AppStorage("rebrickableAPIKey")` for runtime and CI.
+- **SwiftData:** Use `@Model` for persistence, `@Query` in views, `ModelContext` in services.
+- **Image Caching:**
+  - Memory: NSCache
+  - Disk: Documents/ImageCache (auto-managed, 50MB limit)
+  - Use `AsyncCachedImage` for loading images in UI.
+- **MVVM:** ViewModels in `ViewModels/`, views in `Views/`, business logic in services.
+- **Testing:**
+  - Unit: `BrixieTests/` (Swift Testing)
+  - UI: `BrixieUITests/` (XCTest)
+- **Platform Differences:** Conditional compilation for UIKit vs AppKit as needed.
 
-# Clean build
-xcodebuild -project Brixie.xcodeproj -scheme Brixie clean build
-```
+### Integration Points
 
-### Testing
-**IMPORTANT**: This project uses Swift Testing framework for unit tests, NOT XCTest.
-**Note**: Testing requires macOS environment with Xcode and iOS Simulator.
+- **External:**
+  - `RebrickableLegoAPIClient` (v2.0.0+) from https://github.com/mpwg/Rebrickable-swift
+  - Managed in Xcode project, not Package.swift
+- **CI/CD:**
+  - GitHub Actions workflows in `.github/` (see `.github/README.md`)
+  - API key must be set as secret `REBRICKABLE_API_KEY` for CI builds
 
-```bash
-# Run unit tests (Swift Testing framework)
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26'
+### Troubleshooting
 
-# Run UI tests (XCTest framework)  
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26' -only-testing:BrixieUITests
-
-# Run specific unit test
-xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26' -only-testing:BrixieTests/BrixieTests/example
-```
-
-**Test Framework Notes:**
-- `BrixieTests/`: Uses Swift Testing framework (`import Testing`, `@Test` annotations)
-- `BrixieUITests/`: Uses XCTest framework  (`import Testing`, `@Test` annotations)
-- Unit tests use `#expect()`
-
-### Environment Setup
-1. Clone repository and open `Brixie.xcodeproj` in Xcode
-2. Dependencies are managed via Swift Package Manager within Xcode
-3. No additional setup scripts required - Xcode handles Swift Package resolution
-4. For runtime: Configure API key in app Settings or via `@AppStorage("rebrickableAPIKey")`
-
-## Project Architecture
-
-### Core Files
-- `Brixie/BrixieApp.swift` - Main app entry point with SwiftData ModelContainer setup
-- `Brixie/Item.swift` - SwiftData model for LegoSet (note: filename is Item.swift but contains LegoSet class)
-- `Brixie/ContentView.swift` - Main tab-based UI coordinator
-
-### Services Layer (`Brixie/Services/`)
-- `LegoSetService.swift` - API integration with Rebrickable, data fetching/caching
-- `ImageCacheService.swift` - Image downloading and caching (memory + disk)
-
-### Views Layer (`Brixie/Views/`)
-- `SetsListView.swift` - Browse all LEGO sets with pagination
-- `SearchView.swift` - Search functionality with recent searches
-- `SetDetailView.swift` - Detailed set information with image viewer
-- `FavoritesView.swift` - User's favorited sets
-- `SettingsView.swift` - API key configuration and cache management
-
-### Test Structure
-- `BrixieTests/BrixieTests.swift` - Unit tests using Swift Testing framework
-- `BrixieUITests/` - UI automation tests using XCTest framework
-
-### Configuration
-- `Brixie/Info.plist` - App configuration (background modes)
-- `Brixie/Brixie.entitlements` - Capabilities (iCloud, push notifications)
-- `.github/dependabot.yml` - Dependency updates (Swift packages, GitHub Actions)
-
-## Dependencies
-
-### External Packages
-- **RebrickableLegoAPIClient** (v2.0.0+): API client for Rebrickable LEGO data
-  - Repository: https://github.com/mpwg/Rebrickable-swift
-  - Configured in Xcode project, not Package.swift
-
-### Platform Frameworks
-- SwiftUI (iOS 26.0+, macOS 26.0+, visionOS 26.0+)
-- SwiftData for persistence
-- Foundation for networking and data handling
-
-## Development Workflow
-
-### Making Changes
-1. **Always build before making changes** to understand current state
-2. **Run tests frequently** - unit tests are fast, UI tests are slower
-3. **Test on multiple platforms** - app supports iOS, macOS (Catalyst), and visionOS
-4. **Validate API integration** - most functionality requires valid Rebrickable API key
-
-### Common Issues
-- **API Key Required**: Most app functionality requires valid Rebrickable API key
-- **Network Dependency**: App needs internet access for initial data fetching
-- **Image Caching**: Large image cache stored in Documents directory
-- **Platform Differences**: Some code uses conditional compilation for UIKit vs AppKit
-
-### Validation Steps
-1. Build successfully without warnings
-2. Run unit tests (all should pass)
-3. Test basic app flow: launch → configure API key → browse sets → view details
-4. Verify image loading and caching works
-5. Test search functionality
-6. Verify favorites persistence
-
-## Key Implementation Notes
-
-### SwiftData Usage
-- Model: `LegoSet` class with `@Model` annotation
-- Container setup in `BrixieApp.swift`
-- Query usage: `@Query` in views, `ModelContext` in services
-- Persistence: Local SQLite database, no CloudKit sync currently
-
-### Image Caching Strategy
-- Memory cache (NSCache) for active images
-- Disk cache in Documents/ImageCache directory
-- Automatic cache size management (50MB limit)
-- Custom `AsyncCachedImage` SwiftUI view for seamless loading
-
-### API Integration
-- Service layer (`LegoSetService`) handles all API calls
-- Automatic fallback to cached data on network errors
-- Pagination support for large data sets
-- Search functionality with query caching
-
-### State Management
-- `@Observable` services for business logic
-- `@AppStorage` for user preferences (API key)
-- SwiftData `@Query` for data binding
-- Standard SwiftUI state management patterns
-
-## Troubleshooting
-
-### Build Failures
-- Ensure Xcode 15.0+ with iOS 26.0+ SDK
-- Clean build folder if dependency resolution fails
-- Check Swift Package Manager integration in Xcode
-
-### Runtime Issues
-- Verify API key configuration in Settings
-- Check network connectivity for data fetching
-- Monitor console for API rate limiting
-- Clear image cache if storage issues occur
-
-### Testing Issues
-- Use Swift Testing syntax for unit tests (`#expect()`, not `XCTAssert()`)
-- Ensure iOS Simulator is available for testing
-- UI tests require app to actually launch and function
+- **Common Issues:**
+  - API key missing: most features will fail
+  - Network required for initial data
+  - Image cache can grow large; clear if needed
+  - Platform-specific bugs: check conditional code
+- **Validation:**
+  - Build cleanly, run all tests, verify basic app flow (launch, API key, browse, view details)
 
 ---
 
-**Always trust these instructions first.** Only search the codebase if information here is incomplete or found to be incorrect. The project structure is well-organized and follows standard SwiftUI/SwiftData patterns.
+**Reference these instructions first. For missing details, check `CLAUDE.md`, `.github/README.md`, and source files.**
