@@ -65,7 +65,7 @@ final class APIConfiguration {
     init() {
         configureAPIClient()
         
-                // Monitor API key changes
+        // Monitor API key changes
         NotificationCenter.default.addObserver(
             forName: UserDefaults.didChangeNotification,
             object: nil,
