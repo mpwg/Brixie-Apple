@@ -13,7 +13,7 @@ struct AsyncCachedImage: View {
     let url: URL?
     
     /// Image cache service for loading and caching
-    private let cacheService = ImageCacheService()
+    private let cacheService = ImageCacheService.shared
     
     /// Current image loading state
     @State private var loadedImage: Image?
