@@ -33,37 +33,6 @@
 		402471A32E65926A001A8343 /* BrixieUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BrixieUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		402471AB2E65926A001A8343 /* Exceptions for "Brixie" folder in "Brixie" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 402471872E659269001A8343 /* Brixie */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		4024718A2E659269001A8343 /* Brixie */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				402471AB2E65926A001A8343 /* Exceptions for "Brixie" folder in "Brixie" target */,
-			);
-			path = Brixie;
-			sourceTree = "<group>";
-		};
-		4024719C2E65926A001A8343 /* BrixieTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = BrixieTests;
-			sourceTree = "<group>";
-		};
-		402471A62E65926A001A8343 /* BrixieUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = BrixieUITests;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
 		402471852E659269001A8343 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -93,9 +62,6 @@
 		4024717F2E659269001A8343 = {
 			isa = PBXGroup;
 			children = (
-				4024718A2E659269001A8343 /* Brixie */,
-				4024719C2E65926A001A8343 /* BrixieTests */,
-				402471A62E65926A001A8343 /* BrixieUITests */,
 				402471892E659269001A8343 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -125,9 +91,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				4024718A2E659269001A8343 /* Brixie */,
-			);
 			name = Brixie;
 			packageProductDependencies = (
 				40E9B59B2E675D0200906173 /* RebrickableLegoAPIClient */,
@@ -149,9 +112,6 @@
 			dependencies = (
 				4024719B2E65926A001A8343 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				4024719C2E65926A001A8343 /* BrixieTests */,
-			);
 			name = BrixieTests;
 			packageProductDependencies = (
 			);
@@ -171,9 +131,6 @@
 			);
 			dependencies = (
 				402471A52E65926A001A8343 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				402471A62E65926A001A8343 /* BrixieUITests */,
 			);
 			name = BrixieUITests;
 			packageProductDependencies = (
