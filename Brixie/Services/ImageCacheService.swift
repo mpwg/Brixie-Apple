@@ -2,243 +2,365 @@
 //  ImageCacheService.swift
 //  Brixie
 //
-//  Created by Matthias Wallner-Géhri on 01.09.25.
+//  Created by GitHub Copilot on 18/09/2025.
 //
 
 import Foundation
 import SwiftUI
 
-// Wrapper class for Data to use with NSCache
-final class CachedImageData: Sendable {
-    let data: Data
-    
-    init(data: Data) {
-        self.data = data
-    }
-}
-
-@Observable
-final class ImageCacheService: @unchecked Sendable {
+/// Image caching service with memory and disk storage
+@Observable @MainActor
+final class ImageCacheService {
+    /// Singleton instance
     static let shared = ImageCacheService()
     
-    private let cache = NSCache<NSString, CachedImageData>()
-    private let fileManager = FileManager.default
+    /// Maximum cache size in bytes (50MB)
+    static let maxCacheSize: Int = 50 * 1024 * 1024
+    
+    /// Memory cache for quick access to image data
+    private let memoryCache = NSCache<NSString, NSData>()
+    
+    /// Disk cache directory URL
     private let cacheDirectory: URL
     
-    private init() {
+    /// File manager for disk operations
+    private let fileManager = FileManager.default
+    
+    /// URLSession for downloading images
+    private let urlSession = URLSession.shared
+    
+    /// Current cache size in bytes
+    private(set) var currentCacheSize: Int = 0
+    
+    /// Active download tasks
+    private var downloadTasks: [URL: Task<Data?, Never>] = [:]
+    
+    /// Queue for disk operations
+    private let diskQueue = DispatchQueue(label: "com.brixie.image-cache", qos: .utility)
+    
+    // MARK: - Initialization
+    
+    init() {
         // Set up cache directory
-        let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
         cacheDirectory = documentsPath.appendingPathComponent("ImageCache")
         
-        // Create cache directory if it doesn't exist
-        try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+        // Create cache directory if needed
+        createCacheDirectoryIfNeeded()
         
-        // Configure memory cache for image data
-        cache.countLimit = 100
-        cache.totalCostLimit = 50 * 1024 * 1024 // 50MB
+        // Configure memory cache
+        memoryCache.totalCostLimit = 20 * 1024 * 1024 // 20MB memory limit
+        memoryCache.countLimit = 100 // Max 100 images in memory
         
+        // Calculate initial disk cache size
+        calculateDiskCacheSize()
+        
+        // Clean up cache on memory warnings if available
+        #if canImport(UIKit)
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.clearMemoryCache()
+            }
+        }
+        #endif
     }
     
+    // MARK: - Public Methods
     
-    func loadImageData(from urlString: String) async -> Data? {
+    /// Get image data from cache or download if needed
+    func imageData(from url: URL) async -> Data? {
         // Check memory cache first
-        if let cachedData = cache.object(forKey: NSString(string: urlString)) {
-            return cachedData.data
+        let cacheKey = NSString(string: url.absoluteString)
+        if let cachedData = memoryCache.object(forKey: cacheKey) as Data? {
+            return cachedData
+        }
+        
+        // Check if download is already in progress
+        if let existingTask = downloadTasks[url] {
+            return await existingTask.value
         }
         
         // Check disk cache
-        let cacheKey = urlString.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? urlString
-        let fileURL = cacheDirectory.appendingPathComponent("\(cacheKey).jpg")
-        
-        if let imageData = try? Data(contentsOf: fileURL) {
-            // Store in memory cache
-            cache.setObject(CachedImageData(data: imageData), forKey: NSString(string: urlString))
-            return imageData
+        if let diskData = await loadImageDataFromDisk(url: url) {
+            // Store in memory cache for quick access
+            memoryCache.setObject(diskData as NSData, forKey: cacheKey)
+            return diskData
         }
         
-        // Download from network
-        return await downloadAndCacheImageData(from: urlString)
+        // Download image
+        let downloadTask = Task<Data?, Never> {
+            await downloadImageData(from: url)
+        }
+        
+        downloadTasks[url] = downloadTask
+        let data = await downloadTask.value
+        downloadTasks.removeValue(forKey: url)
+        
+        return data
     }
     
-    private func downloadAndCacheImageData(from urlString: String) async -> Data? {
-        guard let url = URL(string: urlString) else { return nil }
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+    /// Preload image into cache without returning it
+    func preloadImage(from url: URL) {
+        Task {
+            _ = await imageData(from: url)
+        }
+    }
+    
+    /// Clear all caches
+    func clearAllCaches() {
+        clearMemoryCache()
+        clearDiskCache()
+    }
+    
+    /// Clear memory cache only
+    func clearMemoryCache() {
+        memoryCache.removeAllObjects()
+    }
+    
+    /// Clear disk cache
+    func clearDiskCache() {
+        Task {
+            let cacheDir = cacheDirectory
             
-            // Validate that this is actually image data
-            guard isValidImageData(data) else { return nil }
+            await withCheckedContinuation { continuation in
+                diskQueue.async { [weak self] in
+                    guard let self = self else {
+                        continuation.resume()
+                        return
+                    }
+                    
+                    do {
+                        let contents = try FileManager.default.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: nil)
+                        for url in contents {
+                            try FileManager.default.removeItem(at: url)
+                        }
+                        
+                        Task { @MainActor in
+                            self.currentCacheSize = 0
+                        }
+                    } catch {
+                        print("❌ Failed to clear disk cache: \(error)")
+                    }
+                    
+                    continuation.resume()
+                }
+            }
+        }
+    }
+    
+    /// Clean up old cache files to maintain size limit
+    func cleanupCacheIfNeeded() {
+        guard currentCacheSize > Self.maxCacheSize else { return }
+        
+        Task {
+            await performCacheCleanup()
+        }
+    }
+    
+    // MARK: - Private Methods
+    
+    /// Create cache directory if it doesn't exist
+    private func createCacheDirectoryIfNeeded() {
+        if !fileManager.fileExists(atPath: cacheDirectory.path) {
+            do {
+                try fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+            } catch {
+                print("❌ Failed to create cache directory: \(error)")
+            }
+        }
+    }
+    
+    /// Download image data from URL
+    private func downloadImageData(from url: URL) async -> Data? {
+        do {
+            let (data, response) = try await urlSession.data(from: url)
+            
+            // Validate response
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200 else {
+                print("❌ Invalid response for image: \(url)")
+                return nil
+            }
             
             // Store in memory cache
-            cache.setObject(CachedImageData(data: data), forKey: NSString(string: urlString))
+            let cacheKey = NSString(string: url.absoluteString)
+            memoryCache.setObject(data as NSData, forKey: cacheKey, cost: data.count)
             
             // Store in disk cache
-            let cacheKey = urlString.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? urlString
-            let fileURL = cacheDirectory.appendingPathComponent("\(cacheKey).jpg")
-            
-            try data.write(to: fileURL)
+            await saveImageDataToDisk(data: data, url: url)
             
             return data
         } catch {
-            print("Failed to download image: \(error)")
+            print("❌ Failed to download image: \(error)")
             return nil
         }
     }
     
-    private func isValidImageData(_ data: Data) -> Bool {
-        // Check for common image format headers
-        guard data.count > 4 else { return false }
-        
-        let bytes = [UInt8](data.prefix(4))
-        
-        // JPEG header: FF D8 FF
-        if bytes.prefix(3) == [0xFF, 0xD8, 0xFF] {
-            return true
-        }
-        
-        // PNG header: 89 50 4E 47
-        if bytes == [0x89, 0x50, 0x4E, 0x47] {
-            return true
-        }
-        
-        // GIF header: 47 49 46 38
-        if bytes == [0x47, 0x49, 0x46, 0x38] {
-            return true
-        }
-        
-        // WebP header: 52 49 46 46 (RIFF)
-        if bytes == [0x52, 0x49, 0x46, 0x46] {
-            return true
-        }
-        
-        return false
-    }
-        
-    func clearMemoryCache() {
-        cache.removeAllObjects()
-    }
-    
-    func clearCache() {
-        cache.removeAllObjects()
-        
-        // Clear disk cache
-        do {
-            let files = try fileManager.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: nil)
-            for file in files {
-                try fileManager.removeItem(at: file)
-            }
-        } catch {
-            print("Failed to clear disk cache: \(error)")
-        }
-    }
-    
-    func getCacheSize() -> String {
-        do {
-            let files = try fileManager.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: [.fileSizeKey])
-            let totalSize = files.compactMap { url -> Int64? in
-                let resources = try? url.resourceValues(forKeys: [.fileSizeKey])
-                return Int64(resources?.fileSize ?? 0)
-            }
-            .reduce(0, +)
-            
-            return ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
-        } catch {
-            return "Unknown"
-        }
-    }
-}
-
-#Preview("Placeholder") {
-    AsyncCachedImage(urlString: nil)
-        .frame(width: 100, height: 100)
-}
-
-#Preview("Remote Image") {
-    AsyncCachedImage(urlString: "https://via.placeholder.com/150")
-        .frame(width: 150, height: 150)
-}
-
-// Pure SwiftUI AsyncCachedImage component using Data
-struct AsyncCachedImage: View {
-    let urlString: String?
-    let placeholder: Image
-    
-    @State private var imageData: Data?
-    @State private var isLoading = true
-    
-    init(urlString: String?, placeholder: Image = Image(systemName: "photo")) {
-        self.urlString = urlString
-        self.placeholder = placeholder
-    }
-    
-    var body: some View {
-        Group {
-            if let imageData = imageData {
-                // Use the data to create a temporary file for Image to display
-                CachedImageView(data: imageData)
-            } else if isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                placeholder
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .task {
-            await loadImageData()
-        }
-    }
-    
-    private func loadImageData() async {
-        guard let urlString = urlString else {
-            isLoading = false
-            return
-        }
-        
-        imageData = await ImageCacheService.shared.loadImageData(from: urlString)
-        isLoading = false
-    }
-}
-
-// Helper view to display cached image data
-struct CachedImageView: View {
-    let data: Data
-    @State private var tempURL: URL?
-    
-    var body: some View {
-        Group {
-            if let tempURL = tempURL {
-                AsyncImage(url: tempURL) { image in
-                    image.resizable()
-                } placeholder: {
-                    ProgressView()
+    /// Load image data from disk cache
+    private func loadImageDataFromDisk(url: URL) async -> Data? {
+        let cacheDir = cacheDirectory
+        return await withCheckedContinuation { continuation in
+            diskQueue.async {
+                let fileName = Self.fileName(for: url)
+                let fileURL = cacheDir.appendingPathComponent(fileName)
+                
+                guard let data = try? Data(contentsOf: fileURL) else {
+                    continuation.resume(returning: nil)
+                    return
                 }
-            } else {
-                ProgressView()
+                
+                continuation.resume(returning: data)
             }
         }
-        .onAppear {
-            createTempFile()
-        }
-        .onDisappear {
-            cleanupTempFile()
+    }
+    
+    /// Save image data to disk cache
+    private func saveImageDataToDisk(data: Data, url: URL) async {
+        let cacheDir = cacheDirectory
+        await withCheckedContinuation { continuation in
+            diskQueue.async { [weak self] in
+                let fileName = Self.fileName(for: url)
+                let fileURL = cacheDir.appendingPathComponent(fileName)
+                
+                do {
+                    try data.write(to: fileURL)
+                    
+                    Task { @MainActor in
+                        guard let self = self else { return }
+                        self.currentCacheSize += data.count
+                        self.cleanupCacheIfNeeded()
+                    }
+                } catch {
+                    print("❌ Failed to save image to disk: \(error)")
+                }
+                
+                continuation.resume()
+            }
         }
     }
     
-    private func createTempFile() {
-        let tempDir = FileManager.default.temporaryDirectory
-        let tempFile = tempDir.appendingPathComponent("cached_image_\(UUID().uuidString).jpg")
+    /// Generate filename for cached image
+    nonisolated private static func fileName(for url: URL) -> String {
+        let hash = url.absoluteString.hash
+        let pathExtension = url.pathExtension.isEmpty ? "jpg" : url.pathExtension
+        return "\(abs(hash)).\(pathExtension)"
+    }
+    
+    /// Calculate current disk cache size
+    private func calculateDiskCacheSize() {
+        Task {
+            let cacheDir = cacheDirectory
+            
+            await withCheckedContinuation { continuation in
+                diskQueue.async { [weak self] in
+                    var totalSize = 0
+                    
+                    do {
+                        let contents = try FileManager.default.contentsOfDirectory(
+                            at: cacheDir,
+                            includingPropertiesForKeys: [.fileSizeKey]
+                        )
+                        
+                        for url in contents {
+                            let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
+                            totalSize += resourceValues.fileSize ?? 0
+                        }
+                    } catch {
+                        print("❌ Failed to calculate cache size: \(error)")
+                    }
+                    
+                    Task { @MainActor in
+                        guard let self = self else { return }
+                        self.currentCacheSize = totalSize
+                    }
+                    
+                    continuation.resume()
+                }
+            }
+        }
+    }
+    
+    /// Perform cache cleanup to stay under size limit
+    private func performCacheCleanup() async {
+        let cacheDir = cacheDirectory
+        let maxSize = Self.maxCacheSize
         
-        do {
-            try data.write(to: tempFile)
-            tempURL = tempFile
-        } catch {
-            print("Failed to create temp file: \(error)")
+        await withCheckedContinuation { continuation in
+            diskQueue.async { [weak self] in
+                do {
+                    let contents = try FileManager.default.contentsOfDirectory(
+                        at: cacheDir,
+                        includingPropertiesForKeys: [.fileSizeKey, .contentModificationDateKey]
+                    )
+                    
+                    // Sort by modification date (oldest first)
+                    let sortedContents = contents.sorted { url1, url2 in
+                        let date1 = try? url1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+                        let date2 = try? url2.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+                        
+                        return (date1 ?? Date.distantPast) < (date2 ?? Date.distantPast)
+                    }
+                    
+                    // Get current size from main actor
+                    Task { @MainActor in
+                        guard let self = self else { return }
+                        let currentSize = self.currentCacheSize
+                        
+                        // Continue cleanup on background queue
+                        Task.detached {
+                            var totalSize = currentSize
+                            let targetSize = Int(Double(maxSize) * 0.8) // Clean to 80% of limit
+                            
+                            for url in sortedContents {
+                                guard totalSize > targetSize else { break }
+                                
+                                let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
+                                let fileSize = resourceValues.fileSize ?? 0
+                                
+                                try FileManager.default.removeItem(at: url)
+                                totalSize -= fileSize
+                            }
+                            
+                            // Update size on main actor
+                            await MainActor.run {
+                                self.currentCacheSize = totalSize
+                            }
+                        }
+                    }
+                } catch {
+                    print("❌ Cache cleanup failed: \(error)")
+                }
+                
+                continuation.resume()
+            }
         }
     }
+}
+
+// MARK: - Cache Statistics
+
+extension ImageCacheService {
+    /// Formatted cache size string
+    var formattedCacheSize: String {
+        ByteCountFormatter.string(fromByteCount: Int64(currentCacheSize), countStyle: .file)
+    }
     
-    private func cleanupTempFile() {
-        guard let tempURL = tempURL else { return }
-        try? FileManager.default.removeItem(at: tempURL)
+    /// Cache usage percentage
+    var cacheUsagePercentage: Double {
+        Double(currentCacheSize) / Double(Self.maxCacheSize)
+    }
+    
+    /// Number of files in disk cache
+    var diskCacheFileCount: Int {
+        do {
+            let contents = try fileManager.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: nil)
+            return contents.count
+        } catch {
+            return 0
+        }
     }
 }

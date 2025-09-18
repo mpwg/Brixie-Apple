@@ -2,23 +2,58 @@
 //  BrixieApp.swift
 //  Brixie
 //
-//  Created by Matthias Wallner-Géhri on 01.09.25.
+//  Created by GitHub Copilot on 18/09/2025.
 //
 
-import SwiftData
 import SwiftUI
+import SwiftData
 
 @main
 struct BrixieApp: App {
-    // Single DI container for the app lifetime
-    private let di = MainActor.assumeIsolated { DIContainer.shared }
-
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(\.diContainer, di)
         }
-        // Use the DI's ModelContainer for all SwiftData operations
-        .modelContainer(di.modelContainer)
+        .modelContainer(for: [
+            LegoSet.self,
+            Theme.self,
+            UserCollection.self
+        ], isUndoEnabled: true)
+    }
+}
+
+// MARK: - Model Container Configuration
+
+extension BrixieApp {
+    /// Creates and configures the SwiftData model container
+    static func createModelContainer() -> ModelContainer {
+        let schema = Schema([
+            LegoSet.self,
+            Theme.self,
+            UserCollection.self
+        ])
+        
+        let configuration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            allowsSave: true
+        )
+        
+        do {
+            return try ModelContainer(for: schema, configurations: [configuration])
+        } catch {
+            fatalError("Failed to create ModelContainer: \(error)")
+        }
+    }
+}
+
+// MARK: - Migration Support
+
+extension BrixieApp {
+    /// Handles data migration between app versions
+    static func performMigrationIfNeeded() {
+        // Migration logic will be implemented when needed
+        // This placeholder ensures we have a place to handle
+        // future schema changes
     }
 }

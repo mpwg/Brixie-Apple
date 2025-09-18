@@ -6,62 +6,77 @@ Brixie is a multi-platform SwiftUI app for browsing LEGO sets via the Rebrickabl
 
 ### Architecture Overview
 
-- **Entry Point:** `BrixieApp.swift` sets up SwiftData ModelContainer and app state.
-- **Data Model:** `Item.swift` defines the main LegoSet model (`@Model`), used throughout.
-- **UI:** SwiftUI views in `Views/` and `UI/` folders. Main navigation is in `ContentView.swift`.
-- **Services:** API/data logic in `Services/` (e.g., `LegoSetService.swift`, `ImageCacheService.swift`).
-- **Repositories:** Abstraction for data access in `Repositories/` (protocols and implementations).
-- **Managers:** App-wide state/configuration (e.g., `ThemeManager.swift`).
-- **ViewModels:** MVVM pattern for UI logic and state.
+- **Entry Point:** `BrixieApp.swift` sets up SwiftData ModelContainer for three models: `LegoSet`, `Theme`, `UserCollection`.
+- **Data Models:**
+  - `LegoSet.swift`: Main LEGO set model with `@Attribute(.unique)` setNumber
+  - `Theme.swift`: LEGO themes (e.g., Star Wars, Creator)
+  - `UserCollection.swift`: User's saved/favorite sets
+- **UI:** SwiftUI views in `Views/` folder. Main navigation in `ContentView.swift`.
+- **Services:** API/data logic in `Services/` (`LegoSetService.swift`, `ImageCacheService.swift`).
+- **Components:** Reusable UI components in `Components/` (`AsyncCachedImage.swift`).
+- **Configuration:** API key management in `Configuration/` with build-time generation.
 
 ### Developer Workflow
 
+- **Prerequisites:** Xcode 15+ on macOS 15+, `REBRICKABLE_API_KEY` environment variable required.
+- **Build Script:** `./Scripts/generate-api-config.sh` generates `Configuration/Generated/GeneratedConfiguration.swift` with embedded API key.
 - **Build:**
-  - Use Xcode 15+ on macOS 15+.
-  - Build with:
-    `xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug build`
+  - Fastlane (recommended): `REBRICKABLE_API_KEY="key" bundle exec fastlane ios build_all`
+  - Direct xcodebuild: Run script first, then build normally
 - **Test:**
-  - Unit tests use Swift Testing (`#expect()`), not XCTest.
-  - Run with:
-    `xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26'`
-  - UI tests in `BrixieUITests/` use XCTest.
-- **Fastlane:**
-  - Build/release automation via Fastlane (`fastlane/`).
-  - Requires `REBRICKABLE_API_KEY` env var for all builds/tests.
-  - Example: `REBRICKABLE_API_KEY="your_key" fastlane ios create_release version:1.0.0`
+  - Test targets exist in Xcode project (`BrixieTests`, `BrixieUITests`) but directories not yet created
+  - Fastlane: `REBRICKABLE_API_KEY="key" bundle exec fastlane ios test_all`
+- **Branch-Based Config:** Debug for feature/develop branches, Release for main/release/hotfix branches.
 
 ### Key Conventions & Patterns
 
-- **API Key:** Must be set in Settings or via `@AppStorage("rebrickableAPIKey")` for runtime and CI.
+- **API Key Management:**
+  - Build-time: `REBRICKABLE_API_KEY` env var → `Scripts/generate-api-config.sh` → `Configuration/Generated/GeneratedConfiguration.swift`
+  - Runtime: `APIConfiguration.shared` manages user-set keys via `@AppStorage("rebrickableAPIKey")`
+  - Both mechanisms supported for flexibility (CI vs user settings)
 - **SwiftData:** Use `@Model` for persistence, `@Query` in views, `ModelContext` in services.
 - **Image Caching:**
-  - Memory: NSCache
+  - Memory: NSCache in `ImageCacheService`
   - Disk: Documents/ImageCache (auto-managed, 50MB limit)
-  - Use `AsyncCachedImage` for loading images in UI.
-- **MVVM:** ViewModels in `ViewModels/`, views in `Views/`, business logic in services.
-- **Testing:**
-  - Unit: `BrixieTests/` (Swift Testing)
-  - UI: `BrixieUITests/` (XCTest)
-- **Platform Differences:** Conditional compilation for UIKit vs AppKit as needed.
+  - Use `AsyncCachedImage` component for UI image loading
+- **MVVM Pattern:** Services handle business logic, Views use `@Observable` classes
+- **Platform Support:** Conditional compilation for UIKit vs AppKit differences
 
 ### Integration Points
 
-- **External:**
+- **External Dependencies:**
   - `RebrickableLegoAPIClient` (v2.0.0+) from https://github.com/mpwg/Rebrickable-swift
-  - Managed in Xcode project, not Package.swift
+  - Managed in Xcode project dependencies, not Package.swift
 - **CI/CD:**
-  - GitHub Actions workflows in `.github/` (see `.github/README.md`)
-  - API key must be set as secret `REBRICKABLE_API_KEY` for CI builds
+  - GitHub Actions workflows in `.github/workflows/` (see `.github/README.md`)
+  - API key must be set as repository secret `REBRICKABLE_API_KEY` for CI builds
+  - Makefile-based build commands via Fastlane lanes
 
 ### Troubleshooting
 
 - **Common Issues:**
-  - API key missing: most features will fail
-  - Network required for initial data
-  - Image cache can grow large; clear if needed
-  - Platform-specific bugs: check conditional code
-- **Validation:**
-  - Build cleanly, run all tests, verify basic app flow (launch, API key, browse, view details)
+  - Missing API key: Run `./Scripts/generate-api-config.sh` first or set in app Settings
+  - Network connectivity required for initial data fetching from Rebrickable
+  - Image cache can grow large; managed automatically but clearable if needed
+  - Platform-specific bugs: Check conditional compilation blocks
+- **Validation Steps:**
+  - Build succeeds without errors on both iOS/macOS targets
+  - Run available tests via Fastlane
+  - Verify basic app flow: launch → API key setup → browse sets → view details
+
+### Project-Specific Instructions
+
+**IMPORTANT:** Always follow ALL instruction files in `.github/instructions/` before making any changes:
+
+- `swift.instructions.md` - Swift coding standards and patterns
+- `spec-driven-workflow-v1.instructions.md` - Development workflow and documentation requirements
+- `conventional-commit.instructions.md` - Commit message formatting
+- `github-actions-ci-cd-best-practices.instructions.md` - CI/CD workflow guidelines
+- `a11y.instructions.md` - Accessibility compliance requirements
+- `markdown.instructions.md` - Documentation standards
+- `localization.instructions.md` - Internationalization guidelines
+
+These instruction files contain critical project requirements and must be consulted before any code modifications.
 
 ---
 
