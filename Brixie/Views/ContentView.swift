@@ -35,9 +35,7 @@ struct ContentView: View {
         .onAppear {
             configureServices()
         }
-        .sheet(isPresented: $showingSettings) {
-            SettingsView()
-        }
+        .sheet(isPresented: $showingSettings) { SettingsView() }
         .alert("API Key Required", isPresented: $showingAPIKeyPrompt) {
             Button("Settings") {
                 showingSettings = true
@@ -231,183 +229,7 @@ struct SidebarView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingSettings) {
-            SettingsView()
-        }
-    }
-}
-
-// MARK: - Placeholder Views
-
-struct BrowseView: View {
-    var body: some View {
-        NavigationStack {
-            VStack {
-                Image(systemName: "square.grid.2x2")
-                    .font(.system(size: 48))
-                    .foregroundColor(.secondary)
-                
-                Text("Browse LEGO Sets")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .padding(.top)
-                
-                Text("Coming soon in Phase 2")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .navigationTitle("Browse")
-        }
-    }
-}
-
-struct SearchView: View {
-    var body: some View {
-        NavigationStack {
-            VStack {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 48))
-                    .foregroundColor(.secondary)
-                
-                Text("Search Sets")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .padding(.top)
-                
-                Text("Coming soon in Phase 3")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .navigationTitle("Search")
-        }
-    }
-}
-
-struct CollectionView: View {
-    var body: some View {
-        NavigationStack {
-            VStack {
-                Image(systemName: "heart")
-                    .font(.system(size: 48))
-                    .foregroundColor(.secondary)
-                
-                Text("Meine LEGO-Sammlung")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .padding(.top)
-                
-                Text("Coming soon in Phase 4")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .navigationTitle("Collection")
-        }
-    }
-}
-
-struct WishlistView: View {
-    var body: some View {
-        NavigationStack {
-            VStack {
-                Image(systemName: "star")
-                    .font(.system(size: 48))
-                    .foregroundColor(.secondary)
-                
-                Text("LEGO-Wunschliste")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .padding(.top)
-                
-                Text("Coming soon in Phase 4")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .navigationTitle("Wishlist")
-        }
-    }
-}
-
-struct SettingsView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var apiConfig = APIConfiguration()
-    @State private var apiKey = ""
-    @State private var isValidating = false
-    @State private var validationResult: Bool?
-    
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    SecureField("Rebrickable API Key", text: $apiKey)
-                        .textContentType(.password)
-                        .onAppear {
-                            apiKey = apiConfig.currentAPIKey ?? ""
-                        }
-                    
-                    if isValidating {
-                        HStack {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                            Text("Validating...")
-                                .foregroundColor(.secondary)
-                        }
-                    } else if let isValid = validationResult {
-                        Label(
-                            isValid ? "Valid API Key" : "Invalid API Key",
-                            systemImage: isValid ? "checkmark.circle.fill" : "xmark.circle.fill"
-                        )
-                        .foregroundColor(isValid ? .green : .red)
-                    }
-                } header: {
-                    Text("API Configuration")
-                } footer: {
-                    Text("Get your API key from rebrickable.com/api/")
-                }
-                
-                Section {
-                    Button("Save & Validate") {
-                        saveAndValidateAPIKey()
-                    }
-                    .disabled(apiKey.isEmpty || isValidating)
-                    
-                    Button("Clear Key") {
-                        apiConfig.clearAPIKey()
-                        apiKey = ""
-                        validationResult = nil
-                    }
-                    .foregroundColor(.red)
-                    .disabled(apiKey.isEmpty)
-                }
-            }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-    
-    private func saveAndValidateAPIKey() {
-        isValidating = true
-        apiConfig.updateAPIKey(apiKey)
-        
-        Task {
-            let isValid = await apiConfig.validateAPIKey()
-            await MainActor.run {
-                isValidating = false
-                validationResult = isValid
-            }
-        }
+        .sheet(isPresented: $showingSettings) { SettingsView() }
     }
 }
 
@@ -419,7 +241,5 @@ struct SettingsView: View {
         .modelContainer(for: [LegoSet.self, Theme.self, UserCollection.self], inMemory: true)
 }
 
-#Preview("Settings") {
-    SettingsView()
-}
+#Preview("Settings") { SettingsView() }
 #endif

@@ -18,6 +18,12 @@
 		40C6BDF12E7C782500D3B0B8 /* ImageCacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDE02E7C782500D3B0B8 /* ImageCacheService.swift */; };
 		40C6BDF22E7C782500D3B0B8 /* BrixieApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDE52E7C782500D3B0B8 /* BrixieApp.swift */; };
 		40E9B59C2E675D0200906173 /* RebrickableLegoAPIClient in Frameworks */ = {isa = PBXBuildFile; productRef = 40E9B59B2E675D0200906173 /* RebrickableLegoAPIClient */; };
+		90E001002E7C7D3A00AABBCC /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E000F92E7C7D3900AABBCC /* BrowseView.swift */; };
+		90E001012E7C7D3A00AABBCC /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E000FA2E7C7D3900AABBCC /* SearchView.swift */; };
+		90E001022E7C7D3A00AABBCC /* CollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E000FB2E7C7D3900AABBCC /* CollectionView.swift */; };
+		90E001032E7C7D3A00AABBCC /* WishlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E000FC2E7C7D3900AABBCC /* WishlistView.swift */; };
+		90E001042E7C7D3A00AABBCC /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E000FD2E7C7D3900AABBCC /* SettingsView.swift */; };
+		90E001052E7C7D3A00AABBCC /* BrixieMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E000FE2E7C7D3900AABBCC /* BrixieMigrationPlan.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +58,12 @@
 		40C6BDE32E7C782500D3B0B8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		40C6BDE52E7C782500D3B0B8 /* BrixieApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrixieApp.swift; sourceTree = "<group>"; };
 		40C6BDE62E7C782500D3B0B8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		90E000F92E7C7D3900AABBCC /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
+		90E000FA2E7C7D3900AABBCC /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		90E000FB2E7C7D3900AABBCC /* CollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionView.swift; sourceTree = "<group>"; };
+		90E000FC2E7C7D3900AABBCC /* WishlistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WishlistView.swift; sourceTree = "<group>"; };
+		90E000FD2E7C7D3900AABBCC /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		90E000FE2E7C7D3900AABBCC /* BrixieMigrationPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrixieMigrationPlan.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +141,7 @@
 				40C6BDDC2E7C782500D3B0B8 /* LegoSet.swift */,
 				40C6BDDD2E7C782500D3B0B8 /* Theme.swift */,
 				40C6BDDE2E7C782500D3B0B8 /* UserCollection.swift */,
+                90E000FE2E7C7D3900AABBCC /* BrixieMigrationPlan.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -146,6 +159,11 @@
 			isa = PBXGroup;
 			children = (
 				40C6BDE32E7C782500D3B0B8 /* ContentView.swift */,
+                90E000F92E7C7D3900AABBCC /* BrowseView.swift */,
+                90E000FA2E7C7D3900AABBCC /* SearchView.swift */,
+                90E000FB2E7C7D3900AABBCC /* CollectionView.swift */,
+                90E000FC2E7C7D3900AABBCC /* WishlistView.swift */,
+                90E000FD2E7C7D3900AABBCC /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -314,6 +332,12 @@
 				40C6BDF02E7C782500D3B0B8 /* AsyncCachedImage.swift in Sources */,
 				40C6BDF12E7C782500D3B0B8 /* ImageCacheService.swift in Sources */,
 				40C6BDF22E7C782500D3B0B8 /* BrixieApp.swift in Sources */,
+                90E001002E7C7D3A00AABBCC /* BrowseView.swift in Sources */,
+                90E001012E7C7D3A00AABBCC /* SearchView.swift in Sources */,
+                90E001022E7C7D3A00AABBCC /* CollectionView.swift in Sources */,
+                90E001032E7C7D3A00AABBCC /* WishlistView.swift in Sources */,
+                90E001042E7C7D3A00AABBCC /* SettingsView.swift in Sources */,
+                90E001052E7C7D3A00AABBCC /* BrixieMigrationPlan.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

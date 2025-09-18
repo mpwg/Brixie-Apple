@@ -3,29 +3,29 @@
 ## Phase 1: Core Infrastructure ✅
 
 ### Task 1.1: Configure SwiftData Models
-- [ ] Create LegoSet model with all properties
-- [ ] Create Theme model with hierarchy support
-- [ ] Create UserCollection model
-- [ ] Set up ModelContainer in BrixieApp
-- [ ] Add migration support
+- [x] Create LegoSet model with all properties
+- [x] Create Theme model with hierarchy support
+- [x] Create UserCollection model
+- [x] Set up ModelContainer in BrixieApp
+- [x] Add migration support
 
 ### Task 1.2: API Configuration
-- [ ] Set up RebrickableAPIClient
-- [ ] Create APIConfig with key management
-- [ ] Implement secure key storage
-- [ ] Add network error handling
+- [x] Set up RebrickableAPIClient
+- [x] Create APIConfig with key management
+- [x] Implement secure key storage
+- [x] Add network error handling
 
 ### Task 1.3: Navigation Structure
-- [ ] Create ContentView with platform-specific navigation
-- [ ] Implement tab bar for iOS
-- [ ] Implement sidebar for macOS/iPadOS
-- [ ] Add navigation state management
+- [x] Create ContentView with platform-specific navigation
+- [x] Implement tab bar for iOS
+- [x] Implement sidebar for macOS/iPadOS
+- [x] Add navigation state management
 
 ### Task 1.4: Image Cache Service
-- [ ] Implement ImageCacheService with NSCache
-- [ ] Add disk caching to Documents
-- [ ] Create AsyncCachedImage view
-- [ ] Implement cache size management
+- [x] Implement ImageCacheService with NSCache
+- [x] Add disk caching to Documents
+- [x] Create AsyncCachedImage view
+- [x] Implement cache size management
 
 ## Phase 2: Browse & Display
 

@@ -14,11 +14,8 @@ struct BrixieApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [
-            LegoSet.self,
-            Theme.self,
-            UserCollection.self
-        ], isUndoEnabled: true)
+    // Configure SwiftData for our models; migration plan scaffolding exists for future changes.
+    .modelContainer(for: [LegoSet.self, Theme.self, UserCollection.self], isUndoEnabled: true)
     }
 }
 
@@ -27,20 +24,8 @@ struct BrixieApp: App {
 extension BrixieApp {
     /// Creates and configures the SwiftData model container
     static func createModelContainer() -> ModelContainer {
-        let schema = Schema([
-            LegoSet.self,
-            Theme.self,
-            UserCollection.self
-        ])
-        
-        let configuration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false,
-            allowsSave: true
-        )
-        
         do {
-            return try ModelContainer(for: schema, configurations: [configuration])
+            return try ModelContainer(for: LegoSet.self, Theme.self, UserCollection.self)
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
@@ -52,8 +37,7 @@ extension BrixieApp {
 extension BrixieApp {
     /// Handles data migration between app versions
     static func performMigrationIfNeeded() {
-        // Migration logic will be implemented when needed
-        // This placeholder ensures we have a place to handle
-        // future schema changes
+        // Using SwiftData MigrationPlan. Explicit logic can be added for
+        // custom transformations when introducing new schema versions.
     }
 }

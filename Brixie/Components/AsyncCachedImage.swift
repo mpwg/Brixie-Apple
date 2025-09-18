@@ -6,6 +6,13 @@
 //
 
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+typealias PlatformImage = UIImage
+#elseif canImport(AppKit)
+import AppKit
+typealias PlatformImage = NSImage
+#endif
 
 /// Async image view with caching support
 struct AsyncCachedImage: View {
@@ -48,16 +55,26 @@ struct AsyncCachedImage: View {
         defer { isLoading = false }
         
         if let imageData = await cacheService.imageData(from: url),
-           let uiImage = createImage(from: imageData) {
+           let platformImage = createImage(from: imageData) {
             await MainActor.run {
-                loadedImage = Image(uiImage: uiImage)
+                #if canImport(UIKit)
+                loadedImage = Image(uiImage: platformImage)
+                #elseif canImport(AppKit)
+                loadedImage = Image(nsImage: platformImage)
+                #endif
             }
         }
     }
     
     /// Create platform image from data
-    private func createImage(from data: Data) -> UIImage? {
-        return UIImage(data: data)
+    private func createImage(from data: Data) -> PlatformImage? {
+        #if canImport(UIKit)
+        return PlatformImage(data: data)
+        #elseif canImport(AppKit)
+        return PlatformImage(data: data)
+        #else
+        return nil
+        #endif
     }
 }
 
