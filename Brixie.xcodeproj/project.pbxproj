@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		40C6BDE82E7C782500D3B0B8 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 40C6BDE62E7C782500D3B0B8 /* Info.plist */; };
 		40C6BDE92E7C782500D3B0B8 /* LegoSetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDE12E7C782500D3B0B8 /* LegoSetService.swift */; };
 		40C6BDEA2E7C782500D3B0B8 /* LegoSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDDC2E7C782500D3B0B8 /* LegoSet.swift */; };
 		40C6BDEB2E7C782500D3B0B8 /* GeneratedConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDD82E7C782500D3B0B8 /* GeneratedConfiguration.swift */; };
@@ -281,7 +280,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40C6BDE82E7C782500D3B0B8 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
