@@ -23,7 +23,7 @@ Brixie is a multi-platform SwiftUI app for browsing LEGO sets via the Rebrickabl
 - **Test:**
   - Unit tests use Swift Testing (`#expect()`), not XCTest.
   - Run with:
-    `xcodebuild test -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 26'`
+    `bundle exec fastlane build`
   - UI tests in `BrixieUITests/` use XCTest.
 - **Fastlane:**
   - Build/release automation via Fastlane (`fastlane/`).
