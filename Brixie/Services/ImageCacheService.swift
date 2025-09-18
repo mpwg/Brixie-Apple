@@ -62,7 +62,9 @@ final class ImageCacheService {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.clearMemoryCache()
+            Task { @MainActor in
+                self?.clearMemoryCache()
+            }
         }
         #endif
     }
@@ -122,6 +124,8 @@ final class ImageCacheService {
     /// Clear disk cache
     func clearDiskCache() {
         Task {
+            let cacheDir = cacheDirectory
+            
             await withCheckedContinuation { continuation in
                 diskQueue.async { [weak self] in
                     guard let self = self else {
@@ -130,12 +134,12 @@ final class ImageCacheService {
                     }
                     
                     do {
-                        let contents = try self.fileManager.contentsOfDirectory(at: self.cacheDirectory, includingPropertiesForKeys: nil)
+                        let contents = try FileManager.default.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: nil)
                         for url in contents {
-                            try self.fileManager.removeItem(at: url)
+                            try FileManager.default.removeItem(at: url)
                         }
                         
-                        DispatchQueue.main.async {
+                        Task { @MainActor in
                             self.currentCacheSize = 0
                         }
                     } catch {
@@ -198,10 +202,11 @@ final class ImageCacheService {
     
     /// Load image data from disk cache
     private func loadImageDataFromDisk(url: URL) async -> Data? {
+        let cacheDir = cacheDirectory
         return await withCheckedContinuation { continuation in
             diskQueue.async {
-                let fileName = self.fileName(for: url)
-                let fileURL = self.cacheDirectory.appendingPathComponent(fileName)
+                let fileName = Self.fileName(for: url)
+                let fileURL = cacheDir.appendingPathComponent(fileName)
                 
                 guard let data = try? Data(contentsOf: fileURL) else {
                     continuation.resume(returning: nil)
@@ -215,15 +220,17 @@ final class ImageCacheService {
     
     /// Save image data to disk cache
     private func saveImageDataToDisk(data: Data, url: URL) async {
+        let cacheDir = cacheDirectory
         await withCheckedContinuation { continuation in
-            diskQueue.async {
-                let fileName = self.fileName(for: url)
-                let fileURL = self.cacheDirectory.appendingPathComponent(fileName)
+            diskQueue.async { [weak self] in
+                let fileName = Self.fileName(for: url)
+                let fileURL = cacheDir.appendingPathComponent(fileName)
                 
                 do {
                     try data.write(to: fileURL)
                     
-                    DispatchQueue.main.async {
+                    Task { @MainActor in
+                        guard let self = self else { return }
                         self.currentCacheSize += data.count
                         self.cleanupCacheIfNeeded()
                     }
@@ -237,7 +244,7 @@ final class ImageCacheService {
     }
     
     /// Generate filename for cached image
-    private func fileName(for url: URL) -> String {
+    nonisolated private static func fileName(for url: URL) -> String {
         let hash = url.absoluteString.hash
         let pathExtension = url.pathExtension.isEmpty ? "jpg" : url.pathExtension
         return "\(abs(hash)).\(pathExtension)"
@@ -246,13 +253,15 @@ final class ImageCacheService {
     /// Calculate current disk cache size
     private func calculateDiskCacheSize() {
         Task {
+            let cacheDir = cacheDirectory
+            
             await withCheckedContinuation { continuation in
-                diskQueue.async {
+                diskQueue.async { [weak self] in
                     var totalSize = 0
                     
                     do {
-                        let contents = try self.fileManager.contentsOfDirectory(
-                            at: self.cacheDirectory,
+                        let contents = try FileManager.default.contentsOfDirectory(
+                            at: cacheDir,
                             includingPropertiesForKeys: [.fileSizeKey]
                         )
                         
@@ -264,7 +273,8 @@ final class ImageCacheService {
                         print("❌ Failed to calculate cache size: \(error)")
                     }
                     
-                    DispatchQueue.main.async {
+                    Task { @MainActor in
+                        guard let self = self else { return }
                         self.currentCacheSize = totalSize
                     }
                     
@@ -276,11 +286,14 @@ final class ImageCacheService {
     
     /// Perform cache cleanup to stay under size limit
     private func performCacheCleanup() async {
+        let cacheDir = cacheDirectory
+        let maxSize = Self.maxCacheSize
+        
         await withCheckedContinuation { continuation in
-            diskQueue.async {
+            diskQueue.async { [weak self] in
                 do {
-                    let contents = try self.fileManager.contentsOfDirectory(
-                        at: self.cacheDirectory,
+                    let contents = try FileManager.default.contentsOfDirectory(
+                        at: cacheDir,
                         includingPropertiesForKeys: [.fileSizeKey, .contentModificationDateKey]
                     )
                     
@@ -292,21 +305,31 @@ final class ImageCacheService {
                         return (date1 ?? Date.distantPast) < (date2 ?? Date.distantPast)
                     }
                     
-                    var totalSize = self.currentCacheSize
-                    let targetSize = Int(Double(Self.maxCacheSize) * 0.8) // Clean to 80% of limit
-                    
-                    for url in sortedContents {
-                        guard totalSize > targetSize else { break }
+                    // Get current size from main actor
+                    Task { @MainActor in
+                        guard let self = self else { return }
+                        let currentSize = self.currentCacheSize
                         
-                        let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
-                        let fileSize = resourceValues.fileSize ?? 0
-                        
-                        try self.fileManager.removeItem(at: url)
-                        totalSize -= fileSize
-                    }
-                    
-                    DispatchQueue.main.async {
-                        self.currentCacheSize = totalSize
+                        // Continue cleanup on background queue
+                        Task.detached {
+                            var totalSize = currentSize
+                            let targetSize = Int(Double(maxSize) * 0.8) // Clean to 80% of limit
+                            
+                            for url in sortedContents {
+                                guard totalSize > targetSize else { break }
+                                
+                                let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
+                                let fileSize = resourceValues.fileSize ?? 0
+                                
+                                try FileManager.default.removeItem(at: url)
+                                totalSize -= fileSize
+                            }
+                            
+                            // Update size on main actor
+                            await MainActor.run {
+                                self.currentCacheSize = totalSize
+                            }
+                        }
                     }
                 } catch {
                     print("❌ Cache cleanup failed: \(error)")

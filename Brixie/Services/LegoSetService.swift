@@ -45,7 +45,7 @@ final class LegoSetService {
     
     /// Fetch sets from API or local cache
     func fetchSets(limit: Int = 20, offset: Int = 0) async throws -> [LegoSet] {
-        guard let context = modelContext else {
+        guard modelContext != nil else {
             throw ServiceError.notConfigured
         }
         
@@ -160,7 +160,7 @@ final class LegoSetService {
     
     /// Fetch sets from API and cache them
     private func fetchSetsFromAPI(limit: Int, offset: Int) async throws -> [LegoSet] {
-        guard let context = modelContext else {
+        guard modelContext != nil else {
             throw ServiceError.notConfigured
         }
         

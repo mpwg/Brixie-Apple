@@ -212,11 +212,15 @@ struct SidebarView: View {
     @State private var showingSettings = false
     
     var body: some View {
-        List(NavigationTab.allCases, id: \.self, selection: $selectedTab) { tab in
-            NavigationLink(value: tab) {
-                Label(tab.title, systemImage: tab.systemImage)
+        List {
+            ForEach(NavigationTab.allCases, id: \.self) { tab in
+                NavigationLink(value: tab) {
+                    Label(tab.title, systemImage: tab.systemImage)
+                }
+                .tag(tab)
             }
         }
+        .listStyle(SidebarListStyle())
         .navigationTitle("Brixie")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -325,7 +329,7 @@ struct WishlistView: View {
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var apiConfig = APIConfiguration()
+    @State private var apiConfig = APIConfiguration()
     @State private var apiKey = ""
     @State private var isValidating = false
     @State private var validationResult: Bool?
