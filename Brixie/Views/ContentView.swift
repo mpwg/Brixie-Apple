@@ -126,7 +126,7 @@ struct ContentView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(.regularMaterial)
     }
     
     // MARK: - Helper Methods
