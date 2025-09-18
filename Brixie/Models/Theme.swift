@@ -124,14 +124,3 @@ extension Theme {
     }
 }
 
-// MARK: - Hashable & Equatable
-
-extension Theme: Hashable {
-    static func == (lhs: Theme, rhs: Theme) -> Bool {
-        return lhs.id == rhs.id
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-}

@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 /// Image caching service with memory and disk storage
-@Observable
+@Observable @MainActor
 final class ImageCacheService {
     /// Singleton instance
     static let shared = ImageCacheService()
@@ -30,7 +30,7 @@ final class ImageCacheService {
     private let urlSession = URLSession.shared
     
     /// Current cache size in bytes
-    @Published var currentCacheSize: Int = 0
+     var currentCacheSize: Int = 0
     
     /// Active download tasks
     private var downloadTasks: [URL: Task<Data?, Never>] = [:]

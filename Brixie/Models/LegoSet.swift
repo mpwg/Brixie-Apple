@@ -120,12 +120,3 @@ extension LegoSet {
 
 // MARK: - Hashable & Equatable
 
-extension LegoSet: Hashable {
-    static func == (lhs: LegoSet, rhs: LegoSet) -> Bool {
-        return lhs.setNumber == rhs.setNumber
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(setNumber)
-    }
-}

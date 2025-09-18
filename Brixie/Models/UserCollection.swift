@@ -196,14 +196,4 @@ extension UserCollection {
     }
 }
 
-// MARK: - Hashable & Equatable
 
-extension UserCollection: Hashable {
-    static func == (lhs: UserCollection, rhs: UserCollection) -> Bool {
-        return lhs.id == rhs.id
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-}

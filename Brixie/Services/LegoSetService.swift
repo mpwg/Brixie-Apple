@@ -10,7 +10,7 @@ import SwiftData
 import SwiftUI
 
 /// Service for managing LEGO set data from Rebrickable API and local cache
-@Observable
+@Observable @MainActor
 final class LegoSetService {
     /// Singleton instance
     static let shared = LegoSetService()
