@@ -114,7 +114,7 @@ xcodebuild -project Brixie.xcodeproj -scheme Brixie -configuration Debug -destin
 - It should be possible to have an detailed view of a Set
 - It should download and cache the Images of a Set and view it
 - The App is called "Brixie", the website is brixie.net
-- It targets the most modern Version of iOS (iOS Version 26 beta) and macOS (macOS 26 Beta)
+- It targets the most modern Version of iOS (iOS Version 26) and macOS (macOS 26)
 - It has a modern, cool, easy to use and elegant user interface
 - please ensure that the project compiles
 - do not create a macOS Target, only use mac (Mac Catalyst)
