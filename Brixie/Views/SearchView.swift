@@ -2,248 +2,215 @@
 //  SearchView.swift
 //  Brixie
 //
-//  Created by Matthias Wallner-Géhri on 01.09.25.
+//  Created by GitHub Copilot on 18/09/2025.
 //
 
 import SwiftUI
 import SwiftData
 
 struct SearchView: View {
-    @Environment(\.diContainer)
-    private var diContainer
-    @State private var viewModel: SearchViewModel?
+    @State private var viewModel = SearchViewModel()
+    @State private var showingFilters = false
     
+    @Query(sort: \LegoSet.name) private var allSets: [LegoSet]
+    @Query(sort: \Theme.name) private var themes: [Theme]
+    
+    @Environment(\.isSearching) private var isSearching
+
     var body: some View {
         NavigationStack {
-            ZStack {
-                Color.brixieBackground
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 0) {
-                    // Error banner for search failures  
-                    if let vm = viewModel, let error = vm.error, !vm.searchText.isEmpty {
-                        errorBannerView(for: error)
-                            .padding(.horizontal, 16)
-                            .padding(.top, 8)
+            if isSearching && viewModel.query.isEmpty {
+                // Show suggestions when search is active but no query
+                SearchSuggestionsView(
+                    suggestions: viewModel.getSuggestions(for: "")
+                )                    { suggestion in
+                        viewModel.query = suggestion
+                        viewModel.submitSearch()
+                        viewModel.filterSets(from: allSets)
                     }
-                    
-                    if viewModel != nil {
-                        searchContentView
-                    } else {
-                        ProgressView("Loading...")
-                    }
-                }
-            }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItemGroup(placement: .navigationBarLeading) {
-                    Text("Search Sets")
-                        .font(.brixieTitle)
-                        .foregroundStyle(Color.brixieText)
-                }
-            }
-            .searchable(text: Binding(
-                get: { viewModel?.searchText ?? "" },
-                set: { viewModel?.searchText = $0 }
-            ), prompt: "Search LEGO sets...") {
-                if let vm = viewModel {
-                    BrixieSearchSuggestions(recentSearches: vm.recentSearches) { selection in
-                        vm.searchText = selection
-                        Task { await vm.performSearch() }
-                    }
-                }
-            }
-            .onSubmit(of: .search) {
-                Task {
-                    await viewModel?.performSearch()
-                }
-            }
-            .onChange(of: viewModel?.searchText ?? "") { _, newValue in
-                if newValue.isEmpty {
-                    viewModel?.clearResults()
-                }
-            }
-        }
-        .onAppear {
-            if viewModel == nil {
-                viewModel = diContainer.makeSearchViewModel()
-            }
-        }
-    }
-    
-    private var searchContentView: some View {
-        Group {
-            if let vm = viewModel {
-                if vm.searchText.isEmpty {
-                    recentSearchesView
-                } else if vm.isSearching {
-                    modernLoadingView
-                } else if vm.searchResults.isEmpty && vm.showingNoResults {
-                    modernNoResultsView
-                } else {
-                    modernSearchResultsView
-                }
-            }
-        }
-    }
-    
-    private var recentSearchesView: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                if let vm = viewModel, !vm.recentSearches.isEmpty {
-                    VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                            Text(NSLocalizedString("Recent Searches", comment: "Recent searches heading"))
-                                .font(.brixieHeadline)
-                                .foregroundStyle(Color.brixieText)
-                            Spacer()
-                            }
-                        .padding(.horizontal, 20)
-                        
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            LazyHStack(spacing: 12) {
-                                ForEach(vm.recentSearches, id: \.self) { search in
-                                    Button {
-                                        vm.searchText = search
-                                        Task {
-                                            await vm.performSearch()
-                                        }
-                                    } label: {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "clock.arrow.circlepath")
-                                                .font(.system(size: 10))
-                                                .foregroundStyle(Color.brixieAccent)
-                                            Text(search)
-                                                .font(.brixieCaption)
-                                                .foregroundStyle(Color.brixieAccent)
-                                        }
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 8)
-                                        .background(
-                                            Capsule()
-                                                .fill(Color.brixieAccent.opacity(0.15))
-                                                .overlay(
-                                                    Capsule()
-                                                        .stroke(Color.brixieAccent.opacity(0.3), lineWidth: 1)
-                                                )
-                                        )
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 20)
-                        }
-                    }
-                }
-                
-                BrixieHeroSection(
-                    title: "Discover LEGO Sets",
-                    subtitle: "Search through thousands of LEGO sets by name, number, or theme " +
-                              "to find your next build.",
-                    icon: "magnifyingglass"
-                ) {
-                    EmptyView()
-                }
-            }
-            .padding(.top, 20)
-        }
-    }
-    
-    private var modernLoadingView: some View {
-        BrixieHeroSection(
-            title: "Searching...",
-            subtitle: "Finding the perfect LEGO sets for you",
-            icon: "magnifyingglass"
-        ) {
-            BrixieLoadingView()
-        }
-    }
-    
-    private var modernNoResultsView: some View {
-        BrixieHeroSection(
-            title: "No Results Found",
-            subtitle: String(
-                format: NSLocalizedString(
-                    "No sets found for '%@'. Try a different search term.",
-                    comment: "No results message"
-                ),
-                viewModel?.searchText ?? ""
-            ),
-            icon: "magnifyingglass"
-        ) {
-            Button("Clear Search") {
-                viewModel?.clearSearch()
-            }
-            .buttonStyle(BrixieButtonStyle(variant: .secondary))
-        }
-    }
-    
-    private var modernSearchResultsView: some View {
-        ScrollView {
-            LazyVStack(spacing: 16) {
-                if let vm = viewModel {
-                    HStack {
-                        Text("\(vm.searchResults.count) results")
-                            .font(.brixieSubhead)
-                            .foregroundStyle(Color.brixieTextSecondary)
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    
-                    ForEach(vm.searchResults) { set in
+            } else if viewModel.filteredResults.isEmpty && !viewModel.query.isEmpty {
+                // Show no results state
+                EmptyStateView.searchNoResults(query: viewModel.query)
+            } else {
+                // Show results
+                List {
+                    ForEach(viewModel.filteredResults.isEmpty ? allSets : viewModel.filteredResults) { set in
                         NavigationLink(destination: SetDetailView(set: set)) {
-                            SetRowView(set: set) { set in
-                                Task {
-                                    await vm.toggleFavorite(for: set)
-                                }
-                            }
+                            SetSearchRowView(set: set)
                         }
-                        .buttonStyle(PlainButtonStyle())
                     }
                 }
             }
-            .padding(.horizontal, 20)
         }
-    }
-    
-    @ViewBuilder
-    private func errorBannerView(for error: BrixieError) -> some View {
-        switch error {
-        case .networkError:
-            BrixieBannerView.networkError(onRetry: {
-                Task {
-                    await viewModel?.retrySearch()
+        .navigationTitle("Search")
+        .searchable(
+            text: $viewModel.query,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: "Search sets, themes, or numbers"
+        ) {
+            // Search suggestions in search scope
+            if !viewModel.query.isEmpty {
+                ForEach(viewModel.getSuggestions(for: viewModel.query), id: \.self) { suggestion in
+                    Text(suggestion)
+                        .searchCompletion(suggestion)
                 }
-            }, onDismiss: {
-                viewModel?.error = nil
-            })
-            
-        case .apiKeyMissing, .unauthorized:
-            BrixieBannerView.apiKeyError(onRetry: {
-                // Navigate to settings - for now just clear error
-                viewModel?.error = nil
-            }, onDismiss: {
-                viewModel?.error = nil
-            })
-            
-        default:
-            BrixieBannerView.generalError(
-                error,
-                onRetry: {
-                    Task {
-                        await viewModel?.retrySearch()
+            }
+        }
+        .onSubmit(of: .search) {
+            viewModel.submitSearch()
+            viewModel.filterSets(from: allSets)
+        }
+        .onChange(of: viewModel.query) {
+            viewModel.filterSets(from: allSets)
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack {
+                    Button {
+                        viewModel.showBarcodeScanner()
+                    } label: {
+                        Image(systemName: "barcode.viewfinder")
                     }
-                },
-                onDismiss: {
-                    viewModel?.error = nil
+                    .accessibilityLabel("Scan barcode")
+                    
+                    Button {
+                        showingFilters = true
+                    } label: {
+                        Image(systemName: viewModel.hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                    }
+                    .accessibilityLabel("Filters")
                 }
+            }
+        }
+        .sheet(isPresented: $showingFilters) {
+            SearchFiltersView(
+                selectedThemes: $viewModel.selectedThemes,
+                themes: themes,
+                minYear: $viewModel.minYear,
+                maxYear: $viewModel.maxYear,
+                minParts: $viewModel.minParts,
+                maxParts: $viewModel.maxParts,
+                useYearFilter: $viewModel.useYearFilter,
+                usePartsFilter: $viewModel.usePartsFilter
             )
         }
+        .sheet(isPresented: $viewModel.showingBarcodeScanner) {
+            BarcodeScannerView { barcode in
+                viewModel.handleBarcodeResult(barcode, with: allSets)
+            }
+        }
+    }
+}
+
+// MARK: - Supporting Views
+
+struct SetSearchRowView: View {
+    let set: LegoSet
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            AsyncCachedImage(thumbnailURL: URL(string: set.primaryImageURL ?? ""))
+                .frame(width: 60, height: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .accessibilityHidden(true)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(set.name)
+                    .font(.headline)
+                    .lineLimit(2)
+                
+                HStack {
+                    Text("#\(set.setNumber)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
+                    if let theme = set.theme {
+                        Text("•")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(theme.name)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+                HStack {
+                    Text("\(set.formattedPartCount) parts")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                    
+                    if set.year > 0 {
+                        Text("•")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                        Text("\(set.year)")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            if let price = set.formattedPrice {
+                Text(price)
+                    .font(.callout)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(set.name), set number \(set.setNumber)")
+        .accessibilityHint("Opens set details")
+    }
+}
+
+struct SearchSuggestionsView: View {
+    let suggestions: [String]
+    let onSuggestionSelected: (String) -> Void
+    private let searchHistory = SearchHistoryService.shared
+    
+    var body: some View {
+        List {
+            if !searchHistory.recentSearches.isEmpty {
+                Section("Recent Searches") {
+                    ForEach(Array(searchHistory.recentSearches.prefix(5)), id: \.self) { search in
+                        Button {
+                            onSuggestionSelected(search)
+                        } label: {
+                            HStack {
+                                Image(systemName: "clock")
+                                    .foregroundStyle(.secondary)
+                                Text(search)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Section("Popular Themes") {
+                ForEach(Array(searchHistory.suggestions.prefix(8)), id: \.self) { suggestion in
+                    Button {
+                        onSuggestionSelected(suggestion)
+                    } label: {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundStyle(.secondary)
+                            Text(suggestion)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                        }
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
     }
 }
 
 #Preview {
     SearchView()
-        .modelContainer(ModelContainerFactory.createPreviewContainer())
+        .modelContainer(for: [LegoSet.self, Theme.self, UserCollection.self], inMemory: true)
 }

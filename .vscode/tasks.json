@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Brixie Xcode project",
+			"type": "shell",
+			"command": "xcodebuild -project Brixie.xcodeproj -scheme Brixie -sdk macosx -destination 'platform=macOS' build",
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build"
+		}
+	]
+}

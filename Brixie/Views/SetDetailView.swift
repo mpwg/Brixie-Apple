@@ -1,296 +1,124 @@
-//
-//  SetDetailView.swift
-//  Brixie
-//
-//  Created by Matthias Wallner-Géhri on 01.09.25.
-//
-
 import SwiftUI
 import SwiftData
 
 struct SetDetailView: View {
     let set: LegoSet
-    @Environment(\.modelContext)
-    private var modelContext
-    @State private var isFavorite: Bool
-    @State private var showingFullScreenImage = false
     
-    init(set: LegoSet) {
-        self.set = set
-        self._isFavorite = State(initialValue: set.isFavorite)
-    }
+    @Environment(\.modelContext) private var modelContext
+    @State private var viewModel = SetDetailViewModel()
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Hero Image
-                heroImageView
+            VStack(alignment: .leading, spacing: AppConstants.Spacing.standard) {
+                AsyncCachedImage(fullSizeURL: URL(string: set.primaryImageURL ?? ""))
+                    .frame(height: AppConstants.ImageSize.previewHeight)
+                    .accessibilityLabel("Image of LEGO set \(set.name)")
                 
-                // Set Information
-                setInfoView
+                Text(set.name)
+                    .font(.title)
+                    .accessibilityIdentifier("setDetailName")
+                Text("Set #\(set.setNumber)")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                    .accessibilityIdentifier("setDetailNumber")
+                Text("Year: \(set.year)")
+                    .font(.subheadline)
+                    .accessibilityIdentifier("setDetailYear")
+                Text("Parts: \(set.numParts)")
+                    .font(.subheadline)
+                    .accessibilityIdentifier("setDetailParts")
                 
-                // Statistics
-                statisticsView
-                
-                // Actions
-                actionsView
-            }
-            .padding()
-        }
-        .navigationTitle(set.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                FavoriteButton(isFavorite: isFavorite, action: { toggleFavorite() }, prominent: false)
-            }
-        }
-        .onAppear {
-            markAsViewed()
-        }
-        .fullScreenCover(isPresented: $showingFullScreenImage) {
-            FullScreenImageView(imageURL: set.imageURL)
-        }
-    }
-    
-    private var heroImageView: some View {
-        VStack {
-            CachedImageCard(urlString: set.imageURL, maxHeight: 300) {
-                EmptyView()
-            }
-            .onTapGesture {
-                if set.imageURL != nil {
-                    showingFullScreenImage = true
-                }
-            }
-            
-            if set.imageURL != nil {
-                Text(NSLocalizedString("Tap to view full size", comment: "Hint for image tap"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-    
-    private var setInfoView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(NSLocalizedString("Set Information", comment: "Set information heading"))
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            VStack(spacing: 12) {
-                InfoRow(label: "Set Number", value: set.setNum)
-                InfoRow(label: "Name", value: set.name)
-                InfoRow(label: "Year", value: String(set.year))
-                InfoRow(label: "Pieces", value: String(set.numParts))
-                if let themeName = set.themeName {
-                    InfoRow(label: "Theme", value: themeName)
-                }
-            }
-            .padding()
-            .background(.gray.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-    }
-    
-    private var statisticsView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(NSLocalizedString("Statistics", comment: "Statistics heading"))
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
-                StatCard(
-                    title: "Pieces",
-                    value: String(set.numParts),
-                    icon: "cube.box",
-                    color: .blue
-                )
-                
-                StatCard(
-                    title: "Year",
-                    value: String(set.year),
-                    icon: "calendar",
-                    color: .green
-                )
-
-                if let lastViewed = set.lastViewed {
-                    StatCard(
-                        title: "Last Viewed",
-                        value: RelativeDateTimeFormatter().localizedString(for: lastViewed, relativeTo: Date()),
-                        icon: "eye",
-                        color: .purple
-                    )
-                }
-                
-                StatCard(
-                    title: "Favorite",
-                    value: isFavorite ? "Yes" : "No",
-                    icon: isFavorite ? "heart.fill" : "heart",
-                    color: .red
-                )
-            }
-        }
-    }
-    
-    private var actionsView: some View {
-        VStack(spacing: 12) {
-            Button {
-                toggleFavorite()
-            } label: {
-                Label(
-                    isFavorite ?
-                        NSLocalizedString("Remove from Favorites", comment: "Remove favorite action") :
-                        NSLocalizedString("Add to Favorites", comment: "Add favorite action"),
-                    systemImage: isFavorite ? "heart.slash" : "heart"
-                )
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(isFavorite ? .red : .blue)
-            
-            if let imageURL = set.imageURL {
-                ShareLink(item: URL(string: imageURL)!) {
-                    Label(
-                        NSLocalizedString("Share Image", comment: "Share image action"),
-                        systemImage: "square.and.arrow.up"
-                    )
+                // Collection Management Buttons
+                HStack(spacing: 12) {
+                    Button(action: {
+                        viewModel.toggleOwned(set, in: modelContext)
+                    }) {
+                        HStack {
+                            Image(systemName: set.userCollection?.isOwned == true ? "heart.fill" : "heart")
+                            Text(set.userCollection?.isOwned == true ? "Remove from Collection" : "Add to Collection")
+                        }
+                        .foregroundStyle(set.userCollection?.isOwned == true ? .red : .blue)
+                    }
+                    .accessibilityIdentifier("ownedToggle")
+                    
+                    Button(action: {
+                        viewModel.toggleWishlist(set, in: modelContext)
+                    }) {
+                        HStack {
+                            Image(systemName: set.userCollection?.isWishlist == true ? "star.fill" : "star")
+                            Text(set.userCollection?.isWishlist == true ? "Remove from Wishlist" : "Add to Wishlist")
+                        }
+                        .foregroundStyle(set.userCollection?.isWishlist == true ? .yellow : .blue)
+                    }
+                    .accessibilityIdentifier("wishlistToggle")
                 }
                 .buttonStyle(.bordered)
-            }
-        }
-    }
-    
-    private func toggleFavorite() {
-        set.isFavorite.toggle()
-        isFavorite = set.isFavorite
-        
-        do {
-            try modelContext.save()
-        } catch {
-            print("Failed to update favorite status: \(error)")
-        }
-    }
-    
-    private func markAsViewed() {
-        set.lastViewed = Date()
-        
-        do {
-            try modelContext.save()
-        } catch {
-            print("Failed to update view date: \(error)")
-        }
-    }
-}
-
-struct InfoRow: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Text(label)
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
-            Spacer()
-            Text(value)
-                .fontWeight(.semibold)
-        }
-    }
-}
-
-struct StatCard: View {
-    let title: String
-    let value: String
-    let icon: String
-    let color: Color
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(color)
-            
-            Text(value)
-                .font(.headline)
-                .fontWeight(.bold)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(color.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-}
-
-struct FullScreenImageView: View {
-    let imageURL: String?
-    @Environment(\.dismiss)
-    private var dismiss
-    
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.black
-                    .ignoresSafeArea()
                 
-                AsyncCachedImage(urlString: imageURL)
-                    .aspectRatio(contentMode: .fit)
-                    .clipped()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+                // Collection Status Information
+                if let collection = set.userCollection, collection.isActiveCollectionItem {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Collection Status")
+                            .font(.headline)
+                            .accessibilityAddTraits(.isHeader)
+                        
+                        if collection.isOwned {
+                            Label("Owned", systemImage: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                            
+                            if let dateAcquired = collection.dateAcquired {
+                                Text("Acquired: \(dateAcquired.formatted(date: .abbreviated, time: .omitted))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            if let price = collection.formattedPurchasePrice {
+                                Text("Purchase Price: \(price)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            if collection.condition != nil {
+                                Text("Condition: \(collection.conditionStars)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            if collection.hasMissingParts {
+                                Label("\(collection.missingPartsCount) missing parts", systemImage: "exclamationmark.triangle")
+                                    .foregroundStyle(.orange)
+                                    .font(.caption)
+                            }
+                        }
+                        
+                        if collection.isWishlist {
+                            Label("On Wishlist", systemImage: "star.fill")
+                                .foregroundStyle(.yellow)
+                        }
+                        
+                        // Missing parts management for owned sets
+                        if collection.isOwned {
+                            Button("View Missing Parts") {
+                                viewModel.showMissingParts()
+                            }
+                            .buttonStyle(.bordered)
+                        }
                     }
-                    .foregroundStyle(.white)
                 }
             }
-            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+        .sheet(isPresented: $viewModel.showingMissingParts) {
+            if let collection = set.userCollection {
+                MissingPartsView(userCollection: collection)
+            }
+        }
+        .alert("Error", isPresented: .constant(viewModel.error != nil), presenting: viewModel.error) { _ in
+            Button("OK") { viewModel.error = nil }
+        } message: { error in
+            Text(error.localizedDescription)
         }
     }
 }
 
 #Preview {
-    let sampleSet = LegoSet(
-        setNum: "10294-1",
-        name: "Titanic",
-        year: 2_021,
-        themeId: 1,
-        numParts: 9_090
-    )
-    
-    NavigationStack {
-        SetDetailView(set: sampleSet)
-    }
-    .modelContainer(ModelContainerFactory.createPreviewContainer())
-}
-
-#Preview {
-    // Preview for InfoRow
-    VStack {
-        InfoRow(label: "Set Number", value: "10294-1")
-        Divider()
-        InfoRow(label: "Year", value: "2021")
-    }
-    .padding()
-}
-
-#Preview {
-    // Preview for StatCard
-    HStack(spacing: 12) {
-        StatCard(title: "Pieces", value: "9090", icon: "cube.box", color: .blue)
-        StatCard(title: "Year", value: "2021", icon: "calendar", color: .green)
-    }
-    .padding()
-}
-
-#Preview("No Image") {
-    FullScreenImageView(imageURL: nil)
-}
-
-#Preview("With Image") {
-    FullScreenImageView(imageURL: "https://example.com/image.jpg")
+    SetDetailView(set: LegoSet.example)
 }

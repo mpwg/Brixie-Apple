@@ -2,58 +2,56 @@
 //  SetDetailViewModel.swift
 //  Brixie
 //
-//  Created by Claude on 06.09.25.
+//  Created by GitHub Copilot on 19/09/2025.
 //
 
-import Foundation
+import SwiftUI
+import SwiftData
 
+/// ViewModel for SetDetailView following MVVM pattern
 @Observable
 @MainActor
-final class SetDetailViewModel: ViewModelErrorHandling {
-    private let legoSetRepository: LegoSetRepository
-    
-    var set: LegoSet
-    var isLoadingDetails = false
+final class SetDetailViewModel {
+    // MARK: - Published State
+    var showingMissingParts: Bool = false
     var error: BrixieError?
     
-    init(set: LegoSet, legoSetRepository: LegoSetRepository) {
-        self.set = set
-        self.legoSetRepository = legoSetRepository
+    // MARK: - Dependencies
+    private let collectionService: CollectionService
+    
+    // MARK: - Initialization
+    init(collectionService: CollectionService = CollectionService.shared) {
+        self.collectionService = collectionService
     }
     
-    func loadSetDetails() async {
-        isLoadingDetails = true
+    // MARK: - Public Methods
+    
+    /// Toggle owned status of a set
+    func toggleOwned(_ set: LegoSet, in modelContext: ModelContext) {
+        // CollectionService.toggleOwned is non-throwing; call directly and clear any existing error.
+        collectionService.toggleOwned(set, in: modelContext)
         error = nil
-        
-        defer { isLoadingDetails = false }
-        
-        do {
-            if let detailedSet = try await legoSetRepository.getSetDetails(setNum: set.setNum) {
-                set = detailedSet
-            }
-        } catch {
-            handleError(error)
-        }
     }
     
-    func toggleFavorite() async {
-        do {
-            try await toggleFavoriteOnRepository(set: set, repository: legoSetRepository)
-            set.isFavorite.toggle()
-        } catch {
-            handleError(error)
-        }
+    /// Toggle wishlist status of a set
+    func toggleWishlist(_ set: LegoSet, in modelContext: ModelContext) {
+        // CollectionService.toggleWishlist is non-throwing; call directly and clear any existing error.
+        collectionService.toggleWishlist(set, in: modelContext)
+        error = nil
     }
     
-    var formattedYear: String {
-        String(set.year)
+    /// Show missing parts view
+    func showMissingParts() {
+        showingMissingParts = true
     }
     
-    var formattedParts: String {
-        String(format: NSLocalizedString("%d pieces", comment: "Number of pieces"), set.numParts)
+    /// Hide missing parts view
+    func hideMissingParts() {
+        showingMissingParts = false
     }
     
-    var setNumber: String {
-        String(format: NSLocalizedString("Set #%@", comment: "Set number display"), set.setNum)
+    /// Generate share text for a LEGO set
+    func generateShareText(for set: LegoSet) -> String {
+        return "Check out LEGO set \(set.name) (#\(set.setNumber)), released in \(set.year) with \(set.numParts) parts!"
     }
 }
