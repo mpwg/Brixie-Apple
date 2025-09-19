@@ -5,7 +5,7 @@ import Foundation
 /// Manages offline state detection and queued actions
 @MainActor
 @Observable
-final class OfflineManager {
+internal final class OfflineManager {
     static let shared = OfflineManager()
     
     // MARK: - Published Properties
@@ -169,7 +169,7 @@ final class OfflineManager {
 
 // MARK: - QueuedAction
 
-struct QueuedAction: Identifiable, Codable {
+internal struct QueuedAction: Identifiable, Codable {
     let id = UUID()
     let type: ActionType
     let data: [String: String] // Simple string-based data storage

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Foundation
 
 /// Main content view with platform-specific navigation
 struct ContentView: View {
@@ -15,6 +16,7 @@ struct ContentView: View {
     
     private let legoSetService = LegoSetService.shared
     private let apiConfig = APIConfiguration.shared
+    // private let offlineManager = OfflineManager.shared
     
     @State private var selectedTab: NavigationTab = .browse
     @State private var showingSettings = false
@@ -32,10 +34,13 @@ struct ContentView: View {
             
             // Offline indicator at the top
             VStack {
-                // Simple offline indicator - will be enhanced later when OfflineManager is integrated
+                // OfflineIndicator() - temporarily disabled
+                //     .frame(maxWidth: .infinity, alignment: .center)
+                //     .padding(.top)
                 Spacer()
             }
         }
+        // .environment(\.offlineManager, offlineManager) - temporarily disabled
         .onAppear {
             configureServices()
         }
@@ -166,6 +171,7 @@ struct ContentView: View {
     /// Configure services with model context
     private func configureServices() {
         legoSetService.configure(with: modelContext)
+        // offlineManager.startMonitoring() - temporarily disabled
         
         // Show API key prompt if not configured
         if !apiConfig.isConfigured {
