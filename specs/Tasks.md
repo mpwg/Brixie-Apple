@@ -26,6 +26,10 @@
 - [x] Add disk caching to Documents
 - [x] Create AsyncCachedImage view
 - [x] Implement cache size management
+- [ ] Add disk caching to Documents
+- [ ] Create AsyncCachedImage view
+- [ ] Implement cache size management
+>>>>>>> develop
 
 ## Phase 2: Browse & Display
 

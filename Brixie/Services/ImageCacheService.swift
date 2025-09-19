@@ -30,7 +30,7 @@ final class ImageCacheService {
     private let urlSession = URLSession.shared
     
     /// Current cache size in bytes
-     var currentCacheSize: Int = 0
+    private(set) var currentCacheSize: Int = 0
     
     /// Active download tasks
     private var downloadTasks: [URL: Task<Data?, Never>] = [:]
