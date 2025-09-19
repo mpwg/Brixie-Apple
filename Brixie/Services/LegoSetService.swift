@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import RebrickableLegoAPIClient
 
 /// Service for managing LEGO set data from Rebrickable API and local cache
 @Observable @MainActor
@@ -82,8 +83,76 @@ final class LegoSetService {
             return Array(cachedSets.prefix(limit))
         }
         
-        // Fetch from API (implementation would go here when RebrickableAPI is available)
-        return cachedSets
+        // Fetch from API
+        guard apiConfig.isConfigured else {
+            throw ServiceError.apiNotConfigured
+        }
+        
+        do {
+            // Calculate page number (API uses 1-based pagination)
+            let page = (offset / limit) + 1
+            
+            // Get the API client configuration
+            guard let apiClientConfig = apiConfig.apiClient else {
+                throw ServiceError.apiNotConfigured
+            }
+            
+            // Call Rebrickable API to get sets list filtered by theme
+            let apiResponse = try await LegoAPI.legoSetsList(
+                page: page,
+                pageSize: limit,
+                themeId: String(themeId),
+                apiConfiguration: apiClientConfig
+            )
+            
+            // Convert and cache the results
+            var convertedSets: [LegoSet] = []
+            
+            for apiSet in apiResponse.results {
+                let localSet = convertToLegoSet(apiSet)
+                
+                // Check if set already exists in context
+                let setNumber = localSet.setNumber
+                let existingDescriptor2 = FetchDescriptor<LegoSet>(
+                    predicate: #Predicate<LegoSet> { set in
+                        set.setNumber == setNumber
+                    }
+                )
+                
+                if let existingSet = try context.fetch(existingDescriptor2).first {
+                    // Update existing set
+                    existingSet.name = localSet.name
+                    existingSet.year = localSet.year
+                    existingSet.themeId = localSet.themeId
+                    existingSet.numParts = localSet.numParts
+                    existingSet.setImageURL = localSet.setImageURL
+                    existingSet.lastModified = localSet.lastModified
+                    convertedSets.append(existingSet)
+                } else {
+                    // Insert new set
+                    context.insert(localSet)
+                    convertedSets.append(localSet)
+                }
+            }
+            
+            // Save context
+            try context.save()
+            
+            return convertedSets
+            
+        } catch {
+            // If API fails, return cached data if available
+            if !cachedSets.isEmpty {
+                return Array(cachedSets.prefix(limit))
+            }
+            
+            // Convert API errors to service errors
+            if error is ErrorResponse {
+                throw ServiceError.networkError
+            } else {
+                throw ServiceError.parseError
+            }
+        }
     }
     
     /// Search sets by various criteria
@@ -124,8 +193,69 @@ final class LegoSetService {
             sortBy: [SortDescriptor(\.year, order: .reverse)]
         )
         
-        let results = try context.fetch(descriptor)
-        return Array(results.prefix(limit))
+        let cachedResults = try context.fetch(descriptor)
+        
+        // If we have cached results or API is not configured, return cached data
+        if !cachedResults.isEmpty || !apiConfig.isConfigured {
+            return Array(cachedResults.prefix(limit))
+        }
+        
+        // Try API search for name-based queries
+        if searchType == .name && !query.isEmpty {
+            do {
+                // Get the API client configuration
+                guard let apiClientConfig = apiConfig.apiClient else {
+                    return Array(cachedResults.prefix(limit))
+                }
+                
+                let apiResponse = try await LegoAPI.legoSetsList(
+                    pageSize: limit,
+                    search: query,
+                    apiConfiguration: apiClientConfig
+                )
+                
+                // Convert and cache the results
+                var convertedSets: [LegoSet] = []
+                
+                for apiSet in apiResponse.results {
+                    let localSet = convertToLegoSet(apiSet)
+                    
+                    // Check if set already exists in context
+                    let setNumber = localSet.setNumber
+                    let existingDescriptor3 = FetchDescriptor<LegoSet>(
+                        predicate: #Predicate<LegoSet> { set in
+                            set.setNumber == setNumber
+                        }
+                    )
+                    
+                    if let existingSet = try context.fetch(existingDescriptor3).first {
+                        // Update existing set
+                        existingSet.name = localSet.name
+                        existingSet.year = localSet.year
+                        existingSet.themeId = localSet.themeId
+                        existingSet.numParts = localSet.numParts
+                        existingSet.setImageURL = localSet.setImageURL
+                        existingSet.lastModified = localSet.lastModified
+                        convertedSets.append(existingSet)
+                    } else {
+                        // Insert new set
+                        context.insert(localSet)
+                        convertedSets.append(localSet)
+                    }
+                }
+                
+                // Save context
+                try context.save()
+                
+                return convertedSets
+                
+            } catch {
+                // If API fails, fall back to cached results
+                return Array(cachedResults.prefix(limit))
+            }
+        }
+        
+        return Array(cachedResults.prefix(limit))
     }
     
     /// Get set by set number
@@ -138,7 +268,58 @@ final class LegoSetService {
             predicate: #Predicate { $0.setNumber == setNumber }
         )
         
-        return try context.fetch(descriptor).first
+        // Try to find in cache first
+        if let cachedSet = try context.fetch(descriptor).first {
+            // If data is fresh, return cached version
+            if isDataFresh() {
+                return cachedSet
+            }
+        }
+        
+        // Try to fetch from API if configured
+        guard apiConfig.isConfigured else {
+            // Return cached version even if not fresh if API is not configured
+            return try context.fetch(descriptor).first
+        }
+        
+        do {
+            // Get the API client configuration
+            guard let apiClientConfig = apiConfig.apiClient else {
+                // Return cached version if API client not available
+                return try context.fetch(descriptor).first
+            }
+            
+            // Call API to get specific set details
+            let apiSet = try await LegoAPI.legoSetsRead(
+                setNum: setNumber,
+                apiConfiguration: apiClientConfig
+            )
+            
+            let localSet = convertToLegoSet(apiSet)
+            
+            // Check if set already exists in context
+            if let existingSet = try context.fetch(descriptor).first {
+                // Update existing set
+                existingSet.name = localSet.name
+                existingSet.year = localSet.year
+                existingSet.themeId = localSet.themeId
+                existingSet.numParts = localSet.numParts
+                existingSet.setImageURL = localSet.setImageURL
+                existingSet.lastModified = localSet.lastModified
+                
+                try context.save()
+                return existingSet
+            } else {
+                // Insert new set
+                context.insert(localSet)
+                try context.save()
+                return localSet
+            }
+            
+        } catch {
+            // If API fails, return cached version if available
+            return try context.fetch(descriptor).first
+        }
     }
     
     // MARK: - Private Methods
@@ -160,7 +341,7 @@ final class LegoSetService {
     
     /// Fetch sets from API and cache them
     private func fetchSetsFromAPI(limit: Int, offset: Int) async throws -> [LegoSet] {
-        guard modelContext != nil else {
+        guard let context = modelContext else {
             throw ServiceError.notConfigured
         }
         
@@ -168,19 +349,70 @@ final class LegoSetService {
             throw ServiceError.apiNotConfigured
         }
         
-        // TODO: Implement actual API calls when RebrickableAPI is available
-        // For now, return empty array
-        
-        // This is where we would:
-        // 1. Call apiConfig.apiClient.getSets(limit: limit, offset: offset)
-        // 2. Convert API response to LegoSet models
-        // 3. Save to context
-        // 4. Update lastSyncDate
-        
-        lastSyncDate = Date()
-        saveLastSyncDate()
-        
-        return []
+        do {
+            // Calculate page number (API uses 1-based pagination)
+            let page = (offset / limit) + 1
+            
+            // Get the API client configuration
+            guard let apiClientConfig = apiConfig.apiClient else {
+                throw ServiceError.apiNotConfigured
+            }
+            
+            // Call Rebrickable API to get sets list
+            let apiResponse = try await LegoAPI.legoSetsList(
+                page: page,
+                pageSize: limit,
+                apiConfiguration: apiClientConfig
+            )
+            
+            // Convert API models to local models and save to context
+            var convertedSets: [LegoSet] = []
+            
+            for apiSet in apiResponse.results {
+                // Convert ModelSet to LegoSet
+                let localSet = convertToLegoSet(apiSet)
+                
+                // Check if set already exists in context
+                let setNumber = localSet.setNumber
+                let existingDescriptor = FetchDescriptor<LegoSet>(
+                    predicate: #Predicate<LegoSet> { set in
+                        set.setNumber == setNumber
+                    }
+                )
+                
+                if let existingSet = try context.fetch(existingDescriptor).first {
+                    // Update existing set
+                    existingSet.name = localSet.name
+                    existingSet.year = localSet.year
+                    existingSet.themeId = localSet.themeId
+                    existingSet.numParts = localSet.numParts
+                    existingSet.setImageURL = localSet.setImageURL
+                    existingSet.lastModified = localSet.lastModified
+                    convertedSets.append(existingSet)
+                } else {
+                    // Insert new set
+                    context.insert(localSet)
+                    convertedSets.append(localSet)
+                }
+            }
+            
+            // Save context
+            try context.save()
+            
+            // Update last sync date
+            lastSyncDate = Date()
+            saveLastSyncDate()
+            
+            return convertedSets
+            
+        } catch {
+            // Convert API errors to service errors
+            if error is ErrorResponse {
+                throw ServiceError.networkError
+            } else {
+                throw ServiceError.parseError
+            }
+        }
     }
     
     /// Check if cached data is fresh (less than 1 hour old)
@@ -201,6 +433,31 @@ final class LegoSetService {
         if let date = lastSyncDate {
             UserDefaults.standard.set(date, forKey: "LastSyncDate")
         }
+    }
+    
+    // MARK: - Model Conversion
+    
+    /// Convert API ModelSet to local LegoSet
+    private func convertToLegoSet(_ apiSet: ModelSet) -> LegoSet {
+        return LegoSet(
+            setNumber: apiSet.setNum ?? "",
+            name: apiSet.name ?? "Unknown Set",
+            year: apiSet.year ?? 0,
+            themeId: apiSet.themeId ?? 0,
+            numParts: apiSet.numParts ?? 0,
+            setImageURL: apiSet.setImgUrl,
+            lastModified: apiSet.lastModifiedDt ?? Date()
+        )
+    }
+    
+    /// Convert API Theme to local Theme
+    private func convertToTheme(_ apiTheme: RebrickableLegoAPIClient.Theme) -> Theme {
+        return Theme(
+            id: apiTheme.id,
+            name: apiTheme.name,
+            parentId: apiTheme.parentId,
+            lastModified: Date()
+        )
     }
 }
 
@@ -270,8 +527,67 @@ extension LegoSetService {
             return cachedThemes
         }
         
-        // TODO: Fetch from API when available
-        return cachedThemes
+        // Fetch from API
+        guard apiConfig.isConfigured else {
+            throw ServiceError.apiNotConfigured
+        }
+        
+        do {
+            // Get the API client configuration
+            guard let apiClientConfig = apiConfig.apiClient else {
+                throw ServiceError.apiNotConfigured
+            }
+            
+            // Call Rebrickable API to get themes list
+            let apiResponse = try await LegoAPI.legoThemesList(
+                apiConfiguration: apiClientConfig
+            )
+            
+            // Convert API models to local models and save to context
+            var convertedThemes: [Theme] = []
+            
+            for apiTheme in apiResponse.results {
+                // Convert RebrickableLegoAPIClient.Theme to local Theme
+                let localTheme = convertToTheme(apiTheme)
+                
+                // Check if theme already exists in context
+                let themeId = localTheme.id
+                let existingDescriptor4 = FetchDescriptor<Theme>(
+                    predicate: #Predicate<Theme> { theme in
+                        theme.id == themeId
+                    }
+                )
+                
+                if let existingTheme = try context.fetch(existingDescriptor4).first {
+                    // Update existing theme
+                    existingTheme.name = localTheme.name
+                    existingTheme.parentId = localTheme.parentId
+                    existingTheme.lastModified = localTheme.lastModified
+                    convertedThemes.append(existingTheme)
+                } else {
+                    // Insert new theme
+                    context.insert(localTheme)
+                    convertedThemes.append(localTheme)
+                }
+            }
+            
+            // Save context
+            try context.save()
+            
+            // Update last sync date
+            lastSyncDate = Date()
+            saveLastSyncDate()
+            
+            return convertedThemes.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+            
+        } catch {
+            // Convert API errors to service errors
+            if error is ErrorResponse {
+                throw ServiceError.networkError
+            } else {
+                throw ServiceError.parseError
+            }
+        }
     }
     
     /// Get theme by ID

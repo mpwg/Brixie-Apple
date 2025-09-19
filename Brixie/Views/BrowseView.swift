@@ -12,11 +12,15 @@ struct BrowseView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \LegoSet.year, order: .reverse, animation: .default) private var sets: [LegoSet]
     @State private var isRefreshing = false
+    @State private var service = LegoSetService.shared
 
     var body: some View {
         NavigationStack {
             Group {
-                if sets.isEmpty {
+                if isRefreshing {
+                    LoadingView(message: "Loading LEGO sets...", isError: false)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if sets.isEmpty {
                     emptyState
                 } else {
                     List(sets) { set in
@@ -42,14 +46,17 @@ struct BrowseView: View {
             }
             .navigationTitle("Browse")
             .toolbar { toolbar }
+            .onAppear {
+                service.configure(with: modelContext)
+            }
         }
     }
 
     private var emptyState: some View {
         ContentUnavailableView(
-            "No sets yet",
+            "No LEGO Sets Found",
             systemImage: "square.grid.2x2",
-            description: Text("You can refresh to fetch sample data once API is wired in Phase 2.")
+            description: Text("Configure your Rebrickable API key in Settings to browse LEGO sets from the catalog.")
         )
     }
 
@@ -66,8 +73,16 @@ struct BrowseView: View {
     private func refresh() async {
         guard !isRefreshing else { return }
         isRefreshing = true
-        // Phase 1: no network fetch. Optionally seed with sample data.
-        isRefreshing = false
+        defer { isRefreshing = false }
+        
+        // Try to fetch sets from the service
+        do {
+            let service = LegoSetService.shared
+            service.configure(with: modelContext)
+            let _ = try await service.fetchSets()
+        } catch {
+            print("Failed to fetch sets: \(error)")
+        }
     }
 }
 
