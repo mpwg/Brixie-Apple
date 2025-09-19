@@ -24,11 +24,7 @@ struct WishlistView: View {
         NavigationStack {
             VStack {
                 if wishedSets.isEmpty {
-                    ContentUnavailableView(
-                        "Your wishlist is empty",
-                        systemImage: "star",
-                        description: Text("Add sets to your wishlist to track them here.")
-                    )
+                    EmptyStateView.emptyWishlist()
                 } else {
                     wishlistContent
                 }

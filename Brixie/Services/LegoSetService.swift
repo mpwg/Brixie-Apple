@@ -449,16 +449,6 @@ final class LegoSetService {
             lastModified: apiSet.lastModifiedDt ?? Date()
         )
     }
-    
-    /// Convert API Theme to local Theme
-    private func convertToTheme(_ apiTheme: RebrickableLegoAPIClient.Theme) -> Theme {
-        return Theme(
-            id: apiTheme.id,
-            name: apiTheme.name,
-            parentId: apiTheme.parentId,
-            lastModified: Date()
-        )
-    }
 }
 
 // MARK: - Supporting Types
@@ -504,102 +494,5 @@ extension LegoSetService {
                 return NSLocalizedString("Failed to parse API response", comment: "Parse error")
             }
         }
-    }
-}
-
-// MARK: - Theme Operations
-
-extension LegoSetService {
-    /// Fetch all themes from API or cache
-    func fetchThemes() async throws -> [Theme] {
-        guard let context = modelContext else {
-            throw ServiceError.notConfigured
-        }
-        
-        // Try cache first
-        let descriptor = FetchDescriptor<Theme>(
-            sortBy: [SortDescriptor(\.name)]
-        )
-        
-        let cachedThemes = try context.fetch(descriptor)
-        
-        if !cachedThemes.isEmpty && isDataFresh() {
-            return cachedThemes
-        }
-        
-        // Fetch from API
-        guard apiConfig.isConfigured else {
-            throw ServiceError.apiNotConfigured
-        }
-        
-        do {
-            // Get the API client configuration
-            guard let apiClientConfig = apiConfig.apiClient else {
-                throw ServiceError.apiNotConfigured
-            }
-            
-            // Call Rebrickable API to get themes list
-            let apiResponse = try await LegoAPI.legoThemesList(
-                apiConfiguration: apiClientConfig
-            )
-            
-            // Convert API models to local models and save to context
-            var convertedThemes: [Theme] = []
-            
-            for apiTheme in apiResponse.results {
-                // Convert RebrickableLegoAPIClient.Theme to local Theme
-                let localTheme = convertToTheme(apiTheme)
-                
-                // Check if theme already exists in context
-                let themeId = localTheme.id
-                let existingThemeDescriptor = FetchDescriptor<Theme>(
-                    predicate: #Predicate<Theme> { theme in
-                        theme.id == themeId
-                    }
-                )
-                
-                if let existingTheme = try context.fetch(existingThemeDescriptor).first {
-                    // Update existing theme
-                    existingTheme.name = localTheme.name
-                    existingTheme.parentId = localTheme.parentId
-                    existingTheme.lastModified = localTheme.lastModified
-                    convertedThemes.append(existingTheme)
-                } else {
-                    // Insert new theme
-                    context.insert(localTheme)
-                    convertedThemes.append(localTheme)
-                }
-            }
-            
-            // Save context
-            try context.save()
-            
-            // Update last sync date
-            lastSyncDate = Date()
-            saveLastSyncDate()
-            
-            return convertedThemes.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
-            
-        } catch {
-            // Convert API errors to service errors
-            if error is ErrorResponse {
-                throw ServiceError.networkError
-            } else {
-                throw ServiceError.parseError
-            }
-        }
-    }
-    
-    /// Get theme by ID
-    func getTheme(byId id: Int) async throws -> Theme? {
-        guard let context = modelContext else {
-            throw ServiceError.notConfigured
-        }
-        
-        let descriptor = FetchDescriptor<Theme>(
-            predicate: #Predicate { $0.id == id }
-        )
-        
-        return try context.fetch(descriptor).first
     }
 }

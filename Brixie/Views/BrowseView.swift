@@ -20,7 +20,9 @@ struct BrowseView: View {
                     LoadingView(message: "Loading LEGO sets...", isError: false)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if sets.isEmpty {
-                    emptyState
+                    EmptyStateView.emptyBrowse {
+                        Task { await viewModel.refresh() }
+                    }
                 } else {
                     List(sets) { set in
                         HStack(spacing: 12) {
@@ -61,14 +63,6 @@ struct BrowseView: View {
                 Text(error.localizedDescription)
             }
         }
-    }
-
-    private var emptyState: some View {
-        ContentUnavailableView(
-            "No LEGO Sets Found",
-            systemImage: "square.grid.2x2",
-            description: Text("Configure your Rebrickable API key in Settings to browse LEGO sets from the catalog.")
-        )
     }
 
     @ToolbarContentBuilder

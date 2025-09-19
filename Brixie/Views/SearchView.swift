@@ -32,7 +32,7 @@ struct SearchView: View {
                 )
             } else if viewModel.filteredResults.isEmpty && !viewModel.query.isEmpty {
                 // Show no results state
-                ContentUnavailableView.search(text: viewModel.query)
+                EmptyStateView.searchNoResults(query: viewModel.query)
             } else {
                 // Show results
                 List {

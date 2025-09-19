@@ -15,6 +15,7 @@ struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     private let legoSetService = LegoSetService.shared
+    private let themeService = ThemeService.shared
     private let apiConfig = APIConfiguration.shared
     // private let offlineManager = OfflineManager.shared
     
@@ -172,6 +173,7 @@ struct ContentView: View {
     /// Configure services with model context
     private func configureServices() {
         legoSetService.configure(with: modelContext)
+        themeService.configure(with: modelContext)
         // offlineManager.startMonitoring() - temporarily disabled
         
         // Show API key prompt if not configured

@@ -25,11 +25,7 @@ struct CollectionView: View {
         NavigationStack {
             VStack {
                 if ownedSets.isEmpty {
-                    ContentUnavailableView(
-                        "No sets in your collection",
-                        systemImage: "heart",
-                        description: Text("Mark sets as owned to see them here.")
-                    )
+                    EmptyStateView.emptyCollection()
                 } else {
                     collectionContent
                 }
