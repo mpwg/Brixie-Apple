@@ -36,6 +36,13 @@
 		402F280C2E7D279400F00917 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402F28092E7D279400F00917 /* LoadingView.swift */; };
 		402F28102E7D32C700F00917 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402F280D2E7D32C700F00917 /* ModelTests.swift */; };
 		402F28112E7D32C700F00917 /* ServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402F280E2E7D32C700F00917 /* ServiceTests.swift */; };
+		4091B0A42E7D47680079F97C /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4091B0A02E7D47680079F97C /* SearchViewModel.swift */; };
+		4091B0A52E7D47680079F97C /* WishlistViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4091B0A22E7D47680079F97C /* WishlistViewModel.swift */; };
+		4091B0A62E7D47680079F97C /* CollectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4091B09F2E7D47680079F97C /* CollectionViewModel.swift */; };
+		4091B0A72E7D47680079F97C /* SetDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4091B0A12E7D47680079F97C /* SetDetailViewModel.swift */; };
+		4091B0A82E7D47680079F97C /* BrowseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4091B09E2E7D47680079F97C /* BrowseViewModel.swift */; };
+		4091B0AA2E7D477E0079F97C /* BrixieError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4091B0A92E7D477E0079F97C /* BrixieError.swift */; };
+		4091B0AC2E7D47AD0079F97C /* OfflineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4091B0AB2E7D47AD0079F97C /* OfflineManager.swift */; };
 		40C6BDE92E7C782500D3B0B8 /* LegoSetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDE12E7C782500D3B0B8 /* LegoSetService.swift */; };
 		40C6BDEA2E7C782500D3B0B8 /* LegoSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDDC2E7C782500D3B0B8 /* LegoSet.swift */; };
 		40C6BDEB2E7C782500D3B0B8 /* GeneratedConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDD82E7C782500D3B0B8 /* GeneratedConfiguration.swift */; };
@@ -99,6 +106,13 @@
 		402F280A2E7D279400F00917 /* SetCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetCardView.swift; sourceTree = "<group>"; };
 		402F280D2E7D32C700F00917 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		402F280E2E7D32C700F00917 /* ServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceTests.swift; sourceTree = "<group>"; };
+		4091B09E2E7D47680079F97C /* BrowseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViewModel.swift; sourceTree = "<group>"; };
+		4091B09F2E7D47680079F97C /* CollectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewModel.swift; sourceTree = "<group>"; };
+		4091B0A02E7D47680079F97C /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
+		4091B0A12E7D47680079F97C /* SetDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetDetailViewModel.swift; sourceTree = "<group>"; };
+		4091B0A22E7D47680079F97C /* WishlistViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WishlistViewModel.swift; sourceTree = "<group>"; };
+		4091B0A92E7D477E0079F97C /* BrixieError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrixieError.swift; sourceTree = "<group>"; };
+		4091B0AB2E7D47AD0079F97C /* OfflineManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineManager.swift; sourceTree = "<group>"; };
 		40C6BDD62E7C782500D3B0B8 /* AsyncCachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncCachedImage.swift; sourceTree = "<group>"; };
 		40C6BDD82E7C782500D3B0B8 /* GeneratedConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedConfiguration.swift; sourceTree = "<group>"; };
 		40C6BDDA2E7C782500D3B0B8 /* APIConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfiguration.swift; sourceTree = "<group>"; };
@@ -176,6 +190,18 @@
 			path = BrixieUITests;
 			sourceTree = "<group>";
 		};
+		4091B0A32E7D47680079F97C /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				4091B09E2E7D47680079F97C /* BrowseViewModel.swift */,
+				4091B09F2E7D47680079F97C /* CollectionViewModel.swift */,
+				4091B0A02E7D47680079F97C /* SearchViewModel.swift */,
+				4091B0A12E7D47680079F97C /* SetDetailViewModel.swift */,
+				4091B0A22E7D47680079F97C /* WishlistViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		40C6BDD72E7C782500D3B0B8 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -206,6 +232,7 @@
 		40C6BDDF2E7C782500D3B0B8 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				4091B0A92E7D477E0079F97C /* BrixieError.swift */,
 				402F28052E7D278100F00917 /* BrixieMigrationPlan.swift */,
 				402F28062E7D278100F00917 /* MissingPart.swift */,
 				40C6BDDC2E7C782500D3B0B8 /* LegoSet.swift */,
@@ -218,6 +245,7 @@
 		40C6BDE22E7C782500D3B0B8 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				4091B0AB2E7D47AD0079F97C /* OfflineManager.swift */,
 				402F27E72E7D275A00F00917 /* CollectionService.swift */,
 				402F27E82E7D275A00F00917 /* SearchHistoryService.swift */,
 				40C6BDE02E7C782500D3B0B8 /* ImageCacheService.swift */,
@@ -250,6 +278,7 @@
 		40C6BDE72E7C782500D3B0B8 /* Brixie */ = {
 			isa = PBXGroup;
 			children = (
+				4091B0A32E7D47680079F97C /* ViewModels */,
 				40C6BDD72E7C782500D3B0B8 /* Components */,
 				40C6BDDB2E7C782500D3B0B8 /* Configuration */,
 				40C6BDDF2E7C782500D3B0B8 /* Models */,
@@ -393,14 +422,21 @@
 				402F27E92E7D275A00F00917 /* CollectionService.swift in Sources */,
 				402F27EA2E7D275A00F00917 /* SearchHistoryService.swift in Sources */,
 				40C6BDEB2E7C782500D3B0B8 /* GeneratedConfiguration.swift in Sources */,
+				4091B0AC2E7D47AD0079F97C /* OfflineManager.swift in Sources */,
 				40C6BDEC2E7C782500D3B0B8 /* UserCollection.swift in Sources */,
 				40C6BDED2E7C782500D3B0B8 /* APIConfiguration.swift in Sources */,
 				40C6BDEE2E7C782500D3B0B8 /* Theme.swift in Sources */,
 				40C6BDEF2E7C782500D3B0B8 /* ContentView.swift in Sources */,
 				402F28072E7D278100F00917 /* MissingPart.swift in Sources */,
 				402F28082E7D278100F00917 /* BrixieMigrationPlan.swift in Sources */,
+				4091B0AA2E7D477E0079F97C /* BrixieError.swift in Sources */,
 				40C6BDF02E7C782500D3B0B8 /* AsyncCachedImage.swift in Sources */,
 				402F27F82E7D276E00F00917 /* BarcodeScannerView.swift in Sources */,
+				4091B0A42E7D47680079F97C /* SearchViewModel.swift in Sources */,
+				4091B0A52E7D47680079F97C /* WishlistViewModel.swift in Sources */,
+				4091B0A62E7D47680079F97C /* CollectionViewModel.swift in Sources */,
+				4091B0A72E7D47680079F97C /* SetDetailViewModel.swift in Sources */,
+				4091B0A82E7D47680079F97C /* BrowseViewModel.swift in Sources */,
 				402F27F92E7D276E00F00917 /* BrowseView.swift in Sources */,
 				402F27FA2E7D276E00F00917 /* CollectionExportView.swift in Sources */,
 				402F27FB2E7D276E00F00917 /* CollectionStatisticsView.swift in Sources */,
