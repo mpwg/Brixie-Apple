@@ -57,31 +57,39 @@
 [x] Add theme filtering
 [x] Create theme search
 
-## Phase 3: Search & Filter
-[x] Create SetDetailView layout
-[x] Display all set properties
-[x] Add image gallery
-[x] Implement share functionality
-- [ ] Implement search suggestions
-- [ ] Add recent searches
-[x] Create LoadingView component
-[x] Add skeleton loading
-[x] Implement progress indicators
-[x] Add error states
-- [ ] Search by theme
-- [ ] Add advanced filters
+## Phase 3: Search & Filter ✅
 
-### Task 3.3: Barcode Scanning
-- [ ] Implement camera permissions
-- [ ] Add barcode scanner view
-- [ ] Process barcode to set lookup
-- [ ] Handle scan errors
+### Task 3.1: Search Enhancements
 
-### Task 3.4: Filter Options
-- [ ] Create FilterView sheet
-- [ ] Add year range filter
-- [ ] Add part count filter
-- [ ] Add theme filter
+- [x] Create SearchHistoryService for recent searches
+- [x] Implement search suggestions functionality
+- [x] Add recent searches display
+- [x] Enhance SearchView with suggestions UI
+
+### Task 3.2: Advanced Search & Filter
+
+- [x] Search by theme functionality
+- [x] Create comprehensive SearchFiltersView
+- [x] Add year range filtering
+- [x] Add parts count filtering
+- [x] Add theme-based filtering
+- [x] Implement filter state management
+
+### Task 3.3: Barcode Scanning ✅
+
+- [x] Implement camera permissions handling
+- [x] Add BarcodeScannerView with VisionKit DataScannerViewController
+- [x] Process barcode to set lookup
+- [x] Handle scan errors and unsupported devices
+- [x] Add manual barcode entry fallback
+
+### Task 3.4: Filter Options ✅
+
+- [x] Create SearchFiltersView sheet
+- [x] Add hierarchical theme filter with expand/collapse
+- [x] Add year range filter with sliders
+- [x] Add part count filter with sliders
+- [x] Add clear all filters functionality
 
 ## Phase 4: Collection Management
 
