@@ -95,7 +95,7 @@ struct SearchFiltersView: View {
                                 Slider(value: Binding(
                                     get: { Double(maxParts) },
                                     set: { maxParts = Int($0) }
-                                ), in: Double(minParts)...Double(AppConstants.Search.maxPartCount), step: Double(AppConstants.Search.partCountStep))
+                                ), in: Double(minParts)...AppConstants.Search.maxPartCount, step: AppConstants.Search.partCountStep)
                                 Text("\(maxParts)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)

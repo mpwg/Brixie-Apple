@@ -50,40 +50,40 @@ enum AppConstants {
     // MARK: - User Interface
     enum UI {
         /// Standard corner radius for cards and containers
-        static let standardCornerRadius: Double = 12
+        static let standardCornerRadius: CGFloat = 12
         
         /// Small corner radius for buttons and small elements
-        static let smallCornerRadius: Double = 8
+        static let smallCornerRadius: CGFloat = 8
         
         /// Standard spacing between elements
-        static let standardSpacing: Double = 16
+        static let standardSpacing: CGFloat = 16
         
         /// Small spacing between elements
-        static let smallSpacing: Double = 8
+        static let smallSpacing: CGFloat = 8
         
         /// Large spacing between sections
-        static let largeSpacing: Double = 24
+        static let largeSpacing: CGFloat = 24
         
         /// Large padding for major layout sections
-        static let largePadding: Double = 32
+        static let largePadding: CGFloat = 32
         
         /// Standard card height for set images
-        static let cardImageHeight: Double = 120
+        static let cardImageHeight: CGFloat = 120
         
         /// Navigation split view minimum width
-        static let navigationMinWidth: Double = 200
+        static let navigationMinWidth: CGFloat = 200
         
         /// Navigation split view ideal width
-        static let navigationIdealWidth: Double = 250
+        static let navigationIdealWidth: CGFloat = 250
         
         /// Skeleton loading shimmer height
-        static let skeletonHeight: Double = 24
+        static let skeletonHeight: CGFloat = 24
         
         /// Skeleton loading opacity
         static let skeletonOpacity: Double = 0.15
         
         /// Grid item minimum width
-        static let gridItemMinWidth: Double = 280
+        static let gridItemMinWidth: CGFloat = 280
     }
     
     // MARK: - Animation Durations
@@ -206,10 +206,10 @@ enum AppConstants {
         static let matchingDefaultCount = 2
         
         /// Maximum part count for filters
-        static let maxPartCount = 10000
+        static let maxPartCount: Double = 10000
         
         /// Part count step for sliders
-        static let partCountStep = 50
+        static let partCountStep: Double = 50
     }
     
     // MARK: - Achievement Thresholds
@@ -234,12 +234,6 @@ enum AppConstants {
         
         /// Percentage multiplier for calculations
         static let percentageMultiplier = 100.0
-        
-        /// Number of matching recent searches to show
-        static let matchingRecentCount = 3
-        
-        /// Number of matching default suggestions to show
-        static let matchingDefaultCount = 7
     }
     
     // MARK: - Collection Management
@@ -284,13 +278,13 @@ enum AppConstants {
     // MARK: - Accessibility
     enum Accessibility {
         /// Font size for large icons
-        static let largeIconSize: Double = 64
+        static let largeIconSize: CGFloat = 64
         
         /// Minimum tap target size (44x44 points per Apple HIG)
-        static let minTapTargetSize: Double = 44
+        static let minTapTargetSize: CGFloat = 44
         
         /// Standard padding for accessible content
-        static let accessiblePadding: Double = 16
+        static let accessiblePadding: CGFloat = 16
     }
     
     // MARK: - Visual Effects
@@ -338,16 +332,16 @@ enum AppConstants {
     // MARK: - Layout Dimensions
     enum Layout {
         /// Standard list item height
-        static let standardListItemHeight: Double = 60
+        static let standardListItemHeight: CGFloat = 60
         
         /// Set card image size
-        static let setCardImageSize: Double = 60
+        static let setCardImageSize: CGFloat = 60
         
         /// Icon button size for collection actions
-        static let iconButtonSize: Double = 48
+        static let iconButtonSize: CGFloat = 48
         
         /// Large preview image size
-        static let largePreviewSize: Double = 200
+        static let largePreviewSize: CGFloat = 200
         
         /// Skeleton loading item count
         static let defaultSkeletonItemCount = 8
@@ -356,58 +350,58 @@ enum AppConstants {
         static let themePreviewItemCount = 5
         
         /// Grid spacing in grids and lists
-        static let gridSpacing: Double = 16
+        static let gridSpacing: CGFloat = 16
         
         /// List row vertical spacing
-        static let listRowSpacing: Double = 12
+        static let listRowSpacing: CGFloat = 12
         
         /// Card content vertical spacing
-        static let cardContentSpacing: Double = 4
+        static let cardContentSpacing: CGFloat = 4
         
         /// Small field width for filters
-        static let smallFieldWidth: Double = 50
+        static let smallFieldWidth: CGFloat = 50
         
         /// Medium field width for labels
-        static let mediumFieldWidth: Double = 60
+        static let mediumFieldWidth: CGFloat = 60
         
         /// Button row horizontal spacing  
-        static let buttonRowSpacing: Double = 2
+        static let buttonRowSpacing: CGFloat = 2
         
         /// Stats container spacing
-        static let statsSpacing: Double = 20
+        static let statsSpacing: CGFloat = 20
         
         /// Skeleton row internal spacing
-        static let skeletonRowSpacing: Double = 4
+        static let skeletonRowSpacing: CGFloat = 4
     }
     
     // MARK: - Image Dimensions
     enum ImageSize {
         /// Thumbnail width
-        static let thumbnailWidth: Double = 60
+        static let thumbnailWidth: CGFloat = 60
         
         /// Thumbnail height  
-        static let thumbnailHeight: Double = 60
+        static let thumbnailHeight: CGFloat = 60
         
         /// Icon size for collection status
-        static let collectionIconSize: Double = 48
+        static let collectionIconSize: CGFloat = 48
         
         /// Large icon size
-        static let largeIconSize: Double = 64
+        static let largeIconSize: CGFloat = 64
         
         /// Preview image width for sharing
-        static let previewWidth: Double = 200
+        static let previewWidth: CGFloat = 200
         
         /// Preview image height for sharing
-        static let previewHeight: Double = 200
+        static let previewHeight: CGFloat = 200
         
         /// Skeleton placeholder dimensions
-        static let skeletonPlaceholderHeight: Double = 16
+        static let skeletonPlaceholderHeight: CGFloat = 16
         
         /// Skeleton secondary placeholder height
-        static let skeletonSecondaryHeight: Double = 12
+        static let skeletonSecondaryHeight: CGFloat = 12
         
         /// Maximum skeleton placeholder width
-        static let skeletonMaxWidth: Double = 100
+        static let skeletonMaxWidth: CGFloat = 100
     }
     
     // MARK: - Timing & Delays
@@ -454,8 +448,11 @@ enum AppConstants {
         /// Base scale for animation calculations
         static let baseAnimationScale: Double = 1.0
         
-        /// Zero value for default/fallback cases
-        static let zeroValue = 0
+        /// Zero value for default/fallback cases (as Double for animations)
+        static let zeroValue: Double = 0
+        
+        /// Zero value as Int for counts and indices
+        static let zeroInt = 0
         
         /// Directory index for documents path
         static let documentsDirectoryIndex = 0
@@ -560,29 +557,29 @@ extension AppConstants {
         static let springDefault = SwiftUI.Animation.spring(
             response: Animation.springResponse,
             dampingFraction: Animation.springDamping,
-            blendDuration: 0
+            blendDuration: Limits.zeroValue
         )
     }
     
     /// Common spacing values for UI layout
     enum Spacing {
-        static let xs: Double = 4
+        static let xs: CGFloat = 4
         static let small = UI.smallSpacing
         static let standard = UI.standardSpacing
         static let large = UI.largeSpacing
-        static let xl: Double = 32
+        static let xl: CGFloat = 32
     }
     
     /// Common corner radius values
     enum CornerRadius {
         static let small = UI.smallCornerRadius
         static let standard = UI.standardCornerRadius
-        static let large: Double = 16
-        static let extraLarge: Double = 20
-        static let button: Double = 6
-        static let card: Double = 12
-        static let thumbnail: Double = 8
-        static let skeleton: Double = 4
+        static let large: CGFloat = 16
+        static let extraLarge: CGFloat = 20
+        static let button: CGFloat = 6
+        static let card: CGFloat = 12
+        static let thumbnail: CGFloat = 8
+        static let skeleton: CGFloat = 4
     }
     
     /// Common scale values for animations
@@ -598,6 +595,7 @@ extension AppConstants {
     /// Common numeric values
     enum Numbers {
         static let zeroValue = Limits.zeroValue
+        static let zeroInt = Limits.zeroInt
         static let percentMultiplier = Achievements.percentageMultiplier
     }
     

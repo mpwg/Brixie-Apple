@@ -10,8 +10,8 @@ struct AnimationPresets {
     
     // MARK: - Spring Animations
     static let spring = AppConstants.CommonAnimations.springDefault
-    static let bouncy = Animation.spring(response: AppConstants.Animation.bouncySpringResponse, dampingFraction: AppConstants.Animation.bouncySpringDamping, blendDuration: Double(AppConstants.Numbers.zeroValue))
-    static let gentle = Animation.spring(response: AppConstants.Animation.gentleSpringResponse, dampingFraction: AppConstants.Animation.gentleSpringDamping, blendDuration: Double(AppConstants.Numbers.zeroValue))
+    static let bouncy = Animation.spring(response: AppConstants.Animation.bouncySpringResponse, dampingFraction: AppConstants.Animation.bouncySpringDamping, blendDuration: AppConstants.Numbers.zeroValue)
+    static let gentle = Animation.spring(response: AppConstants.Animation.gentleSpringResponse, dampingFraction: AppConstants.Animation.gentleSpringDamping, blendDuration: AppConstants.Numbers.zeroValue)
     
     // MARK: - Easing Animations
     static let easeIn = Animation.easeIn(duration: AppConstants.Animation.normal)
