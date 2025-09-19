@@ -123,4 +123,3 @@ extension Theme {
         return themes.filter { $0.totalSetCount > 0 }
     }
 }
-

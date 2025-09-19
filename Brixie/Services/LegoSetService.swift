@@ -186,7 +186,7 @@ final class LegoSetService {
     /// Check if cached data is fresh (less than 1 hour old)
     private func isDataFresh() -> Bool {
         guard let lastSync = lastSyncDate else { return false }
-        return Date().timeIntervalSince(lastSync) < 3600 // 1 hour
+        return Date().timeIntervalSince(lastSync) < 3_600 // 1 hour
     }
     
     /// Load last sync date from UserDefaults

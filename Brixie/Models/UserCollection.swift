@@ -195,5 +195,3 @@ extension UserCollection {
         condition = max(1, min(5, rating)) // Clamp between 1-5
     }
 }
-
-
