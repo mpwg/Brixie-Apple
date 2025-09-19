@@ -6,89 +6,232 @@
 //
 
 import SwiftUI
+import UIKit
 
-/// Async image view with caching support
-/// Pure SwiftUI implementation without UIKit/AppKit dependencies
+/// High-performance async image view with advanced caching and memory management
 struct AsyncCachedImage: View {
     /// URL of the image to load
     let url: URL?
+    /// Content mode for image scaling
+    let contentMode: ContentMode
+    /// Maximum image size for memory efficiency
+    let maxSize: CGSize?
+    /// Whether to show loading placeholder
+    let showPlaceholder: Bool
     
     /// Image cache service for loading and caching
     private let cacheService = ImageCacheService.shared
     
     /// Current image loading state
-    @State private var imageData: Data?
+    @State private var image: Image?
     @State private var isLoading = false
+    @State private var loadingError: Error?
+    @State private var imageTask: Task<Void, Never>?
+    
+    init(
+        url: URL?,
+        contentMode: ContentMode = .fit,
+        maxSize: CGSize? = nil,
+        showPlaceholder: Bool = true
+    ) {
+        self.url = url
+        self.contentMode = contentMode
+        self.maxSize = maxSize
+        self.showPlaceholder = showPlaceholder
+    }
     
     var body: some View {
         Group {
-            if let imageData = imageData {
-                // Use SwiftUI's AsyncImage with local data
-                AsyncImageFromData(data: imageData)
-                    .aspectRatio(contentMode: .fit)
+            if let image = image {
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+                    .transition(.opacity.combined(with: .scale))
+            } else if isLoading && showPlaceholder {
+                placeholderView
+                    .transition(.opacity.combined(with: .scale))
+            } else if loadingError != nil && showPlaceholder {
+                errorView
+                    .transition(.opacity.combined(with: .scale))
             } else {
-                Color.gray.opacity(0.3)
+                Color.clear
             }
         }
-        .task {
+        .task(id: url) {
             await loadImage()
         }
-        .onChange(of: url) { _, _ in
-            imageData = nil
-            Task {
-                await loadImage()
+        .onDisappear {
+            cancelImageLoading()
+        }
+    }
+    
+    // MARK: - Placeholder Views
+    
+    private var placeholderView: some View {
+        ZStack {
+            Color(.systemGray6)
+            
+            VStack(spacing: 8) {
+                Image(systemName: "photo")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+                
+                ProgressView()
+                    .scaleEffect(0.8)
+            }
+        }
+        .opacity(0.8)
+        .background(LinearGradient(
+            colors: [Color.clear, Color(.systemGray6).opacity(0.3), Color.clear],
+            startPoint: .leading,
+            endPoint: .trailing
+        ))
+    }
+    
+    private var errorView: some View {
+        ZStack {
+            Color(.systemGray6)
+            
+            VStack(spacing: 4) {
+                Image(systemName: "photo.badge.exclamationmark")
+                    .font(.title2)
+                    .foregroundColor(.red)
+                
+                Text("Failed to load")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
         }
     }
     
-    /// Load image data from cache or network
+    // MARK: - Image Loading
+    
+    @MainActor
     private func loadImage() async {
-        guard let url = url else { return }
+        guard let url = url else {
+            clearImageState()
+            return
+        }
+        
+        // Cancel any existing loading task
+        cancelImageLoading()
+        
+        // Check if already loaded
+        if image != nil && !isLoading {
+            return
+        }
         
         isLoading = true
-        defer { isLoading = false }
+        loadingError = nil
         
-        if let data = await cacheService.imageData(from: url) {
-            await MainActor.run {
-                imageData = data
+        // Create new loading task
+        imageTask = Task {
+            // First check memory cache for immediate response
+            if let cachedImage = await cacheService.getCachedImage(from: url) {
+                await MainActor.run {
+                    self.image = cachedImage
+                    self.isLoading = false
+                }
+                return
             }
+            
+            // Load from cache service (handles disk cache and network)
+            if let imageData = await cacheService.imageData(from: url) {
+                let loadedImage = await createOptimizedImage(from: imageData)
+                
+                await MainActor.run {
+                    // Check if task was cancelled
+                    guard !Task.isCancelled else { return }
+                    
+                    self.image = loadedImage
+                    self.isLoading = false
+                    
+                    // Cache the SwiftUI Image for faster future access
+                    if let loadedImage = loadedImage {
+                        Task {
+                            await cacheService.cacheImage(loadedImage, for: url)
+                        }
+                    }
+                }
+            } else {
+                await MainActor.run {
+                    self.loadingError = ImageLoadingError.failedToLoad
+                    self.isLoading = false
+                }
+            }
+        }
+    }
+    
+    private func cancelImageLoading() {
+        imageTask?.cancel()
+        imageTask = nil
+    }
+    
+    private func clearImageState() {
+        image = nil
+        isLoading = false
+        loadingError = nil
+    }
+    
+    // MARK: - Image Processing
+    
+    private func createOptimizedImage(from data: Data) async -> Image? {
+        return await Task.detached(priority: .utility) {
+            guard let uiImage = UIImage(data: data) else { return nil }
+            
+            // Apply size optimization if specified
+            let processedImage: UIImage
+            if let maxSize = maxSize, 
+               uiImage.size.width > maxSize.width || uiImage.size.height > maxSize.height {
+                processedImage = await uiImage.resized(to: maxSize) ?? uiImage
+            } else {
+                processedImage = uiImage
+            }
+            
+            return Image(uiImage: processedImage)
+        }.value
+    }
+}
+
+// MARK: - Image Loading Error
+
+enum ImageLoadingError: LocalizedError {
+    case failedToLoad
+    case invalidData
+    case cancelled
+    
+    var errorDescription: String? {
+        switch self {
+        case .failedToLoad:
+            return "Failed to load image"
+        case .invalidData:
+            return "Invalid image data"
+        case .cancelled:
+            return "Image loading cancelled"
         }
     }
 }
 
-/// Helper view to create SwiftUI Image from Data
-/// This is a pure SwiftUI solution that doesn't rely on platform-specific image types
-private struct AsyncImageFromData: View {
-    let data: Data
-    
-    var body: some View {
-        // Create a temporary URL from data and use AsyncImage
-        if let tempURL = createTempDataURL(from: data) {
-            AsyncImage(url: tempURL) { image in
-                image
-                    .resizable()
-            } placeholder: {
-                Color.gray.opacity(0.3)
-            }
-            .onDisappear {
-                // Clean up temp file
-                try? FileManager.default.removeItem(at: tempURL)
-            }
-        } else {
-            Color.gray.opacity(0.3)
-        }
-    }
-    
-    /// Create temporary URL from image data for AsyncImage
-    private func createTempDataURL(from data: Data) -> URL? {
-        let tempDir = FileManager.default.temporaryDirectory
-        let tempFile = tempDir.appendingPathComponent(UUID().uuidString + ".jpg")
+// MARK: - UIImage Extensions for Performance
+
+extension UIImage {
+    /// Resize image while maintaining aspect ratio and quality
+    @MainActor
+    func resized(to maxSize: CGSize) -> UIImage? {
+        let aspectRatio = size.width / size.height
+        let targetSize: CGSize
         
-        do {
-            try data.write(to: tempFile)
-            return tempFile
-        } catch {
-            return nil
+        if size.width > size.height {
+            targetSize = CGSize(width: min(maxSize.width, size.width), 
+                              height: min(maxSize.width, size.width) / aspectRatio)
+        } else {
+            targetSize = CGSize(width: min(maxSize.height, size.height) * aspectRatio,
+                              height: min(maxSize.height, size.height))
+        }
+        
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        return renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: targetSize))
         }
     }
 }

@@ -20,6 +20,9 @@ final class ImageCacheService {
     /// Memory cache for quick access to image data
     private let memoryCache = NSCache<NSString, NSData>()
     
+    /// Memory cache for SwiftUI Images (separate for performance)
+    private let imageCache = NSCache<NSString, ImageWrapper>()
+    
     /// Disk cache directory URL
     private let cacheDirectory: URL
     
@@ -48,9 +51,12 @@ final class ImageCacheService {
         // Create cache directory if needed
         createCacheDirectoryIfNeeded()
         
-        // Configure memory cache
-        memoryCache.totalCostLimit = 20 * 1_024 * 1_024 // 20MB memory limit
-        memoryCache.countLimit = 100 // Max 100 images in memory
+        // Configure memory caches
+        memoryCache.totalCostLimit = 15 * 1_024 * 1_024 // 15MB memory limit for data
+        memoryCache.countLimit = 100 // Max 100 data objects in memory
+        
+        imageCache.totalCostLimit = 10 * 1_024 * 1_024 // 10MB memory limit for images
+        imageCache.countLimit = 50 // Max 50 images in memory
         
         // Calculate initial disk cache size
         calculateDiskCacheSize()
@@ -67,6 +73,20 @@ final class ImageCacheService {
             }
         }
         #endif
+    }
+    
+    // MARK: - SwiftUI Image Caching
+    
+    /// Get cached SwiftUI Image if available
+    func getCachedImage(from url: URL) async -> Image? {
+        let cacheKey = NSString(string: url.absoluteString)
+        return imageCache.object(forKey: cacheKey)?.image
+    }
+    
+    /// Cache a SwiftUI Image for future use
+    func cacheImage(_ image: Image, for url: URL) async {
+        let cacheKey = NSString(string: url.absoluteString)
+        imageCache.setObject(ImageWrapper(image: image), forKey: cacheKey)
     }
     
     // MARK: - Public Methods
@@ -116,9 +136,10 @@ final class ImageCacheService {
         clearDiskCache()
     }
     
-    /// Clear memory cache only
+    /// Clear memory cache to free up memory
     func clearMemoryCache() {
         memoryCache.removeAllObjects()
+        imageCache.removeAllObjects()
     }
     
     /// Clear disk cache
@@ -362,5 +383,17 @@ extension ImageCacheService {
         } catch {
             return 0
         }
+    }
+}
+
+
+// MARK: - Helper Classes
+
+/// Wrapper class for SwiftUI Image to enable NSCache storage
+private final class ImageWrapper {
+    let image: Image
+    
+    init(image: Image) {
+        self.image = image
     }
 }

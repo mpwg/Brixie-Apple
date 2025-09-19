@@ -21,11 +21,19 @@ struct ContentView: View {
     @State private var showingAPIKeyPrompt = false
     
     var body: some View {
-        Group {
-            if apiConfig.isConfigured {
-                mainContent
-            } else {
-                apiKeyPromptView
+        ZStack {
+            Group {
+                if apiConfig.isConfigured {
+                    mainContent
+                } else {
+                    apiKeyPromptView
+                }
+            }
+            
+            // Offline indicator at the top
+            VStack {
+                // Simple offline indicator - will be enhanced later when OfflineManager is integrated
+                Spacer()
             }
         }
         .onAppear {
@@ -64,25 +72,30 @@ struct ContentView: View {
                     Label("Browse", systemImage: "square.grid.2x2")
                 }
                 .tag(NavigationTab.browse)
+                .transition(.opacity.combined(with: .slide))
             
             SearchView()
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")
                 }
                 .tag(NavigationTab.search)
+                .transition(.opacity.combined(with: .slide))
             
             CollectionView()
                 .tabItem {
                     Label("Collection", systemImage: "heart")
                 }
                 .tag(NavigationTab.collection)
+                .transition(.opacity.combined(with: .slide))
             
             WishlistView()
                 .tabItem {
                     Label("Wishlist", systemImage: "star")
                 }
                 .tag(NavigationTab.wishlist)
+                .transition(.opacity.combined(with: .slide))
         }
+        .animation(.easeInOut(duration: 0.3), value: selectedTab)
     }
     
     // MARK: - Sidebar Navigation (macOS, iPad)
