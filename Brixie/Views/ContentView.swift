@@ -74,28 +74,28 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             BrowseView()
                 .tabItem {
-                    Label("Browse", systemImage: "square.grid.2x2")
+                    Label(NavigationTab.browse.title, systemImage: NavigationTab.browse.systemImage)
                 }
                 .tag(NavigationTab.browse)
                 .transition(.opacity.combined(with: .slide))
             
             SearchView()
                 .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
+                    Label(NavigationTab.search.title, systemImage: NavigationTab.search.systemImage)
                 }
                 .tag(NavigationTab.search)
                 .transition(.opacity.combined(with: .slide))
             
             CollectionView()
                 .tabItem {
-                    Label("Collection", systemImage: "heart")
+                    Label(NavigationTab.collection.title, systemImage: NavigationTab.collection.systemImage)
                 }
                 .tag(NavigationTab.collection)
                 .transition(.opacity.combined(with: .slide))
             
             WishlistView()
                 .tabItem {
-                    Label("Wishlist", systemImage: "star")
+                    Label(NavigationTab.wishlist.title, systemImage: NavigationTab.wishlist.systemImage)
                 }
                 .tag(NavigationTab.wishlist)
                 .transition(.opacity.combined(with: .slide))
@@ -108,6 +108,7 @@ struct ContentView: View {
     private var sidebarNavigationView: some View {
         NavigationSplitView {
             SidebarView(selectedTab: $selectedTab)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 250)
         } detail: {
             destinationView(for: selectedTab)
         }
@@ -226,9 +227,19 @@ struct SidebarView: View {
     var body: some View {
         List {
             ForEach(NavigationTab.allCases, id: \.self) { tab in
-                NavigationLink(value: tab) {
-                    Label(tab.title, systemImage: tab.systemImage)
+                Button(action: {
+                    selectedTab = tab
+                }) {
+                    HStack {
+                        Label(tab.title, systemImage: tab.systemImage)
+                        Spacer()
+                        if selectedTab == tab {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.accentColor)
+                        }
+                    }
                 }
+                .foregroundColor(selectedTab == tab ? .accentColor : .primary)
                 .tag(tab)
             }
         }
