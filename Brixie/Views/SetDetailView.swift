@@ -6,7 +6,7 @@ struct SetDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                AsyncCachedImage(url: set.imageURL) {
+                AsyncCachedImage(url: URL(string: set.primaryImageURL ?? "")) {
                     Rectangle()
                         .fill(Color.gray.opacity(0.2))
                         .frame(height: 200)
