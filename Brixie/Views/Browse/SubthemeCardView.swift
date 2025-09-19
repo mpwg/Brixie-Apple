@@ -14,7 +14,7 @@ struct SubthemeCardView: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: AppConstants.UI.smallSpacing + 4) {
                 HStack {
                     Text(subtheme.name)
                         .font(.headline)
@@ -34,7 +34,7 @@ struct SubthemeCardView: View {
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppConstants.UI.standardCornerRadius))
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)

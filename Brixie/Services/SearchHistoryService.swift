@@ -16,8 +16,8 @@ final class SearchHistoryService {
     /// Logger for search history operations
     private let logger = Logger.search
     
-    private let maxHistoryItems = 20
-    private let userDefaultsKey = "SearchHistory"
+    private let maxHistoryItems = AppConstants.Search.maxHistoryItems
+    private let userDefaultsKey = AppConstants.UserDefaultsKeys.searchHistory
     
     /// Recent search queries
     private(set) var recentSearches: [String] = []
@@ -46,7 +46,7 @@ final class SearchHistoryService {
         logger.entering(parameters: ["query": query])
         
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, trimmed.count > 1 else {
+        guard !trimmed.isEmpty, trimmed.count > AppConstants.Search.minQueryLength else {
             logger.debug("⚠️ Skipping empty or too short query")
             logger.exitWith(result: "skipped - invalid query")
             return
@@ -94,7 +94,7 @@ final class SearchHistoryService {
         
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !trimmed.isEmpty else {
-            let suggestions = Array(recentSearches.prefix(5)) + Array(self.suggestions.prefix(5))
+            let suggestions = Array(recentSearches.prefix(AppConstants.Search.recentSuggestionsCount)) + Array(self.suggestions.prefix(AppConstants.Search.popularSuggestionsCount))
             logger.debug("📝 Returning default suggestions: \(suggestions.count) items")
             logger.exitWith(result: "\(suggestions.count) default suggestions")
             return suggestions
@@ -106,14 +106,14 @@ final class SearchHistoryService {
         let matchingRecent = recentSearches.filter { 
             $0.lowercased().contains(trimmed)
         }
-        filteredSuggestions.append(contentsOf: Array(matchingRecent.prefix(3)))
+        filteredSuggestions.append(contentsOf: Array(matchingRecent.prefix(AppConstants.Search.matchingRecentCount)))
         
         // Add matching default suggestions
         let matchingDefault = suggestions.filter { 
             $0.lowercased().contains(trimmed) && 
             !filteredSuggestions.contains($0)
         }
-        filteredSuggestions.append(contentsOf: Array(matchingDefault.prefix(7)))
+        filteredSuggestions.append(contentsOf: Array(matchingDefault.prefix(AppConstants.Search.matchingDefaultCount)))
         
         logger.debug("🔍 Generated \(filteredSuggestions.count) suggestions for '\(trimmed)' (\(matchingRecent.count) recent, \(matchingDefault.count) default)")
         logger.exitWith(result: "\(filteredSuggestions.count) filtered suggestions")

@@ -51,7 +51,7 @@ final class LegoSetService {
     // MARK: - Set Operations
     
     /// Fetch sets from API or local cache
-    func fetchSets(limit: Int = 20, offset: Int = 0) async throws -> [LegoSet] {
+    func fetchSets(limit: Int = AppConstants.API.defaultPageSize, offset: Int = 0) async throws -> [LegoSet] {
         logger.entering(parameters: ["limit": limit, "offset": offset])
         let startTime = CFAbsoluteTimeGetCurrent()
         
@@ -100,13 +100,13 @@ final class LegoSetService {
     }
     
     /// Fetch sets by theme with pagination info
-    func fetchSets(forThemeId themeId: Int, limit: Int = 20, offset: Int = 0) async throws -> [LegoSet] {
+    func fetchSets(forThemeId themeId: Int, limit: Int = AppConstants.API.defaultPageSize, offset: Int = 0) async throws -> [LegoSet] {
         let result = try await fetchSetsWithPagination(forThemeId: themeId, limit: limit, offset: offset)
         return result.sets
     }
     
     /// Fetch sets by theme returning both sets and pagination information
-    func fetchSetsWithPagination(forThemeId themeId: Int, limit: Int = 20, offset: Int = 0) async throws -> (sets: [LegoSet], totalCount: Int) {
+    func fetchSetsWithPagination(forThemeId themeId: Int, limit: Int = AppConstants.API.defaultPageSize, offset: Int = 0) async throws -> (sets: [LegoSet], totalCount: Int) {
         guard let context = modelContext else {
             throw ServiceError.notConfigured
         }
@@ -202,7 +202,7 @@ final class LegoSetService {
     func searchSets(
         query: String,
         searchType: SearchType = .name,
-        limit: Int = 20
+        limit: Int = AppConstants.API.defaultPageSize
     ) async throws -> [LegoSet] {
         guard let context = modelContext else {
             throw ServiceError.notConfigured
@@ -461,12 +461,12 @@ final class LegoSetService {
     /// Check if cached data is fresh (less than 1 hour old)
     private func isDataFresh() -> Bool {
         guard let lastSync = lastSyncDate else { return false }
-        return Date().timeIntervalSince(lastSync) < 3_600 // 1 hour
+        return Date().timeIntervalSince(lastSync) < AppConstants.API.cacheExpirationInterval
     }
     
     /// Load last sync date from UserDefaults
     private func loadLastSyncDate() {
-        if let date = UserDefaults.standard.object(forKey: "LastSyncDate") as? Date {
+        if let date = UserDefaults.standard.object(forKey: AppConstants.UserDefaultsKeys.lastSyncDate) as? Date {
             lastSyncDate = date
         }
     }
@@ -474,7 +474,7 @@ final class LegoSetService {
     /// Save last sync date to UserDefaults
     private func saveLastSyncDate() {
         if let date = lastSyncDate {
-            UserDefaults.standard.set(date, forKey: "LastSyncDate")
+            UserDefaults.standard.set(date, forKey: AppConstants.UserDefaultsKeys.lastSyncDate)
         }
     }
     

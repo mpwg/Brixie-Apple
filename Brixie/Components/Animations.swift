@@ -4,19 +4,19 @@ import SwiftUI
 @MainActor
 struct AnimationPresets {
     // MARK: - Duration Constants
-    static let quick = 0.2
-    static let normal = 0.3
-    static let slow = 0.5
+    static let quick = AppConstants.Animation.quick
+    static let normal = AppConstants.Animation.normal
+    static let slow = AppConstants.Animation.slow
     
     // MARK: - Spring Animations
-    static let spring = Animation.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0)
+    static let spring = AppConstants.CommonAnimations.springDefault
     static let bouncy = Animation.spring(response: 0.6, dampingFraction: 0.6, blendDuration: 0)
     static let gentle = Animation.spring(response: 0.8, dampingFraction: 1.0, blendDuration: 0)
     
     // MARK: - Easing Animations
-    static let easeIn = Animation.easeIn(duration: normal)
-    static let easeOut = Animation.easeOut(duration: normal)
-    static let easeInOut = Animation.easeInOut(duration: normal)
+    static let easeIn = Animation.easeIn(duration: AppConstants.Animation.normal)
+    static let easeOut = Animation.easeOut(duration: AppConstants.Animation.normal)
+    static let easeInOut = Animation.easeInOut(duration: AppConstants.Animation.normal)
     
     // MARK: - List Animations
     static let listInsert = Animation.easeOut(duration: 0.4)

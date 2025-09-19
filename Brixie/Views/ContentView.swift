@@ -101,7 +101,7 @@ struct ContentView: View {
                 .tag(NavigationTab.wishlist)
                 .transition(.opacity.combined(with: .slide))
         }
-        .animation(.easeInOut(duration: 0.3), value: selectedTab)
+        .animation(.easeInOut(duration: AppConstants.Animation.tabSwitchDuration), value: selectedTab)
     }
     
     // MARK: - Sidebar Navigation (macOS, iPad)
@@ -109,7 +109,7 @@ struct ContentView: View {
     private var sidebarNavigationView: some View {
         NavigationSplitView {
             SidebarView(selectedTab: $selectedTab)
-                .navigationSplitViewColumnWidth(min: 200, ideal: 250)
+                .navigationSplitViewColumnWidth(min: AppConstants.UI.navigationMinWidth, ideal: AppConstants.UI.navigationIdealWidth)
         } detail: {
             destinationView(for: selectedTab)
         }
@@ -118,12 +118,12 @@ struct ContentView: View {
     // MARK: - API Key Prompt
     
     private var apiKeyPromptView: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: AppConstants.UI.largeSpacing) {
             Image(systemName: "key.fill")
-                .font(.system(size: 64))
+                .font(.system(size: AppConstants.Accessibility.largeIconSize))
                 .foregroundColor(.secondary)
             
-            VStack(spacing: 12) {
+            VStack(spacing: AppConstants.UI.smallSpacing + 4) {
                 Text("Welcome to Brixie")
                     .font(.largeTitle)
                     .fontWeight(.bold)
@@ -178,7 +178,7 @@ struct ContentView: View {
         
         // Show API key prompt if not configured
         if !apiConfig.isConfigured {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + AppConstants.Animation.navigationDelay) {
                 showingAPIKeyPrompt = true
             }
         }

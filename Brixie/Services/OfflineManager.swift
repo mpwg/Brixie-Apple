@@ -232,7 +232,7 @@ internal struct QueuedAction: Identifiable, Codable {
     func execute() async throws {
         // This would contain the actual execution logic
         // For now, we'll just simulate the execution
-        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
+        try await Task.sleep(nanoseconds: AppConstants.API.offlineRetryDelay) // 0.5 second delay
         
         switch type {
         case .addToCollection, .removeFromCollection:
@@ -281,10 +281,10 @@ struct OfflineIndicator: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, AppConstants.UI.smallSpacing)
+            .padding(.vertical, AppConstants.Spacing.xs)
             .background(Color.orange.opacity(0.1))
-            .cornerRadius(8)
+            .cornerRadius(AppConstants.UI.smallCornerRadius)
         }
     }
 }
@@ -314,9 +314,9 @@ struct QueuedActionsView: View {
                         }
                         .font(.caption)
                     }
-                    .padding(8)
+                    .padding(AppConstants.UI.smallSpacing)
                     .background(Color(.systemGray6))
-                    .cornerRadius(8)
+                    .cornerRadius(AppConstants.UI.smallCornerRadius)
                 }
                 
                 Button("Clear All") {

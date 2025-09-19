@@ -19,7 +19,7 @@ final class ImageCacheService {
     private let logger = Logger.imageCache
     
     /// Maximum cache size in bytes (50MB)
-    static let maxCacheSize: Int = 50 * 1_024 * 1_024
+    static let maxCacheSize: Int = AppConstants.Cache.maxDiskCacheSize
     
     /// Memory cache for quick access to image data
     private let memoryCache = NSCache<NSString, NSData>()
@@ -59,13 +59,13 @@ final class ImageCacheService {
         createCacheDirectoryIfNeeded()
         
         // Configure memory caches
-        memoryCache.totalCostLimit = 15 * 1_024 * 1_024 // 15MB memory limit for data
+        memoryCache.totalCostLimit = AppConstants.Cache.memoryDataCacheLimit
         memoryCache.countLimit = 100 // Max 100 data objects in memory
         
-        imageCache.totalCostLimit = 10 * 1_024 * 1_024 // 10MB memory limit for images
-        imageCache.countLimit = 50 // Max 50 images in memory
+        imageCache.totalCostLimit = AppConstants.Cache.memoryImageCacheLimit
+        imageCache.countLimit = AppConstants.Cache.maxImagesInMemory
         
-        logger.info("⚙️ Memory caches configured: data cache 15MB/100 items, image cache 10MB/50 items")
+        logger.info("⚙️ Memory caches configured: data cache \(AppConstants.Cache.memoryDataCacheLimit / (1024 * 1024))MB/100 items, image cache \(AppConstants.Cache.memoryImageCacheLimit / (1024 * 1024))MB/\(AppConstants.Cache.maxImagesInMemory) items")
         
         // Calculate initial disk cache size
         calculateDiskCacheSize()

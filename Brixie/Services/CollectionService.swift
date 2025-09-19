@@ -297,7 +297,7 @@ final class CollectionService {
     }
     
     /// Get recent acquisitions
-    func getRecentAcquisitions(from context: ModelContext, limit: Int = 10) -> [UserCollection] {
+    func getRecentAcquisitions(from context: ModelContext, limit: Int = AppConstants.Collection.recentAcquisitionsLimit) -> [UserCollection] {
         logger.entering(parameters: ["limit": limit])
         let startTime = CFAbsoluteTimeGetCurrent()
         

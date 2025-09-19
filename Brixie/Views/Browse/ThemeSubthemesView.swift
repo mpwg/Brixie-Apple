@@ -13,7 +13,7 @@ struct ThemeSubthemesView: View {
     let onSubthemeSelected: (Theme) -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: AppConstants.UI.standardSpacing) {
             // Header
             HStack {
                 Text(theme.name)
@@ -30,7 +30,7 @@ struct ThemeSubthemesView: View {
             } else {
                 // Grid of subthemes
                 LazyVGrid(columns: [
-                    GridItem(.adaptive(minimum: 280), spacing: 16)
+                    GridItem(.adaptive(minimum: AppConstants.UI.gridItemMinWidth), spacing: AppConstants.UI.standardSpacing)
                 ], spacing: 16) {
                     ForEach(theme.subthemes.sorted(by: { $0.name < $1.name })) { subtheme in
                         SubthemeCardView(subtheme: subtheme) {

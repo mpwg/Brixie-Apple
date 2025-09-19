@@ -11,9 +11,9 @@ struct SetCardView: View {
     @State private var isHovering = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: AppConstants.UI.smallSpacing) {
             AsyncCachedImage(url: URL(string: set.imageURL ?? ""))
-                .frame(height: 120)
+                .frame(height: AppConstants.UI.cardImageHeight)
                 .accessibilityLabel("Image of LEGO set \(set.name)")
             
             Text(set.name)
