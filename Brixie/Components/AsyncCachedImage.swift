@@ -6,15 +6,9 @@
 //
 
 import SwiftUI
-#if canImport(UIKit)
-import UIKit
-typealias PlatformImage = UIImage
-#elseif canImport(AppKit)
-import AppKit
-typealias PlatformImage = NSImage
-#endif
 
 /// Async image view with caching support
+/// Pure SwiftUI implementation without UIKit/AppKit dependencies
 struct AsyncCachedImage: View {
     /// URL of the image to load
     let url: URL?
@@ -23,14 +17,14 @@ struct AsyncCachedImage: View {
     private let cacheService = ImageCacheService.shared
     
     /// Current image loading state
-    @State private var loadedImage: Image?
+    @State private var imageData: Data?
     @State private var isLoading = false
     
     var body: some View {
         Group {
-            if let image = loadedImage {
-                image
-                    .resizable()
+            if let imageData = imageData {
+                // Use SwiftUI's AsyncImage with local data
+                AsyncImageFromData(data: imageData)
                     .aspectRatio(contentMode: .fit)
             } else {
                 Color.gray.opacity(0.3)
@@ -40,41 +34,62 @@ struct AsyncCachedImage: View {
             await loadImage()
         }
         .onChange(of: url) { _, _ in
-            loadedImage = nil
+            imageData = nil
             Task {
                 await loadImage()
             }
         }
     }
     
-    /// Load image from cache or network
+    /// Load image data from cache or network
     private func loadImage() async {
         guard let url = url else { return }
         
         isLoading = true
         defer { isLoading = false }
         
-        if let imageData = await cacheService.imageData(from: url),
-           let platformImage = createImage(from: imageData) {
+        if let data = await cacheService.imageData(from: url) {
             await MainActor.run {
-                #if canImport(UIKit)
-                loadedImage = Image(uiImage: platformImage)
-                #elseif canImport(AppKit)
-                loadedImage = Image(nsImage: platformImage)
-                #endif
+                imageData = data
             }
         }
     }
+}
+
+/// Helper view to create SwiftUI Image from Data
+/// This is a pure SwiftUI solution that doesn't rely on platform-specific image types
+private struct AsyncImageFromData: View {
+    let data: Data
     
-    /// Create platform image from data
-    private func createImage(from data: Data) -> PlatformImage? {
-        #if canImport(UIKit)
-        return PlatformImage(data: data)
-        #elseif canImport(AppKit)
-        return PlatformImage(data: data)
-        #else
-        return nil
-        #endif
+    var body: some View {
+        // Create a temporary URL from data and use AsyncImage
+        if let tempURL = createTempDataURL(from: data) {
+            AsyncImage(url: tempURL) { image in
+                image
+                    .resizable()
+            } placeholder: {
+                Color.gray.opacity(0.3)
+            }
+            .onDisappear {
+                // Clean up temp file
+                try? FileManager.default.removeItem(at: tempURL)
+            }
+        } else {
+            Color.gray.opacity(0.3)
+        }
+    }
+    
+    /// Create temporary URL from image data for AsyncImage
+    private func createTempDataURL(from data: Data) -> URL? {
+        let tempDir = FileManager.default.temporaryDirectory
+        let tempFile = tempDir.appendingPathComponent(UUID().uuidString + ".jpg")
+        
+        do {
+            try data.write(to: tempFile)
+            return tempFile
+        } catch {
+            return nil
+        }
     }
 }
 

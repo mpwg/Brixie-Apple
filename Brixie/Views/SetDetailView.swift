@@ -2,7 +2,6 @@ import SwiftUI
 
 struct SetDetailView: View {
     let set: LegoSet
-    @State private var showShareSheet = false
     
     var body: some View {
         ScrollView {
@@ -49,13 +48,11 @@ struct SetDetailView: View {
                     .accessibilityIdentifier("setGallery")
                 }
                 
-                Button(action: { showShareSheet = true }) {
+                // Pure SwiftUI sharing using ShareLink (iOS 16+/macOS 13+)
+                ShareLink(item: shareText, preview: SharePreview(set.name)) {
                     Label("Share Set", systemImage: "square.and.arrow.up")
                 }
                 .accessibilityIdentifier("shareButton")
-                .sheet(isPresented: $showShareSheet) {
-                    ActivityView(activityItems: [shareText])
-                }
             }
             .padding()
         }
@@ -66,17 +63,6 @@ struct SetDetailView: View {
         "Check out LEGO set \(set.name) (#\(set.setNumber)), released in \(set.year) with \(set.numParts) parts!"
     }
 }
-
 #Preview {
     SetDetailView(set: LegoSet.example)
-}
-
-// UIKit share sheet wrapper for SwiftUI
-import UIKit
-struct ActivityView: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

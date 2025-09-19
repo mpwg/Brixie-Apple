@@ -2,7 +2,15 @@
 
 ## Brixie AI Coding Agent Guide
 
-Brixie is a multi-platform SwiftUI app for browsing LEGO sets via the Rebrickable API. It targets iOS 26+, macOS 26+ (Catalyst), and visionOS, using Swift 6+ concurrency and SwiftData for persistence. The codebase is organized for clarity and maintainability.
+Brixie is a **pure SwiftUI** multi-platform app for browsing LEGO sets via the Rebrickable API. It targets iOS 26+, macOS 26+ (Catalyst), and visionOS 26+, using Swift 6+ concurrency and SwiftData for persistence. The codebase is organized for clarity and maintainability.
+
+**CRITICAL: SwiftUI-Only Architecture**
+
+- **NO UIKit or AppKit dependencies** - Use only SwiftUI primitives and cross-platform APIs
+- Use `@Environment(\.horizontalSizeClass)` instead of `UIDevice` for device detection
+- Use SwiftUI's native sharing via `ShareLink` instead of `UIActivityViewController`
+- All UI components must be pure SwiftUI - no platform-specific wrappers
+- Image loading uses SwiftUI's `AsyncImage` or custom SwiftUI-based solutions
 
 ### Architecture Overview
 
@@ -29,6 +37,13 @@ Brixie is a multi-platform SwiftUI app for browsing LEGO sets via the Rebrickabl
 - **Branch-Based Config:** Debug for feature/develop branches, Release for main/release/hotfix branches.
 
 ### Key Conventions & Patterns
+
+- **SwiftUI-Only Architecture:**
+
+  - NO UIKit/AppKit imports or dependencies
+  - Use SwiftUI's environment values for device detection
+  - Platform-specific behavior via SwiftUI modifiers and environment
+  - Pure SwiftUI image loading and caching solutions
 
 - **API Key Management:**
   - Build-time: `REBRICKABLE_API_KEY` env var → `Scripts/generate-api-config.sh` → `Configuration/Generated/GeneratedConfiguration.swift`
