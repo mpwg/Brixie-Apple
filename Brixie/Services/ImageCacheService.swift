@@ -15,7 +15,7 @@ final class ImageCacheService {
     static let shared = ImageCacheService()
     
     /// Maximum cache size in bytes (50MB)
-    static let maxCacheSize: Int = 50 * 1024 * 1024
+    static let maxCacheSize: Int = 50 * 1_024 * 1_024
     
     /// Memory cache for quick access to image data
     private let memoryCache = NSCache<NSString, NSData>()
@@ -49,7 +49,7 @@ final class ImageCacheService {
         createCacheDirectoryIfNeeded()
         
         // Configure memory cache
-        memoryCache.totalCostLimit = 20 * 1024 * 1024 // 20MB memory limit
+        memoryCache.totalCostLimit = 20 * 1_024 * 1_024 // 20MB memory limit
         memoryCache.countLimit = 100 // Max 100 images in memory
         
         // Calculate initial disk cache size
