@@ -99,7 +99,7 @@ struct PulseLoadingView: View {
         Circle()
             .fill(Color.accentColor)
             .frame(width: 20, height: 20)
-            .scaleEffect(isAnimating ? AppConstants.Scale.pressed : AppConstants.Scale.small)
+            .scaleEffect(isAnimating ? AppConstants.Scale.pressed : AppConstants.Scale.error)
             .opacity(isAnimating ? AppConstants.Opacity.light : AppConstants.Opacity.visible)
             .animation(
                 Animation.easeInOut(duration: AppConstants.Animation.longDuration).repeatForever(autoreverses: true),

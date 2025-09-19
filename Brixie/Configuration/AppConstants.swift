@@ -433,9 +433,6 @@ enum AppConstants {
         /// Maximum fraction digits for price formatting
         static let maxPriceDecimalPlaces = 0
         
-        /// HTTP success status code
-        static let httpSuccessCode = 200
-        
         /// Cache cleanup threshold (80% of max size)
         static let cacheCleanupThreshold: Double = 0.8
         
@@ -636,9 +633,6 @@ extension AppConstants {
         /// Error icon scale factor (0.8) - references VisualEffects.errorIconScale
         static let error = VisualEffects.errorIconScale
         
-        /// Small scale for animations (0.8) - same as error scale
-        static let small = VisualEffects.errorIconScale  // 0.8 - small scale for animations
-        
         /// Base animation scale (1.0) - references Limits.baseAnimationScale
         static let base = Limits.baseAnimationScale
     }
@@ -672,8 +666,8 @@ extension AppConstants {
     
     /// HTTP status codes
     enum HTTPStatus {
-        /// HTTP success status code (200) - references Limits.httpSuccessCode
-        static let success = Limits.httpSuccessCode
+        /// HTTP success status code (200)
+        static let success = 200
     }
     
     /// Common frame sizes
