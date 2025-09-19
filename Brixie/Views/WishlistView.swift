@@ -9,7 +9,14 @@ import SwiftUI
 import SwiftData
 
 struct WishlistView: View {
+    @Environment(\.modelContext) private var modelContext
+    private let collectionService = CollectionService.shared
+    
     @Query private var wishedSets: [LegoSet]
+    
+    @State private var searchText = ""
+    @State private var selectedSortOption: WishlistSortOption = .dateAdded
+    @State private var showingShareSheet = false
 
     init() {
         _wishedSets = Query(filter: #Predicate<LegoSet> { set in
@@ -19,7 +26,7 @@ struct WishlistView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            VStack {
                 if wishedSets.isEmpty {
                     ContentUnavailableView(
                         "Your wishlist is empty",
@@ -27,25 +34,249 @@ struct WishlistView: View {
                         description: Text("Add sets to your wishlist to track them here.")
                     )
                 } else {
-                    List(wishedSets) { set in
-                        HStack {
-                            AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
-                                .frame(width: 48, height: 48)
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                                .accessibilityHidden(true)
-                            VStack(alignment: .leading) {
-                                Text(set.name)
-                                Text("#\(set.setNumber)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                    wishlistContent
+                }
+            }
+            .navigationTitle("Wishlist")
+            .searchable(text: $searchText, prompt: "Search wishlist...")
+            .toolbar {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Menu {
+                        Section("Sort By") {
+                            Picker("Sort", selection: $selectedSortOption) {
+                                ForEach(WishlistSortOption.allCases, id: \.self) { option in
+                                    Label(option.title, systemImage: option.icon)
+                                        .tag(option)
+                                }
                             }
-                            Spacer()
-                            if let formatted = set.formattedPrice { Text(formatted).font(.subheadline).foregroundColor(.secondary) }
+                            .pickerStyle(.menu)
+                        }
+                        
+                        Section("Actions") {
+                            ShareLink(
+                                item: wishlistShareText,
+                                preview: SharePreview("My LEGO Wishlist")
+                            ) {
+                                Label("Share Wishlist", systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                }
+            }
+        }
+    }
+    
+    private var wishlistContent: some View {
+        List {
+            // Wishlist summary
+            Section {
+                WishlistSummaryCardView()
+            }
+            
+            // Priority groups
+            ForEach(groupedWishlistSets.keys.sorted(), id: \.self) { groupName in
+                Section(header: Text(groupName)) {
+                    ForEach(groupedWishlistSets[groupName] ?? []) { set in
+                        NavigationLink(destination: SetDetailView(set: set)) {
+                            WishlistSetRowView(set: set)
+                        }
+                        .swipeActions(edge: .leading) {
+                            Button("Own It") {
+                                collectionService.addToCollection(set, in: modelContext, isOwned: true, isWishlist: false)
+                            }
+                            .tint(.green)
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button("Remove") {
+                                collectionService.toggleWishlist(set, in: modelContext)
+                            }
+                            .tint(.red)
                         }
                     }
                 }
             }
-            .navigationTitle("Wishlist")
+        }
+    }
+    
+    private var filteredSets: [LegoSet] {
+        let filtered = searchText.isEmpty ? wishedSets : wishedSets.filter { 
+            $0.name.localizedCaseInsensitiveContains(searchText) ||
+            $0.setNumber.contains(searchText)
+        }
+        
+        return filtered.sorted { lhs, rhs in
+            switch selectedSortOption {
+            case .name:
+                return lhs.name < rhs.name
+            case .year:
+                return lhs.year > rhs.year
+            case .price:
+                return (lhs.retailPrice ?? 0) > (rhs.retailPrice ?? 0)
+            case .dateAdded:
+                return (lhs.userCollection?.dateAdded ?? Date()) > (rhs.userCollection?.dateAdded ?? Date())
+            }
+        }
+    }
+    
+    private var groupedWishlistSets: [String: [LegoSet]] {
+        return Dictionary(grouping: filteredSets) { set in
+            set.theme?.name ?? "Unknown Theme"
+        }
+    }
+    
+    private var wishlistShareText: String {
+        let setList = wishedSets.prefix(10).map { "#\($0.setNumber) \($0.name)" }.joined(separator: "\n")
+        let totalValue = wishedSets.compactMap { $0.retailPrice }.reduce(0, +)
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        let formattedTotal = formatter.string(from: totalValue as NSDecimalNumber) ?? "$0"
+        
+        return """
+        My LEGO Wishlist (\(wishedSets.count) sets, ~\(formattedTotal)):
+        
+        \(setList)
+        \(wishedSets.count > 10 ? "\n...and \(wishedSets.count - 10) more!" : "")
+        
+        Created with Brixie
+        """
+    }
+}
+
+// MARK: - Supporting Views
+
+private struct WishlistSummaryCardView: View {
+    @Environment(\.modelContext) private var modelContext
+    private let collectionService = CollectionService.shared
+    
+    var body: some View {
+        let stats = collectionService.getCollectionStats(from: modelContext)
+        
+        HStack(spacing: 20) {
+            VStack {
+                Text("\(stats.wishlistCount)")
+                    .font(.title2)
+                    .bold()
+                Text("Sets")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            
+            VStack {
+                Text(formatPrice(stats.wishlistValue))
+                    .font(.title2)
+                    .bold()
+                Text("Total Value")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            
+            VStack {
+                Text(formatPrice(stats.averageSetValue))
+                    .font(.title2)
+                    .bold()
+                Text("Avg. Value")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+    
+    private func formatPrice(_ price: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.maximumFractionDigits = 0
+        return formatter.string(from: price as NSDecimalNumber) ?? "$0"
+    }
+}
+
+private struct WishlistSetRowView: View {
+    let set: LegoSet
+    
+    var body: some View {
+        HStack {
+            AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
+                .frame(width: 48, height: 48)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .accessibilityHidden(true)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(set.name)
+                    .font(.headline)
+                    .lineLimit(2)
+                
+                Text("#\(set.setNumber)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                HStack(spacing: 8) {
+                    Text("\(set.year)")
+                        .font(.caption2)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.blue.opacity(0.2))
+                        .cornerRadius(4)
+                    
+                    Text("\(set.numParts) parts")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 2) {
+                if let price = set.formattedPrice {
+                    Text(price)
+                        .font(.subheadline)
+                        .bold()
+                        .foregroundStyle(.primary)
+                }
+                
+                if let collection = set.userCollection {
+                    Text("Added \(collection.timeSinceAdded)")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Image(systemName: "star.fill")
+                    .foregroundStyle(.yellow)
+                    .font(.caption)
+            }
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+// MARK: - Sort Options
+
+private enum WishlistSortOption: CaseIterable {
+    case name
+    case year
+    case price
+    case dateAdded
+    
+    var title: String {
+        switch self {
+        case .name: return "Name"
+        case .year: return "Year"
+        case .price: return "Price"
+        case .dateAdded: return "Date Added"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .name: return "textformat"
+        case .year: return "calendar"
+        case .price: return "dollarsign.circle"
+        case .dateAdded: return "clock"
         }
     }
 }

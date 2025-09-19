@@ -118,4 +118,24 @@ extension LegoSet {
     }
 }
 
+// MARK: - Preview Support
+
+extension LegoSet {
+    /// Example LEGO set for previews and testing
+    static var example: LegoSet {
+        let set = LegoSet(
+            setNumber: "75192",
+            name: "Millennium Falcon",
+            year: 2017,
+            themeId: 171,
+            numParts: 7541,
+            setImageURL: "https://cdn.rebrickable.com/media/sets/75192-1/53219.jpg",
+            lastModified: Date()
+        )
+        set.retailPrice = 799.99
+        set.priceCurrency = "USD"
+        return set
+    }
+}
+
 // MARK: - Hashable & Equatable

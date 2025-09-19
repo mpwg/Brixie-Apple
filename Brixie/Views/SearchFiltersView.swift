@@ -239,13 +239,13 @@ struct ThemeFilterRow: View {
 }
 
 #Preview {
-    @State var selectedThemes: Set<Int> = []
-    @State var minYear = 1958
-    @State var maxYear = 2024
-    @State var minParts = 1
-    @State var maxParts = 10000
-    @State var useYearFilter = false
-    @State var usePartsFilter = false
+    @Previewable @State var selectedThemes: Set<Int> = []
+    @Previewable @State var minYear = 1958
+    @Previewable @State var maxYear = 2024
+    @Previewable @State var minParts = 1
+    @Previewable @State var maxParts = 10000
+    @Previewable @State var useYearFilter = false
+    @Previewable @State var usePartsFilter = false
     
     return SearchFiltersView(
         selectedThemes: $selectedThemes,

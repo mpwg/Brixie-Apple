@@ -21,7 +21,9 @@ final class UserCollection {
     var isWishlist: Bool
     
     /// Whether the set has missing parts ("Fehlende Teile")
-    var hasMissingParts: Bool
+    var hasMissingParts: Bool {
+        return !missingParts.isEmpty
+    }
     
     /// Whether the set is in a sealed box ("Versiegelte Box")
     var isSealedBox: Bool
@@ -59,12 +61,15 @@ final class UserCollection {
     @Relationship(deleteRule: .nullify)
     var legoSet: LegoSet?
     
+    /// Missing parts for this collection entry
+    @Relationship(deleteRule: .cascade)
+    var missingParts: [MissingPart] = []
+    
     // MARK: - Initialization
     
     init(
         isOwned: Bool = false,
         isWishlist: Bool = false,
-        hasMissingParts: Bool = false,
         isSealedBox: Bool = false,
         dateAdded: Date = Date(),
         dateAcquired: Date? = nil,
@@ -79,7 +84,6 @@ final class UserCollection {
         self.id = UUID()
         self.isOwned = isOwned
         self.isWishlist = isWishlist
-        self.hasMissingParts = hasMissingParts
         self.isSealedBox = isSealedBox
         self.dateAdded = dateAdded
         self.dateAcquired = dateAcquired
@@ -159,6 +163,40 @@ extension UserCollection {
         }
         return retailPrice - purchasePrice
     }
+    
+    /// Percentage value increase
+    var valueChangePercentage: Double? {
+        guard let purchasePrice = purchasePrice,
+              let valueChange = valueChange,
+              purchasePrice > 0 else {
+            return nil
+        }
+        return Double(truncating: (valueChange / purchasePrice * 100) as NSDecimalNumber)
+    }
+    
+    /// Collection completion status (percentage based on missing parts)
+    var completionPercentage: Double {
+        let totalParts = missingParts.reduce(0) { $0 + $1.quantity }
+        if totalParts == 0 { return 100.0 }
+        
+        let orderedParts = missingParts.filter { $0.isOrdered }.reduce(0) { $0 + $1.quantity }
+        return Double(orderedParts) / Double(totalParts) * 100.0
+    }
+    
+    /// Count of missing parts
+    var missingPartsCount: Int {
+        return missingParts.reduce(0) { $0 + $1.quantity }
+    }
+    
+    /// Count of ordered parts
+    var orderedPartsCount: Int {
+        return missingParts.filter { $0.isOrdered }.reduce(0) { $0 + $1.quantity }
+    }
+    
+    /// Total replacement cost for missing parts
+    var totalReplacementCost: Decimal? {
+        return nil
+    }
 }
 
 // MARK: - Collection Management
@@ -193,5 +231,15 @@ extension UserCollection {
     /// Update condition rating
     func updateCondition(_ rating: Int) {
         condition = max(1, min(5, rating)) // Clamp between 1-5
+    }
+    
+    /// Add a missing part to this collection entry
+    func addMissingPart(_ part: MissingPart) {
+        missingParts.append(part)
+    }
+    
+    /// Remove a missing part from this collection entry
+    func removeMissingPart(_ part: MissingPart) {
+        missingParts.removeAll { $0.id == part.id }
     }
 }
