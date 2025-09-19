@@ -26,6 +26,9 @@
 		402F28082E7D278100F00917 /* BrixieMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402F28052E7D278100F00917 /* BrixieMigrationPlan.swift */; };
 		402F280B2E7D279400F00917 /* SetCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402F280A2E7D279400F00917 /* SetCardView.swift */; };
 		402F280C2E7D279400F00917 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402F28092E7D279400F00917 /* LoadingView.swift */; };
+		402F28102E7D32C700F00917 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402F280D2E7D32C700F00917 /* ModelTests.swift */; };
+		402F28112E7D32C700F00917 /* ServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402F280E2E7D32C700F00917 /* ServiceTests.swift */; };
+		402F28142E7D32D100F00917 /* BrixieUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402F28122E7D32D100F00917 /* BrixieUITests.swift */; };
 		40C6BDE92E7C782500D3B0B8 /* LegoSetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDE12E7C782500D3B0B8 /* LegoSetService.swift */; };
 		40C6BDEA2E7C782500D3B0B8 /* LegoSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDDC2E7C782500D3B0B8 /* LegoSet.swift */; };
 		40C6BDEB2E7C782500D3B0B8 /* GeneratedConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C6BDD82E7C782500D3B0B8 /* GeneratedConfiguration.swift */; };
@@ -79,6 +82,9 @@
 		402F28062E7D278100F00917 /* MissingPart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissingPart.swift; sourceTree = "<group>"; };
 		402F28092E7D279400F00917 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		402F280A2E7D279400F00917 /* SetCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetCardView.swift; sourceTree = "<group>"; };
+		402F280D2E7D32C700F00917 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
+		402F280E2E7D32C700F00917 /* ServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceTests.swift; sourceTree = "<group>"; };
+		402F28122E7D32D100F00917 /* BrixieUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrixieUITests.swift; sourceTree = "<group>"; };
 		40C6BDD62E7C782500D3B0B8 /* AsyncCachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncCachedImage.swift; sourceTree = "<group>"; };
 		40C6BDD82E7C782500D3B0B8 /* GeneratedConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedConfiguration.swift; sourceTree = "<group>"; };
 		40C6BDDA2E7C782500D3B0B8 /* APIConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfiguration.swift; sourceTree = "<group>"; };
@@ -121,6 +127,8 @@
 		4024717F2E659269001A8343 = {
 			isa = PBXGroup;
 			children = (
+				402F28132E7D32D100F00917 /* BrixieUITests */,
+				402F280F2E7D32C700F00917 /* BrixieTests */,
 				40C6BDE72E7C782500D3B0B8 /* Brixie */,
 				402471892E659269001A8343 /* Products */,
 			);
@@ -134,6 +142,23 @@
 				402471A32E65926A001A8343 /* BrixieUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		402F280F2E7D32C700F00917 /* BrixieTests */ = {
+			isa = PBXGroup;
+			children = (
+				402F280D2E7D32C700F00917 /* ModelTests.swift */,
+				402F280E2E7D32C700F00917 /* ServiceTests.swift */,
+			);
+			path = BrixieTests;
+			sourceTree = "<group>";
+		};
+		402F28132E7D32D100F00917 /* BrixieUITests */ = {
+			isa = PBXGroup;
+			children = (
+				402F28122E7D32D100F00917 /* BrixieUITests.swift */,
+			);
+			path = BrixieUITests;
 			sourceTree = "<group>";
 		};
 		40C6BDD72E7C782500D3B0B8 /* Components */ = {
@@ -397,6 +422,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				402F28102E7D32C700F00917 /* ModelTests.swift in Sources */,
+				402F28112E7D32C700F00917 /* ServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -404,6 +431,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				402F28142E7D32D100F00917 /* BrixieUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
