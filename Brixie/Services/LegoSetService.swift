@@ -222,13 +222,13 @@ final class LegoSetService {
                     
                     // Check if set already exists in context
                     let setNumber = localSet.setNumber
-                    let existingDescriptor3 = FetchDescriptor<LegoSet>(
+                    let searchExistingSetDescriptor = FetchDescriptor<LegoSet>(
                         predicate: #Predicate<LegoSet> { set in
                             set.setNumber == setNumber
                         }
                     )
                     
-                    if let existingSet = try context.fetch(existingDescriptor3).first {
+                    if let existingSet = try context.fetch(searchExistingSetDescriptor).first {
                         // Update existing set
                         existingSet.name = localSet.name
                         existingSet.year = localSet.year
