@@ -127,9 +127,9 @@
 		4024717F2E659269001A8343 = {
 			isa = PBXGroup;
 			children = (
+				40C6BDE72E7C782500D3B0B8 /* Brixie */,
 				402F28132E7D32D100F00917 /* BrixieUITests */,
 				402F280F2E7D32C700F00917 /* BrixieTests */,
-				40C6BDE72E7C782500D3B0B8 /* Brixie */,
 				402471892E659269001A8343 /* Products */,
 			);
 			sourceTree = "<group>";
