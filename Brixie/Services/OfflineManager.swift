@@ -4,7 +4,6 @@ import Foundation
 
 /// Manages offline state detection and queued actions
 @MainActor
-@Observable
 internal final class OfflineManager {
     static let shared = OfflineManager()
     
@@ -53,8 +52,10 @@ internal final class OfflineManager {
     }
     
     deinit {
-        stopMonitoring()
-    }
+        // Cancel the NWPathMonitor directly in deinit. This avoids capturing `self` in an
+        // asynchronous task which the compiler warns could introduce data races.
+        monitor.cancel()
+    } 
     
     // MARK: - Network Monitoring
     
@@ -170,7 +171,9 @@ internal final class OfflineManager {
 // MARK: - QueuedAction
 
 internal struct QueuedAction: Identifiable, Codable {
-    let id = UUID()
+    // Make id mutable so it can be decoded from storage. Using `var` allows JSONDecoder
+    // to overwrite the initial value when restoring saved queued actions.
+    var id: UUID = UUID()
     let type: ActionType
     let data: [String: String] // Simple string-based data storage
     let timestamp: Date
@@ -259,7 +262,6 @@ struct OfflineIndicator: View {
             .padding(.vertical, 4)
             .background(Color.orange.opacity(0.1))
             .cornerRadius(8)
-            .transition(ViewTransitions.slideAndFade)
         }
     }
 }

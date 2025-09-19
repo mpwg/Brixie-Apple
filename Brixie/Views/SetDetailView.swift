@@ -5,9 +5,7 @@ struct SetDetailView: View {
     let set: LegoSet
     
     @Environment(\.modelContext) private var modelContext
-    private let collectionService = CollectionService.shared
-    
-    @State private var showingMissingParts = false
+    @State private var viewModel = SetDetailViewModel()
     
     var body: some View {
         ScrollView {
@@ -33,7 +31,7 @@ struct SetDetailView: View {
                 // Collection Management Buttons
                 HStack(spacing: 12) {
                     Button(action: {
-                        collectionService.toggleOwned(set, in: modelContext)
+                        viewModel.toggleOwned(set, in: modelContext)
                     }) {
                         HStack {
                             Image(systemName: set.userCollection?.isOwned == true ? "heart.fill" : "heart")
@@ -44,7 +42,7 @@ struct SetDetailView: View {
                     .accessibilityIdentifier("ownedToggle")
                     
                     Button(action: {
-                        collectionService.toggleWishlist(set, in: modelContext)
+                        viewModel.toggleWishlist(set, in: modelContext)
                     }) {
                         HStack {
                             Image(systemName: set.userCollection?.isWishlist == true ? "star.fill" : "star")
@@ -99,33 +97,24 @@ struct SetDetailView: View {
                         
                         // Missing parts management for owned sets
                         if collection.isOwned {
-                            Button(action: {
-                                showingMissingParts = true
-                            }) {
-                                Label("Manage Missing Parts", systemImage: "wrench.and.screwdriver")
+                            Button("View Missing Parts") {
+                                viewModel.showMissingParts()
                             }
                             .buttonStyle(.bordered)
-                            .accessibilityIdentifier("manageMissingParts")
                         }
                     }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
                 }
-                
-                // Pure SwiftUI sharing using ShareLink (iOS 16+/macOS 13+)
-                ShareLink(item: shareText, preview: SharePreview(set.name)) {
-                    Label("Share Set", systemImage: "square.and.arrow.up")
-                }
-                .accessibilityIdentifier("shareButton")
             }
-            .padding()
         }
-        .accessibilityElement(children: .contain)
-        .sheet(isPresented: $showingMissingParts) {
+        .sheet(isPresented: $viewModel.showingMissingParts) {
             if let collection = set.userCollection {
                 MissingPartsView(userCollection: collection)
             }
+        }
+        .alert("Error", isPresented: .constant(viewModel.error != nil), presenting: viewModel.error) { error in
+            Button("OK") { viewModel.error = nil }
+        } message: { error in
+            Text(error.localizedDescription)
         }
     }
     
@@ -133,6 +122,7 @@ struct SetDetailView: View {
         "Check out LEGO set \(set.name) (#\(set.setNumber)), released in \(set.year) with \(set.numParts) parts!"
     }
 }
+
 #Preview {
     SetDetailView(set: LegoSet.example)
 }

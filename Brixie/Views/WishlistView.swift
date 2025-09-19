@@ -10,13 +10,9 @@ import SwiftData
 
 struct WishlistView: View {
     @Environment(\.modelContext) private var modelContext
-    private let collectionService = CollectionService.shared
+    @State private var viewModel = WishlistViewModel()
     
     @Query private var wishedSets: [LegoSet]
-    
-    @State private var searchText = ""
-    @State private var selectedSortOption: WishlistSortOption = .dateAdded
-    @State private var showingShareSheet = false
 
     init() {
         _wishedSets = Query(filter: #Predicate<LegoSet> { set in
@@ -38,12 +34,12 @@ struct WishlistView: View {
                 }
             }
             .navigationTitle("Wishlist")
-            .searchable(text: $searchText, prompt: "Search wishlist...")
+            .searchable(text: $viewModel.searchText, prompt: "Search wishlist...")
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Menu {
                         Section("Sort By") {
-                            Picker("Sort", selection: $selectedSortOption) {
+                            Picker("Sort", selection: $viewModel.selectedSortOption) {
                                 ForEach(WishlistSortOption.allCases, id: \.self) { option in
                                     Label(option.title, systemImage: option.icon)
                                         .tag(option)
@@ -84,12 +80,15 @@ struct WishlistView: View {
                         }
                         .swipeActions(edge: .leading) {
                             Button("Own It") {
+                                // Move from wishlist to collection
+                                let collectionService = CollectionService.shared
                                 collectionService.addToCollection(set, in: modelContext, isOwned: true, isWishlist: false)
                             }
                             .tint(.green)
                         }
                         .swipeActions(edge: .trailing) {
                             Button("Remove") {
+                                let collectionService = CollectionService.shared
                                 collectionService.toggleWishlist(set, in: modelContext)
                             }
                             .tint(.red)
@@ -101,23 +100,7 @@ struct WishlistView: View {
     }
     
     private var filteredSets: [LegoSet] {
-        let filtered = searchText.isEmpty ? wishedSets : wishedSets.filter { 
-            $0.name.localizedCaseInsensitiveContains(searchText) ||
-            $0.setNumber.contains(searchText)
-        }
-        
-        return filtered.sorted { lhs, rhs in
-            switch selectedSortOption {
-            case .name:
-                return lhs.name < rhs.name
-            case .year:
-                return lhs.year > rhs.year
-            case .price:
-                return (lhs.retailPrice ?? 0) > (rhs.retailPrice ?? 0)
-            case .dateAdded:
-                return (lhs.userCollection?.dateAdded ?? Date()) > (rhs.userCollection?.dateAdded ?? Date())
-            }
-        }
+        return viewModel.sortSets(viewModel.filterSets(wishedSets))
     }
     
     private var groupedWishlistSets: [String: [LegoSet]] {
@@ -149,10 +132,10 @@ struct WishlistView: View {
 
 private struct WishlistSummaryCardView: View {
     @Environment(\.modelContext) private var modelContext
-    private let collectionService = CollectionService.shared
+    @State private var viewModel = WishlistViewModel()
     
     var body: some View {
-        let stats = collectionService.getCollectionStats(from: modelContext)
+        let stats = viewModel.getCollectionStats(from: modelContext)
         
         HStack(spacing: 20) {
             VStack {
@@ -254,33 +237,7 @@ private struct WishlistSetRowView: View {
     }
 }
 
-// MARK: - Sort Options
-
-private enum WishlistSortOption: CaseIterable {
-    case name
-    case year
-    case price
-    case dateAdded
-    
-    var title: String {
-        switch self {
-        case .name: return "Name"
-        case .year: return "Year"
-        case .price: return "Price"
-        case .dateAdded: return "Date Added"
-        }
-    }
-    
-    var icon: String {
-        switch self {
-        case .name: return "textformat"
-        case .year: return "calendar"
-        case .price: return "dollarsign.circle"
-        case .dateAdded: return "clock"
-        }
-    }
-}
-
-#Preview { WishlistView()
+#Preview { 
+    WishlistView()
         .modelContainer(for: [LegoSet.self, Theme.self, UserCollection.self], inMemory: true)
 }

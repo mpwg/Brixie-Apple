@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 
 /// Service for managing search history and suggestions
-@Observable
 final class SearchHistoryService {
     static let shared = SearchHistoryService()
     

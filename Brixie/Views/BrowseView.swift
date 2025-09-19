@@ -11,12 +11,15 @@ import SwiftData
 struct BrowseView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \LegoSet.year, order: .reverse, animation: .default) private var sets: [LegoSet]
-    @State private var isRefreshing = false
+    @State private var viewModel = BrowseViewModel()
 
     var body: some View {
         NavigationStack {
             Group {
-                if sets.isEmpty {
+                if viewModel.isLoading {
+                    LoadingView(message: "Loading LEGO sets...", isError: false)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if sets.isEmpty {
                     emptyState
                 } else {
                     List(sets) { set in
@@ -37,19 +40,34 @@ struct BrowseView: View {
                         }
                         .contentShape(Rectangle())
                     }
-                    .refreshable { await refresh() }
+                    .refreshable { 
+                        await viewModel.refresh()
+                    }
                 }
             }
             .navigationTitle("Browse")
             .toolbar { toolbar }
+            .onAppear {
+                viewModel.configure(with: modelContext)
+            }
+            .task {
+                if sets.isEmpty {
+                    await viewModel.loadSets()
+                }
+            }
+            .alert("Error", isPresented: .constant(viewModel.error != nil), presenting: viewModel.error) { error in
+                Button("OK") { viewModel.error = nil }
+            } message: { error in
+                Text(error.localizedDescription)
+            }
         }
     }
 
     private var emptyState: some View {
         ContentUnavailableView(
-            "No sets yet",
+            "No LEGO Sets Found",
             systemImage: "square.grid.2x2",
-            description: Text("You can refresh to fetch sample data once API is wired in Phase 2.")
+            description: Text("Configure your Rebrickable API key in Settings to browse LEGO sets from the catalog.")
         )
     }
 
@@ -57,17 +75,10 @@ struct BrowseView: View {
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
             Button {
-                Task { await refresh() }
+                Task { await viewModel.refresh() }
             } label: { Image(systemName: "arrow.clockwise") }
             .accessibilityLabel("Refresh sets")
         }
-    }
-
-    private func refresh() async {
-        guard !isRefreshing else { return }
-        isRefreshing = true
-        // Phase 1: no network fetch. Optionally seed with sample data.
-        isRefreshing = false
     }
 }
 

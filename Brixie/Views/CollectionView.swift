@@ -10,15 +10,10 @@ import SwiftData
 
 struct CollectionView: View {
     @Environment(\.modelContext) private var modelContext
-    private let collectionService = CollectionService.shared
+    @State private var viewModel = CollectionViewModel()
     
     // Query LegoSets that have a related UserCollection with isOwned == true
     @Query private var ownedSets: [LegoSet]
-    
-    @State private var selectedSortOption: SortOption = .dateAdded
-    @State private var showingStats = false
-    @State private var showingExportSheet = false
-    @State private var searchText = ""
 
     init() {
         _ownedSets = Query(filter: #Predicate<LegoSet> { set in
@@ -40,13 +35,13 @@ struct CollectionView: View {
                 }
             }
             .navigationTitle("My Collection")
-            .searchable(text: $searchText, prompt: "Search collection...")
+            .searchable(text: $viewModel.searchText, prompt: "Search collection...")
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Menu {
                         Section("Sort By") {
-                            Picker("Sort", selection: $selectedSortOption) {
-                                ForEach(SortOption.allCases, id: \.self) { option in
+                            Picker("Sort", selection: $viewModel.selectedSortOption) {
+                                ForEach(CollectionSortOption.allCases, id: \.self) { option in
                                     Label(option.title, systemImage: option.icon)
                                         .tag(option)
                                 }
@@ -55,11 +50,11 @@ struct CollectionView: View {
                         }
                         
                         Section("Actions") {
-                            Button(action: { showingStats = true }) {
+                            Button(action: { viewModel.showStatistics() }) {
                                 Label("Statistics", systemImage: "chart.bar")
                             }
                             
-                            Button(action: { showingExportSheet = true }) {
+                            Button(action: { viewModel.showExport() }) {
                                 Label("Export Collection", systemImage: "square.and.arrow.up")
                             }
                         }
@@ -68,12 +63,12 @@ struct CollectionView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingStats) {
+            .sheet(isPresented: $viewModel.showingStats) {
                 CollectionStatisticsView()
                     .presentationDetents([.medium, .large])
             }
-            .sheet(isPresented: $showingExportSheet) {
-                CollectionExportView(sets: filteredSets)
+            .sheet(isPresented: $viewModel.showingExportSheet) {
+                CollectionExportView(sets: viewModel.filterSets(ownedSets))
             }
         }
     }
@@ -99,25 +94,7 @@ struct CollectionView: View {
     }
     
     private var filteredSets: [LegoSet] {
-        let filtered = searchText.isEmpty ? ownedSets : ownedSets.filter { 
-            $0.name.localizedCaseInsensitiveContains(searchText) ||
-            $0.setNumber.contains(searchText)
-        }
-        
-        return filtered.sorted { lhs, rhs in
-            switch selectedSortOption {
-            case .name:
-                return lhs.name < rhs.name
-            case .year:
-                return lhs.year > rhs.year
-            case .parts:
-                return lhs.numParts > rhs.numParts
-            case .dateAdded:
-                return (lhs.userCollection?.dateAdded ?? Date()) > (rhs.userCollection?.dateAdded ?? Date())
-            case .value:
-                return (lhs.retailPrice ?? 0) > (rhs.retailPrice ?? 0)
-            }
-        }
+        return viewModel.filterSets(ownedSets)
     }
     
     private var groupedSets: [String: [LegoSet]] {
@@ -131,10 +108,10 @@ struct CollectionView: View {
 
 private struct CollectionSummaryCardView: View {
     @Environment(\.modelContext) private var modelContext
-    private let collectionService = CollectionService.shared
+    @State private var viewModel = CollectionViewModel()
     
     var body: some View {
-        let stats = collectionService.getCollectionStats(from: modelContext)
+        let stats = viewModel.getCollectionStats(from: modelContext)
         
         HStack(spacing: 20) {
             VStack {
@@ -255,36 +232,6 @@ private struct CollectionSetRowView: View {
             }
         }
         .contentShape(Rectangle())
-    }
-}
-
-// MARK: - Sort Options
-
-private enum SortOption: CaseIterable {
-    case name
-    case year
-    case parts
-    case dateAdded
-    case value
-    
-    var title: String {
-        switch self {
-        case .name: return "Name"
-        case .year: return "Year"
-        case .parts: return "Parts"
-        case .dateAdded: return "Date Added"
-        case .value: return "Value"
-        }
-    }
-    
-    var icon: String {
-        switch self {
-        case .name: return "textformat"
-        case .year: return "calendar"
-        case .parts: return "cube.box"
-        case .dateAdded: return "clock"
-        case .value: return "dollarsign.circle"
-        }
     }
 }
 

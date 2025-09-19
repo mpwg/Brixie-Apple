@@ -12,7 +12,8 @@ import Charts
 struct CollectionStatisticsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    private let collectionService = CollectionService.shared
+    @State private var viewModel = CollectionViewModel()
+    @State private var stats = CollectionStats()
     
     var body: some View {
         NavigationStack {
@@ -35,11 +36,10 @@ struct CollectionStatisticsView: View {
                     }
                 }
             }
+            .onAppear {
+                stats = CollectionService.shared.getCollectionStats(from: modelContext)
+            }
         }
-    }
-    
-    private var stats: CollectionStats {
-        collectionService.getCollectionStats(from: modelContext)
     }
     
     private var overviewSection: some View {
@@ -159,7 +159,7 @@ struct CollectionStatisticsView: View {
                 .font(.title2)
                 .bold()
             
-            let themeGroups = collectionService.getOwnedSetsByTheme(from: modelContext)
+            let themeGroups = CollectionService.shared.getOwnedSetsByTheme(from: modelContext)
             let topThemes = Array(themeGroups.sorted { $0.value.count > $1.value.count }.prefix(5))
             
             ForEach(topThemes, id: \.key) { themeName, sets in
@@ -217,7 +217,7 @@ struct CollectionStatisticsView: View {
         }
         
         // Theme diversity
-        let themeCount = collectionService.getOwnedSetsByTheme(from: modelContext).count
+    let themeCount = CollectionService.shared.getOwnedSetsByTheme(from: modelContext).count
         if themeCount >= 10 {
             achievements.append(Achievement(title: "Theme Explorer", description: "Collect from 10+ themes", icon: "globe", isUnlocked: true))
         }
