@@ -155,15 +155,20 @@ struct BrowseView: View {
                 // Show sets for selected subtheme
                 SubthemeSetsView(subtheme: selectedSubtheme, sets: viewModel.setsForSubtheme(selectedSubtheme))
             } else if let selectedTheme = viewModel.selectedTheme {
-                viewModel.logThemeDetails(selectedTheme)
                 // Show subthemes or sets for selected theme
                 if selectedTheme.hasSubthemes {
                     ThemeSubthemesView(theme: selectedTheme) { subtheme in
                         viewModel.selectSubtheme(subtheme)
                     }
+                    .onAppear {
+                        viewModel.logThemeDetails(selectedTheme)
+                    }
                 } else {
                     let setsForTheme = viewModel.setsForTheme(selectedTheme)
                     ThemeSetsView(theme: selectedTheme, sets: setsForTheme)
+                        .onAppear {
+                            viewModel.logThemeDetails(selectedTheme)
+                        }
                 }
             } else {
                 // No theme selected - show welcome message
@@ -222,7 +227,7 @@ struct BrowseView: View {
                         }
                     }
                 } else {
-                    ThemeSetsView(theme: selectedTheme, sets: setsForTheme(selectedTheme))
+                    ThemeSetsView(theme: selectedTheme, sets: viewModel.setsForTheme(selectedTheme))
                 }
             }
         }
@@ -239,7 +244,7 @@ struct BrowseView: View {
     private var selectedSubthemeSetsView: some View {
         VStack {
             if let selectedSubtheme = viewModel.selectedSubtheme {
-                SubthemeSetsView(subtheme: selectedSubtheme, sets: setsForSubtheme(selectedSubtheme))
+                SubthemeSetsView(subtheme: selectedSubtheme, sets: viewModel.setsForSubtheme(selectedSubtheme))
             }
         }
         .navigationTitle(viewModel.selectedSubtheme?.name ?? "")

@@ -48,8 +48,8 @@ struct SubthemeCardView: View {
     let subtheme = Theme(id: 2, name: "Clone Wars", parentId: 1)
     
     SubthemeCardView(subtheme: subtheme) {
-        // Selection logic should be handled by ViewModel, not view
-        onSubthemeSelected(subtheme)
+        // Preview action - no-op for preview
+        print("Selected subtheme: \(subtheme.name)")
     }
     .padding()
 }

@@ -114,11 +114,10 @@ final class SearchViewModel {
     
     /// Handle barcode scan result
     func handleBarcodeResult(_ barcode: String, with allSets: [LegoSet]) {
-        Logger.barcodeScanner.info("Scanned barcode: \(barcode, privacy: .private)")
+        Logger.search.info("Scanned barcode: \(barcode)")
         query = barcode
         showingBarcodeScanner = false
         submitSearch()
         filterSets(from: allSets)
     }
-}
 }

@@ -164,19 +164,19 @@ final class BrowseViewModel {
     /// Get sets for a specific theme
     func setsForTheme(_ theme: Theme) -> [LegoSet] {
         Logger.database.debug("setsForTheme(\(theme.name)) - Theme ID: \(theme.id)")
-        Logger.database.debug("Total sets available: \(allSets.count)")
+        Logger.database.debug("Total sets available: \(self.allSets.count)")
         
         // Log first few sets for debugging
-        for (index, set) in allSets.prefix(5).enumerated() {
+        for (index, set) in self.allSets.prefix(5).enumerated() {
             Logger.database.debug("Set \(index): \(set.name) - themeId: \(set.themeId), theme?.id: \(set.theme?.id ?? -1)")
         }
         
         // Try relationship-based filter first, fallback to themeId
-        let filteredSets = allSets.filter { 
+        let filteredSets = self.allSets.filter { 
             $0.theme?.id == theme.id || $0.themeId == theme.id
         }
         
-        Logger.database.debug("setsForTheme(\(theme.name)): filtered \(filteredSets.count) sets from \(allSets.count) total sets")
+        Logger.database.debug("setsForTheme(\(theme.name)): filtered \(filteredSets.count) sets from \(self.allSets.count) total sets")
         
         return filteredSets
     }
@@ -186,7 +186,7 @@ final class BrowseViewModel {
         Logger.database.debug("setsForSubtheme(\(subtheme.name)) - Subtheme ID: \(subtheme.id)")
         
         // Use both relationship and themeId for filtering
-        let filteredSets = allSets.filter { 
+        let filteredSets = self.allSets.filter { 
             $0.theme?.id == subtheme.id || $0.themeId == subtheme.id
         }
         
@@ -217,15 +217,15 @@ final class BrowseViewModel {
     
     /// Log main content view appearance
     func logMainContentViewAppearance() {
-        Logger.viewCycle.info("MainContentView appeared - selectedTheme: \(selectedTheme?.name ?? "nil", privacy: .private)")
+        Logger.viewCycle.info("MainContentView appeared - selectedTheme: \(self.selectedTheme?.name ?? "nil")")
     }
     
     /// Clear cached themes data
     func clearCachedThemes() async {
         do {
-            try await themeService.clearAllThemes()
+            try themeService.clearCachedThemes()
         } catch {
-            Logger.error.error("Failed to clear themes: \(error.localizedDescription, privacy: .public)")
+            Logger.error.error("Failed to clear themes: \(error.localizedDescription)")
         }
     }
 }

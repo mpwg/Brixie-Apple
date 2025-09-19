@@ -69,7 +69,7 @@ struct SearchView: View {
                 HStack {
                     Button {
                         viewModel.showBarcodeScanner()
-                    } label {
+                    } label: {
                         Image(systemName: "barcode.viewfinder")
                     }
                     .accessibilityLabel("Scan barcode")
