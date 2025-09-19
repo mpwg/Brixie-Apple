@@ -1,11 +1,15 @@
 import SwiftUI
 import Network
 import Foundation
+import OSLog
 
 /// Manages offline state detection and queued actions
 @MainActor
 internal final class OfflineManager {
     static let shared = OfflineManager()
+    
+    /// Logger for offline manager operations
+    private let logger = Logger.offline
     
     // MARK: - Published Properties
     private(set) var isOffline = false
@@ -47,6 +51,7 @@ internal final class OfflineManager {
     }
     
     private init() {
+        logger.debug("🎯 OfflineManager initialized")
         loadQueuedActions()
         startMonitoring()
     }
@@ -54,26 +59,32 @@ internal final class OfflineManager {
     deinit {
         // Cancel the NWPathMonitor directly in deinit. This avoids capturing `self` in an
         // asynchronous task which the compiler warns could introduce data races.
+        logger.debug("🔄 OfflineManager deinitializing - stopping network monitor")
         monitor.cancel()
     } 
     
     // MARK: - Network Monitoring
     
     private func startMonitoring() {
+        logger.debug("📡 Starting network monitoring")
         monitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
                 self?.updateConnectionStatus(path)
             }
         }
         monitor.start(queue: queue)
+        logger.info("✅ Network monitoring started")
     }
     
     private func stopMonitoring() {
+        logger.debug("📡 Stopping network monitoring")
         monitor.cancel()
     }
     
     private func updateConnectionStatus(_ path: NWPath) {
         let wasOffline = isOffline
+        let previousConnectionType = connectionType
+        
         isOffline = path.status != .satisfied
         
         // Determine connection type
@@ -89,8 +100,20 @@ internal final class OfflineManager {
             connectionType = .unknown
         }
         
+        // Log connection changes
+        if wasOffline != isOffline || previousConnectionType != connectionType {
+            if isOffline {
+                logger.warning("📵 Connection lost - now offline")
+                logger.userAction("went_offline", context: ["previousConnection": previousConnectionType.rawValue])
+            } else {
+                logger.info("📶 Connection restored - now online via \(self.connectionType.displayName)")
+                logger.userAction("went_online", context: ["connectionType": self.connectionType.rawValue])
+            }
+        }
+        
         // Process queued actions when coming back online
         if wasOffline && !isOffline {
+            logger.info("🔄 Processing queued actions after coming back online")
             Task {
                 await processQueuedActions()
             }

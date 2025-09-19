@@ -18,6 +18,9 @@ final class ThemeService {
     /// Singleton instance
     static let shared = ThemeService()
     
+    /// Logger for theme service operations
+    private let logger = Logger.themeService
+    
     /// SwiftData model context for database operations
     private var modelContext: ModelContext?
     
@@ -36,123 +39,115 @@ final class ThemeService {
     // MARK: - Initialization
     
     init() {
+        logger.debug("🎯 ThemeService initialized")
         loadLastThemeSyncDate()
     }
     
     /// Configure with SwiftData model context
     func configure(with context: ModelContext) {
         self.modelContext = context
+        logger.info("⚙️ ThemeService configured with ModelContext")
     }
     
     // MARK: - Theme Operations
     
     /// Clear all cached themes (for debugging)
     func clearCachedThemes() throws {
-        Logger.themeService.entering()
+        logger.entering()
         
         guard let modelContext = modelContext else {
-            Logger.themeService.error("No model context configured")
+            logger.error("❌ ModelContext not configured")
+            logger.exitWith(result: "error: not configured")
             throw ThemeServiceError.notConfigured
         }
         
         let descriptor = FetchDescriptor<Theme>()
         let allThemes = try modelContext.fetch(descriptor)
+        let themeCount = allThemes.count
         
         for theme in allThemes {
             modelContext.delete(theme)
         }
         
         try modelContext.save()
-        Logger.themeService.info("Cleared \(allThemes.count) cached themes")
+        logger.info("🗑️ Cleared \(themeCount) cached themes")
+        logger.userAction("cleared_theme_cache", context: ["themesCleared": themeCount])
         
         // Reset sync date to force fresh fetch
         lastThemeSyncDate = nil
         saveLastThemeSyncDate()
         
-        Logger.themeService.exitWith()
+        logger.exitWith(result: "\(themeCount) themes cleared")
     }
     
     /// Force refresh all themes from API (clears cache first)
     func forceRefreshThemes() async throws -> [Theme] {
-        Logger.themeService.entering()
+        logger.entering()
         
         // Log cache state before clearing
         if let cacheAge = getCacheAgeHours() {
-            Logger.themeService.info("Force refresh requested. Current cache age: \(cacheAge, format: .fixed(precision: 2))h")
+            logger.info("🔄 Force refresh requested. Current cache age: \(cacheAge, format: .fixed(precision: 2))h")
         } else {
-            Logger.themeService.info("Force refresh requested. No existing cache.")
+            logger.info("🔄 Force refresh requested. No existing cache.")
         }
+        logger.userAction("force_refresh_themes")
         
         // Clear existing cache
         try clearCachedThemes()
-        Logger.themeService.info("Cache cleared, forcing API fetch...")
+        logger.info("🧹 Cache cleared, forcing API fetch...")
         
         // Fetch fresh data from API
         let freshThemes = try await fetchThemes()
         
-        Logger.themeService.exitWith(result: "\(freshThemes.count) themes refreshed from API")
+        logger.exitWith(result: "\(freshThemes.count) themes refreshed from API")
         return freshThemes
     }
     
     /// Fetch all themes from API or local cache
     func fetchThemes() async throws -> [Theme] {
-        Logger.themeService.entering()
+        logger.entering()
+        let startTime = CFAbsoluteTimeGetCurrent()
         
         guard modelContext != nil else {
-            Logger.themeService.error("No model context configured")
+            logger.error("❌ No model context configured")
+            logger.exitWith(result: "error: not configured")
             throw ThemeServiceError.notConfigured
         }
         
         guard apiConfig.isConfigured else {
-            Logger.themeService.error("API not configured")
+            logger.error("❌ API not configured")
+            logger.exitWith(result: "error: API not configured")
             throw ThemeServiceError.apiNotConfigured
         }
         
         isLoading = true
         defer { isLoading = false }
         
-        // Try to get cached themes first
-        let cachedThemes = try fetchCachedThemes()
-        Logger.database.info("Found \(cachedThemes.count) cached themes")
-        
-        // Log cache freshness status
-        let isFresh = isThemeDataFresh()
-        if let lastSync = lastThemeSyncDate {
-            Logger.themeService.debug("Theme cache age: \(Date().timeIntervalSince(lastSync) / 3600.0, format: .fixed(precision: 1))h, fresh: \(isFresh)")
-        } else {
-            Logger.themeService.debug("No previous theme sync recorded, cache not fresh")
-        }
-        
-        // If we have fresh data, return it
-        if isFresh && !cachedThemes.isEmpty {
-            Logger.themeService.info("Using fresh cached data (\(cachedThemes.count) themes)")
-            Logger.themeService.exitWith(result: "\(cachedThemes.count) themes")
-            return cachedThemes
-        }
-        
-        // Otherwise fetch from API
-        Logger.network.info("Fetching themes from API (cache miss or stale)...")
         do {
-            let startTime = Date()
-            let apiThemes = try await fetchThemesFromAPI()
-            let duration = Date().timeIntervalSince(startTime)
+            // Try to get cached themes first
+            let cachedThemes = try fetchCachedThemes()
             
-            Logger.network.apiCall("themes", duration: duration)
-            Logger.themeService.info("Fetched \(apiThemes.count) themes from API in \(duration, format: .fixed(precision: 2))s")
-            
-            lastThemeSyncDate = Date()
-            saveLastThemeSyncDate()
-            
-            Logger.themeService.exitWith(result: "\(apiThemes.count) themes from API")
-            return apiThemes
-        } catch {
-            Logger.error.error("API fetch failed: \(error.localizedDescription, privacy: .public)")
-            currentError = error
-            // Return cached data if API fails
-            if !cachedThemes.isEmpty {
-                Logger.themeService.info("Returning \(cachedThemes.count) cached themes as fallback")
+            // If we have cached data and it's recent, return it
+            if !cachedThemes.isEmpty && isThemeDataFresh() {
+                let duration = CFAbsoluteTimeGetCurrent() - startTime
+                logger.info("📱 Using cached themes: \(cachedThemes.count) items (data is fresh)")
+                logger.debug("⏱️ Cache fetch completed in \(duration, format: .fixed(precision: 3))s")
+                logger.exitWith(result: "\(cachedThemes.count) cached themes")
                 return cachedThemes
             }
+            
+            logger.debug("🌐 Cached themes unavailable or stale, fetching from API")
+            // Otherwise, fetch from API
+            let fetchedThemes = try await fetchThemesFromAPI()
+            
+            let duration = CFAbsoluteTimeGetCurrent() - startTime
+            logger.info("✅ Fetched \(fetchedThemes.count) themes in \(duration, format: .fixed(precision: 3))s")
+            logger.exitWith(result: "\(fetchedThemes.count) API themes")
+            return fetchedThemes
+        } catch {
+            let duration = CFAbsoluteTimeGetCurrent() - startTime
+            logger.error("❌ Failed to fetch themes after \(duration, format: .fixed(precision: 3))s: \(error.localizedDescription)")
+            logger.exitWith(result: "error: \(error.localizedDescription)")
             throw error
         }
     }

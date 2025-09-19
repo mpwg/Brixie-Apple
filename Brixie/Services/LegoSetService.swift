@@ -17,6 +17,9 @@ final class LegoSetService {
     /// Singleton instance
     static let shared = LegoSetService()
     
+    /// Logger for LegoSet service operations
+    private let logger = Logger.legoSetService
+    
     /// SwiftData model context for database operations
     private var modelContext: ModelContext?
     
@@ -35,42 +38,65 @@ final class LegoSetService {
     // MARK: - Initialization
     
     init() {
+        logger.debug("🎯 LegoSetService initialized")
         loadLastSyncDate()
     }
     
     /// Configure with SwiftData model context
     func configure(with context: ModelContext) {
         self.modelContext = context
+        logger.info("⚙️ LegoSetService configured with ModelContext")
     }
     
     // MARK: - Set Operations
     
     /// Fetch sets from API or local cache
     func fetchSets(limit: Int = 20, offset: Int = 0) async throws -> [LegoSet] {
+        logger.entering(parameters: ["limit": limit, "offset": offset])
+        let startTime = CFAbsoluteTimeGetCurrent()
+        
         guard modelContext != nil else {
+            logger.error("❌ ModelContext not configured")
+            logger.exitWith(result: "error: not configured")
             throw ServiceError.notConfigured
         }
         
         isLoading = true
         defer { isLoading = false }
         
-        // First try to load from local cache
-        let cachedSets = try fetchCachedSets(limit: limit, offset: offset)
-        
-        // If we have cached data and it's recent, return it
-        if !cachedSets.isEmpty && isDataFresh() {
-            // Ensure relationships are established even for cached data
+        do {
+            // First try to load from local cache
+            let cachedSets = try fetchCachedSets(limit: limit, offset: offset)
+            
+            // If we have cached data and it's recent, return it
+            if !cachedSets.isEmpty && isDataFresh() {
+                logger.info("📱 Using cached sets: \(cachedSets.count) items (data is fresh)")
+                // Ensure relationships are established even for cached data
+                try await establishSetThemeRelationships()
+                
+                let duration = CFAbsoluteTimeGetCurrent() - startTime
+                logger.debug("⏱️ Cache fetch completed in \(duration, format: .fixed(precision: 3))s")
+                logger.exitWith(result: "\(cachedSets.count) cached sets")
+                return cachedSets
+            }
+            
+            logger.debug("🌐 Cached data unavailable or stale, fetching from API")
+            // Otherwise, fetch from API
+            let fetchedSets = try await fetchSetsFromAPI(limit: limit, offset: offset)
+            
+            // Establish relationships after fetching from API
             try await establishSetThemeRelationships()
-            return cachedSets
+            
+            let duration = CFAbsoluteTimeGetCurrent() - startTime
+            logger.info("✅ Fetched \(fetchedSets.count) sets in \(duration, format: .fixed(precision: 3))s")
+            logger.exitWith(result: "\(fetchedSets.count) API sets")
+            return fetchedSets
+        } catch {
+            let duration = CFAbsoluteTimeGetCurrent() - startTime
+            logger.error("❌ Failed to fetch sets after \(duration, format: .fixed(precision: 3))s: \(error.localizedDescription)")
+            logger.exitWith(result: "error: \(error.localizedDescription)")
+            throw error
         }
-        
-        // Otherwise, fetch from API
-        let fetchedSets = try await fetchSetsFromAPI(limit: limit, offset: offset)
-        
-        // Establish relationships after fetching from API
-        try await establishSetThemeRelationships()
-        
-        return fetchedSets
     }
     
     /// Fetch sets by theme
