@@ -196,7 +196,6 @@ struct PermissionRequestView: View {
 
 struct PermissionDeniedView: View {
     @Environment(\.openURL) private var openURL
-    
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "camera.fill.badge.ellipsis")
