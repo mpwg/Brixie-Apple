@@ -5,7 +5,6 @@ import SwiftData
 /// Test suite for LegoSet model
 @MainActor
 struct LegoSetTests {
-    
     // MARK: - Test Setup
     
     private func createModelContext() -> ModelContext {
@@ -21,16 +20,16 @@ struct LegoSetTests {
         let set = LegoSet(
             setNumber: "75192",
             name: "Millennium Falcon",
-            year: 2017,
-            numParts: 7541,
+            year: 2_017,
+            numParts: 7_541,
             themeID: 158,
             imageURL: "https://example.com/image.jpg"
         )
         
         #expect(set.setNumber == "75192")
         #expect(set.name == "Millennium Falcon")
-        #expect(set.year == 2017)
-        #expect(set.numParts == 7541)
+        #expect(set.year == 2_017)
+        #expect(set.numParts == 7_541)
         #expect(set.themeID == 158)
         #expect(set.imageURL == "https://example.com/image.jpg")
     }
@@ -42,16 +41,16 @@ struct LegoSetTests {
         let set1 = LegoSet(
             setNumber: "75192",
             name: "Millennium Falcon",
-            year: 2017,
-            numParts: 7541,
+            year: 2_017,
+            numParts: 7_541,
             themeID: 158
         )
         
         let set2 = LegoSet(
             setNumber: "75192", // Same set number
             name: "Another Name",
-            year: 2018,
-            numParts: 1000,
+            year: 2_018,
+            numParts: 1_000,
             themeID: 200
         )
         
@@ -76,8 +75,8 @@ struct LegoSetTests {
         let set = LegoSet(
             setNumber: "75192",
             name: "Millennium Falcon",
-            year: 2017,
-            numParts: 7541,
+            year: 2_017,
+            numParts: 7_541,
             themeID: 158,
             imageURL: "https://example.com/image.jpg"
         )
@@ -93,7 +92,7 @@ struct LegoSetTests {
         
         #expect(!example.setNumber.isEmpty)
         #expect(!example.name.isEmpty)
-        #expect(example.year > 1900)
+        #expect(example.year > 1_900)
         #expect(example.numParts > 0)
     }
     
@@ -106,8 +105,8 @@ struct LegoSetTests {
         let set = LegoSet(
             setNumber: "75192",
             name: "Millennium Falcon",
-            year: 2017,
-            numParts: 7541,
+            year: 2_017,
+            numParts: 7_541,
             themeID: 158
         )
         

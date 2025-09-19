@@ -32,7 +32,7 @@ struct ThemeSubthemesView: View {
                 LazyVGrid(columns: [
                     GridItem(.adaptive(minimum: AppConstants.UI.gridItemMinWidth), spacing: AppConstants.UI.standardSpacing)
                 ], spacing: 16) {
-                    ForEach(theme.subthemes.sorted(by: { $0.name < $1.name })) { subtheme in
+                    ForEach(theme.subthemes.sorted { $0.name < $1.name }) { subtheme in
                         SubthemeCardView(subtheme: subtheme) {
                             onSubthemeSelected(subtheme)
                         }

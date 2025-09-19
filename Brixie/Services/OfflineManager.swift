@@ -196,7 +196,7 @@ internal final class OfflineManager {
 internal struct QueuedAction: Identifiable, Codable {
     // Make id mutable so it can be decoded from storage. Using `var` allows JSONDecoder
     // to overwrite the initial value when restoring saved queued actions.
-    var id: UUID = UUID()
+    var id = UUID()
     let type: ActionType
     let data: [String: String] // Simple string-based data storage
     let timestamp: Date

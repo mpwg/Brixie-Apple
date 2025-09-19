@@ -22,13 +22,12 @@ struct SearchView: View {
             if isSearching && viewModel.query.isEmpty {
                 // Show suggestions when search is active but no query
                 SearchSuggestionsView(
-                    suggestions: viewModel.getSuggestions(for: ""),
-                    onSuggestionSelected: { suggestion in
+                    suggestions: viewModel.getSuggestions(for: "")
+                )                    { suggestion in
                         viewModel.query = suggestion
                         viewModel.submitSearch()
                         viewModel.filterSets(from: allSets)
                     }
-                )
             } else if viewModel.filteredResults.isEmpty && !viewModel.query.isEmpty {
                 // Show no results state
                 EmptyStateView.searchNoResults(query: viewModel.query)

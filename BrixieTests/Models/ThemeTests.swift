@@ -5,7 +5,6 @@ import SwiftData
 /// Test suite for Theme model
 @MainActor
 struct ThemeTests {
-    
     private func createModelContext() -> ModelContext {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: Theme.self, configurations: config)

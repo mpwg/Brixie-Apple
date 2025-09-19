@@ -350,7 +350,7 @@ final class ThemeService {
     /// Get the age of cached theme data in hours
     func getCacheAgeHours() -> Double? {
         guard let lastSync = lastThemeSyncDate else { return nil }
-        return Date().timeIntervalSince(lastSync) / 3600.0
+        return Date().timeIntervalSince(lastSync) / 3_600.0
     }
     
     /// Load last theme sync date from UserDefaults

@@ -13,7 +13,6 @@ extension Logger {
     /// Using bundle identifier as a unique identifier for the subsystem
     private static var subsystem = Bundle.main.bundleIdentifier!
 
-
     static let imageOptimization = Logger(
         subsystem: Bundle.main.bundleIdentifier ?? "com.brixie",
         category: "ImageOptimization"

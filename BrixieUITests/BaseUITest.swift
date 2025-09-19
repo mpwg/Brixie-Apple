@@ -4,7 +4,6 @@ import XCTest
 /// Base class for UI tests with common setup and utilities
 @preconcurrency
 class BaseUITest: XCTestCase {
-    
     nonisolated(unsafe) var app: XCUIApplication!
     
     override func setUpWithError() throws {

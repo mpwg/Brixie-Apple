@@ -5,7 +5,6 @@ import SwiftData
 /// Test suite for LegoSetService
 @MainActor
 struct LegoSetServiceTests {
-    
     private var service: LegoSetService!
     private var modelContext: ModelContext!
     

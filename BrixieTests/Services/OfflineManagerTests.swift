@@ -5,7 +5,6 @@ import SwiftData
 /// Test suite for OfflineManager
 @MainActor 
 struct OfflineManagerTests {
-    
     private var offlineManager: OfflineManager!
     
     init() {

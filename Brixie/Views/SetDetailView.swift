@@ -111,7 +111,7 @@ struct SetDetailView: View {
                 MissingPartsView(userCollection: collection)
             }
         }
-        .alert("Error", isPresented: .constant(viewModel.error != nil), presenting: viewModel.error) { error in
+        .alert("Error", isPresented: .constant(viewModel.error != nil), presenting: viewModel.error) { _ in
             Button("OK") { viewModel.error = nil }
         } message: { error in
             Text(error.localizedDescription)

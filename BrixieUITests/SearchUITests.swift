@@ -3,7 +3,6 @@ import XCTest
 
 /// UI Tests for Search functionality
 final class SearchUITests: BaseUITest {
-    
     // MARK: - Search Functionality Tests
     
     @MainActor

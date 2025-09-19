@@ -3,7 +3,6 @@ import XCTest
 
 /// UI Tests for Collection Management functionality
 final class CollectionUITests: BaseUITest {
-    
     // MARK: - Collection Management Tests
     
         @MainActor
@@ -13,7 +12,7 @@ final class CollectionUITests: BaseUITest {
         navigateToTab("Browse")
         
         let setCards = app.collectionViews.cells
-        if setCards.count > 0 {
+        if !setCards.isEmpty {
             let firstSet = setCards.firstMatch
             firstSet.tap()
             
@@ -36,7 +35,7 @@ final class CollectionUITests: BaseUITest {
         navigateToTab("Browse")
         
         let setCards = app.collectionViews.cells
-        if setCards.count > 0 {
+        if !setCards.isEmpty {
             let firstSet = setCards.firstMatch
             firstSet.tap()
             

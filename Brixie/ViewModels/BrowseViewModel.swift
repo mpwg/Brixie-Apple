@@ -316,7 +316,6 @@ final class BrowseViewModel {
             }
             
             Logger.database.debug("loadSetsForTheme(\(theme.name)): Updated cache and pagination state with \(result.sets.count)/\(result.totalCount) sets")
-            
         } catch {
             Logger.database.error("loadSetsForTheme(\(theme.name)): Failed to fetch sets - \(error)")
             self.error = BrixieError.from(error)
@@ -396,7 +395,6 @@ final class BrowseViewModel {
             }
             
             Logger.database.debug("loadMoreSetsForTheme(\(theme.name)): Now have \(newLoadedCount)/\(result.totalCount) sets")
-            
         } catch {
             Logger.database.error("loadMoreSetsForTheme(\(theme.name)): Failed to load more sets - \(error)")
             themePaginationState[theme.id]?.isLoadingMore = false

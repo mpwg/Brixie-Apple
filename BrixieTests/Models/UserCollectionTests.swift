@@ -5,7 +5,6 @@ import SwiftData
 /// Test suite for UserCollection model
 @MainActor
 struct UserCollectionTests {
-    
     private func createModelContext() -> ModelContext {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: UserCollection.self, configurations: config)

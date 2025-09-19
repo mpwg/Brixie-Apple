@@ -48,7 +48,7 @@ struct SearchFiltersView: View {
                                 Slider(value: Binding(
                                     get: { Double(minYear) },
                                     set: { minYear = Int($0) }
-                                ), in: 1958...Double(maxYear), step: 1)
+                                ), in: 1_958...Double(maxYear), step: 1)
                                 Text("\(minYear)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -110,10 +110,10 @@ struct SearchFiltersView: View {
                         selectedThemes.removeAll()
                         useYearFilter = false
                         usePartsFilter = false
-                        minYear = 1958
+                        minYear = 1_958
                         maxYear = Calendar.current.component(.year, from: Date())
                         minParts = 1
-                        maxParts = 10000
+                        maxParts = 10_000
                     }
                     .foregroundStyle(.red)
                 }
@@ -240,10 +240,10 @@ struct ThemeFilterRow: View {
 
 #Preview {
     @Previewable @State var selectedThemes: Set<Int> = []
-    @Previewable @State var minYear = 1958
-    @Previewable @State var maxYear = 2024
+    @Previewable @State var minYear = 1_958
+    @Previewable @State var maxYear = 2_024
     @Previewable @State var minParts = 1
-    @Previewable @State var maxParts = 10000
+    @Previewable @State var maxParts = 10_000
     @Previewable @State var useYearFilter = false
     @Previewable @State var usePartsFilter = false
     

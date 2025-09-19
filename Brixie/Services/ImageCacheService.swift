@@ -65,7 +65,7 @@ final class ImageCacheService {
         imageCache.totalCostLimit = AppConstants.Cache.memoryImageCacheLimit
         imageCache.countLimit = AppConstants.Cache.maxImagesInMemory
         
-        logger.info("⚙️ Memory caches configured: data cache \(AppConstants.Cache.memoryDataCacheLimit / (1024 * 1024))MB/\(AppConstants.Cache.maxDataObjectsInMemory) items, image cache \(AppConstants.Cache.memoryImageCacheLimit / (1024 * 1024))MB/\(AppConstants.Cache.maxImagesInMemory) items")
+        logger.info("⚙️ Memory caches configured: data cache \(AppConstants.Cache.memoryDataCacheLimit / (1_024 * 1_024))MB/\(AppConstants.Cache.maxDataObjectsInMemory) items, image cache \(AppConstants.Cache.memoryImageCacheLimit / (1_024 * 1_024))MB/\(AppConstants.Cache.maxImagesInMemory) items")
         
         // Calculate initial disk cache size
         calculateDiskCacheSize()
@@ -675,7 +675,6 @@ extension ImageCacheService {
         }
     }
 }
-
 
 // MARK: - Helper Classes
 

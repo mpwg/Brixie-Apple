@@ -126,9 +126,9 @@ extension LegoSet {
         let set = LegoSet(
             setNumber: "75192",
             name: "Millennium Falcon",
-            year: 2017,
+            year: 2_017,
             themeId: 171,
-            numParts: 7541,
+            numParts: 7_541,
             setImageURL: "https://cdn.rebrickable.com/media/sets/75192-1/53219.jpg",
             lastModified: Date()
         )

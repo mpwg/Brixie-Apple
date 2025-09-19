@@ -3,7 +3,6 @@ import XCTest
 
 /// UI Tests for Missing Parts functionality
 final class MissingPartsUITests: BaseUITest {
-    
     // MARK: - Missing Parts Tests
     
         @MainActor
@@ -13,7 +12,7 @@ final class MissingPartsUITests: BaseUITest {
         navigateToTab("Collection")
         
         let setCards = app.collectionViews.cells
-        if setCards.count > 0 {
+        if !setCards.isEmpty {
             let firstSet = setCards.firstMatch
             firstSet.tap()
             

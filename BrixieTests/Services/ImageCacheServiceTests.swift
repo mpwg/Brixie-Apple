@@ -5,7 +5,6 @@ import SwiftData
 /// Test suite for ImageCacheService
 @MainActor
 struct ImageCacheServiceTests {
-    
     private var cacheService: ImageCacheService!
     
     init() {

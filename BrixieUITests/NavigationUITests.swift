@@ -3,7 +3,6 @@ import XCTest
 
 /// UI Tests for main navigation flows and functionality
 final class NavigationUITests: BaseUITest {
-    
     // MARK: - Navigation Tests
     
         @MainActor

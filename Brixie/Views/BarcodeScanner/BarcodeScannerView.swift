@@ -85,7 +85,7 @@ struct BarcodeScannerView: View {
 }
 
 #Preview {
-    BarcodeScannerView { barcode in
+    BarcodeScannerView { _ in
         // Preview - barcode handling should be done by ViewModel
     }
 }

@@ -10,14 +10,13 @@ import SwiftUI
 
 /// Centralized constants for the Brixie application
 enum AppConstants {
-    
     // MARK: - API & Networking
     enum API {
         /// Default page size for API requests
         static let defaultPageSize = 200
         
         /// Maximum page size allowed for API requests
-        static let maxPageSize = 1000
+        static let maxPageSize = 1_000
         
         /// Cache freshness duration in seconds (1 hour)
         static let cacheExpirationInterval: TimeInterval = 3_600
@@ -176,7 +175,7 @@ enum AppConstants {
         static let hoursPerDay: Double = 24.0
         
         /// Seconds per hour
-        static let secondsPerHour: Double = 3600.0
+        static let secondsPerHour: Double = 3_600.0
         
         /// Cache sync validity period (hours)
         static let cacheSyncValidHours: Double = 24.0
@@ -206,7 +205,7 @@ enum AppConstants {
         static let matchingDefaultCount = 2
         
         /// Maximum part count for filters
-        static let maxPartCount: Double = 10000
+        static let maxPartCount: Double = 10_000
         
         /// Part count step for sliders
         static let partCountStep: Double = 50
@@ -224,7 +223,7 @@ enum AppConstants {
         static let builderSets = 10
         
         /// Parts needed for Parts Master achievement
-        static let partsMasterThreshold = 10000
+        static let partsMasterThreshold = 10_000
         
         /// ROI percentage for Smart Investor achievement
         static let smartInvestorROI = 50.0
@@ -521,7 +520,7 @@ enum AppConstants {
         static let sampleThemeName = "Star Wars"
         
         /// Sample set year
-        static let sampleYear = 2021
+        static let sampleYear = 2_021
         
         /// Sample piece count
         static let samplePieceCount = 474
@@ -533,7 +532,6 @@ enum AppConstants {
 
 // MARK: - Computed Properties
 extension AppConstants {
-    
     /// Commonly used UserDefaults keys as a collection
     enum UserDefaultsKeys {
         /// Key for storing last sync date in UserDefaults

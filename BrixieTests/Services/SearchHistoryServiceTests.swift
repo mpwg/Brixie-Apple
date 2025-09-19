@@ -5,7 +5,6 @@ import SwiftData
 /// Test suite for SearchHistoryService
 @MainActor
 struct SearchHistoryServiceTests {
-    
     private var service: SearchHistoryService!
     
     init() {

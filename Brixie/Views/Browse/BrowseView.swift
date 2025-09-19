@@ -53,7 +53,7 @@ struct BrowseView: View {
                 cachedFilteredThemes = []
                 lastSearchText = ""
             }
-            .onChange(of: searchText) { oldValue, newValue in
+            .onChange(of: searchText) { _, newValue in
                 // Update cache when search changes
                 let allSorted = allThemes.sorted { $0.name < $1.name }
                 let themes = Array(allSorted.prefix(20))
@@ -63,7 +63,7 @@ struct BrowseView: View {
                 lastSearchText = newValue
                 print("🔍 Search changed: \(filtered.count) themes for '\(newValue)'")
             }
-            .alert("Error", isPresented: .constant(viewModel.error != nil), presenting: viewModel.error) { error in
+            .alert("Error", isPresented: .constant(viewModel.error != nil), presenting: viewModel.error) { _ in
                 Button("OK") { viewModel.error = nil }
             } message: { error in
                 Text(error.localizedDescription)
@@ -308,7 +308,7 @@ struct BrowseView: View {
                                 .padding()
                         }
                     } else {
-                        List(selectedTheme.subthemes.sorted(by: { $0.name < $1.name })) { subtheme in
+                        List(selectedTheme.subthemes.sorted { $0.name < $1.name }) { subtheme in
                             NavigationButton(action: { viewModel.selectSubtheme(subtheme) }) {
                                 SubthemeRowView(subtheme: subtheme)
                             }

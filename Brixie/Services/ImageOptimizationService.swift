@@ -46,7 +46,7 @@ final class ImageOptimizationService {
             case .medium:
                 return CGSize(width: 400, height: 400)
             case .full:
-                return CGSize(width: 2048, height: 2048) // Reasonable maximum
+                return CGSize(width: 2_048, height: 2_048) // Reasonable maximum
             }
         }
         

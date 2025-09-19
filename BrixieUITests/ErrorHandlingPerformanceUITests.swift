@@ -3,7 +3,6 @@ import XCTest
 
 /// UI Tests for Error Handling and Performance
 final class ErrorHandlingPerformanceUITests: BaseUITest {
-    
     // MARK: - Error Handling Tests
     
         @MainActor

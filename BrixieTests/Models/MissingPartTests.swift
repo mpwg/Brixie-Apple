@@ -5,7 +5,6 @@ import SwiftData
 /// Test suite for MissingPart model
 @MainActor
 struct MissingPartTests {
-    
     private func createModelContext() -> ModelContext {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: MissingPart.self, configurations: config)

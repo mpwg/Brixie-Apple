@@ -49,7 +49,6 @@ struct ManualBarcodeEntryView: View {
 }
 
 #Preview {
-    ManualBarcodeEntryView { barcode in
-
+    ManualBarcodeEntryView { _ in
     }
 }

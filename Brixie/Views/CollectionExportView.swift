@@ -98,7 +98,7 @@ struct CollectionExportView: View {
                 switch result {
                 case .success:
                     dismiss()
-                case .failure(_):
+                case .failure:
                     // Error handling should be done by ViewModel, not view
                     // Remove logging from view - this should be handled by a proper ViewModel
                     break

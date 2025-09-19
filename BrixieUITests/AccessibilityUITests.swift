@@ -3,7 +3,6 @@ import XCTest
 
 /// UI Tests for Accessibility features
 final class AccessibilityUITests: BaseUITest {
-    
     // MARK: - Accessibility Tests
     
     @MainActor
@@ -18,7 +17,7 @@ final class AccessibilityUITests: BaseUITest {
         
         // Test set card accessibility
         let setCards = app.collectionViews.cells
-        if setCards.count > 0 {
+        if !setCards.isEmpty {
             let firstSet = setCards.firstMatch
             XCTAssertTrue(firstSet.isAccessibilityElement)
             XCTAssertFalse(firstSet.accessibilityLabel?.isEmpty ?? true)

@@ -181,7 +181,6 @@ final class LegoSetService {
             
             // Return both sets and total count from API response
             return (sets: convertedSets, totalCount: apiResponse.count)
-            
         } catch {
             // If API fails, return cached data if available
             if !cachedSets.isEmpty {
@@ -291,7 +290,6 @@ final class LegoSetService {
                 try context.save()
                 
                 return convertedSets
-                
             } catch {
                 // If API fails, fall back to cached results
                 return Array(cachedResults.prefix(limit))
@@ -358,7 +356,6 @@ final class LegoSetService {
                 try context.save()
                 return localSet
             }
-            
         } catch {
             // If API fails, return cached version if available
             return try context.fetch(descriptor).first
@@ -447,7 +444,6 @@ final class LegoSetService {
             saveLastSyncDate()
             
             return convertedSets
-            
         } catch {
             // Convert API errors to service errors
             if error is ErrorResponse {

@@ -16,10 +16,10 @@ final class SearchViewModel {
     // MARK: - Published State
     var query: String = ""
     var selectedThemes: Set<Int> = []
-    var minYear: Int = 1958
+    var minYear: Int = 1_958
     var maxYear: Int = Calendar.current.component(.year, from: Date())
     var minParts: Int = 1
-    var maxParts: Int = 10000
+    var maxParts: Int = 10_000
     var useYearFilter: Bool = false
     var usePartsFilter: Bool = false
     var showingSuggestions: Bool = false
@@ -94,10 +94,10 @@ final class SearchViewModel {
         selectedThemes.removeAll()
         useYearFilter = false
         usePartsFilter = false
-        minYear = 1958
+        minYear = 1_958
         maxYear = Calendar.current.component(.year, from: Date())
         minParts = 1
-        maxParts = 10000
+        maxParts = 10_000
     }
     
     /// Check if any filters are active

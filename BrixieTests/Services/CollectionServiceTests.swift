@@ -5,7 +5,6 @@ import SwiftData
 /// Test suite for CollectionService
 @MainActor
 struct CollectionServiceTests {
-    
     private var service: CollectionService!
     private var modelContext: ModelContext!
     
@@ -32,8 +31,8 @@ struct CollectionServiceTests {
         let set = LegoSet(
             setNumber: "75192",
             name: "Millennium Falcon",
-            year: 2017,
-            numParts: 7541,
+            year: 2_017,
+            numParts: 7_541,
             themeID: 158
         )
         
@@ -65,7 +64,7 @@ struct CollectionServiceTests {
         let set = LegoSet(
             setNumber: "75193",
             name: "Millennium Falcon Microfighter",
-            year: 2018,
+            year: 2_018,
             numParts: 101,
             themeID: 158
         )
@@ -86,8 +85,8 @@ struct CollectionServiceTests {
     @Test("CollectionService statistics calculation works")
     func testStatisticsCalculation() {
         // Add some test sets to collection
-        let set1 = LegoSet(setNumber: "001", name: "Test Set 1", year: 2020, numParts: 100, themeID: 1)
-        let set2 = LegoSet(setNumber: "002", name: "Test Set 2", year: 2021, numParts: 200, themeID: 1)
+        let set1 = LegoSet(setNumber: "001", name: "Test Set 1", year: 2_020, numParts: 100, themeID: 1)
+        let set2 = LegoSet(setNumber: "002", name: "Test Set 2", year: 2_021, numParts: 200, themeID: 1)
         
         let collection1 = UserCollection(setNumber: "001", isOwned: true, purchasePrice: 50.0, currentValue: 75.0)
         let collection2 = UserCollection(setNumber: "002", isOwned: true, purchasePrice: 100.0, currentValue: 90.0)
@@ -111,7 +110,6 @@ struct CollectionServiceTests {
             #expect(stats.totalParts == 300)
             #expect(stats.totalValue == 165.0)
             #expect(stats.totalInvestment == 150.0)
-            
         } catch {
             Issue.record("Failed to save test data for statistics: \(error)")
         }

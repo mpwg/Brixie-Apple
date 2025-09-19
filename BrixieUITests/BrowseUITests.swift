@@ -3,7 +3,6 @@ import XCTest
 
 /// UI Tests for Browse view functionality
 final class BrowseUITests: BaseUITest {
-    
     // MARK: - Browse View Tests
     
     @MainActor
@@ -34,7 +33,7 @@ final class BrowseUITests: BaseUITest {
         // Look for set cards or list items
         let setCards = app.collectionViews.cells
         
-        if setCards.count > 0 {
+        if !setCards.isEmpty {
             let firstSet = setCards.firstMatch
             XCTAssertTrue(firstSet.exists)
             
