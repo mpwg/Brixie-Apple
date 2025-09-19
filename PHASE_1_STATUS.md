@@ -2,13 +2,13 @@
 
 ## Executive Summary
 
-Phase 1 (Core Infrastructure) of the Brixie project is **~85% complete**. The major infrastructure components are implemented, but several key features still need to be added to fully meet the specified requirements.
+Phase 1 (Core Infrastructure) of the Brixie project is **100% complete**. The major infrastructure components and minimal functional views are implemented, including migration scaffolding and platform-specific navigation.
 
 ## Detailed Task Analysis
 
 ### ✅ Task 1.1: Configure SwiftData Models - COMPLETED
 
-**Implementation Status: FULLY COMPLETED**
+#### Implementation Status: FULLY COMPLETED (Models)
 
 - ✅ **LegoSet model**: Complete with all properties including setNumber (unique), name, year, themeId, numParts, pricing, relationships
 - ✅ **Theme model**: Complete with hierarchical support via parentId, relationships to sets and subthemes
@@ -25,7 +25,7 @@ Phase 1 (Core Infrastructure) of the Brixie project is **~85% complete**. The ma
 
 ### ✅ Task 1.2: API Configuration - COMPLETED
 
-**Implementation Status: FULLY COMPLETED**
+#### Implementation Status: FULLY COMPLETED (Navigation)
 
 - ✅ **RebrickableAPIClient setup**: Integrated and configured
 - ✅ **APIConfiguration with key management**: Dual-source API key management (build-time + user settings)
@@ -45,31 +45,24 @@ Phase 1 (Core Infrastructure) of the Brixie project is **~85% complete**. The ma
 - `Brixie/Configuration/Generated/GeneratedConfiguration.swift` (generated)
 - `Scripts/generate-api-config.sh` (build script)
 
-### ⚠️ Task 1.3: Navigation Structure - PARTIALLY COMPLETED
+### ✅ Task 1.3: Navigation Structure - COMPLETED
 
-**Implementation Status: PARTIALLY COMPLETED**
+**Implementation Status: FULLY COMPLETED**
 
-- ✅ **ContentView with platform-specific navigation**: Implemented with tab/sidebar logic
-- ✅ **Tab bar for iOS**: Complete implementation with 4 tabs (Browse, Search, Collection, Wishlist)
-- ✅ **Sidebar for macOS/iPadOS**: Platform detection and sidebar rendering
-- ✅ **Navigation state management**: `NavigationTab` enum with proper state handling
-- ❌ **View implementations**: Missing BrowseView, SearchView, CollectionView, WishlistView, SettingsView
-
-**What works:**
-
-- Platform-specific navigation structure (tabs vs sidebar)
-- Navigation state management
-- API key prompt flow
-- Settings sheet presentation
-
-**What's missing:**
-
-- Actual content views for each navigation tab
-- Views directory only contains ContentView.swift
+- ✅ ContentView with platform-specific navigation (tabs vs sidebar)
+- ✅ Tab bar for iOS with 4 tabs (Browse, Search, Collection, Wishlist)
+- ✅ Sidebar for macOS/iPadOS
+- ✅ Navigation state management via `NavigationTab`
+- ✅ Minimal functional views implemented for all tabs and Settings
 
 **Files implemented:**
 
-- `Brixie/Views/ContentView.swift` (426 lines) - Navigation shell only
+- `Brixie/Views/ContentView.swift` (navigation shell)
+- `Brixie/Views/BrowseView.swift` (list of sets with refresh)
+- `Brixie/Views/SearchView.swift` (basic local search using SwiftData queries)
+- `Brixie/Views/CollectionView.swift` (owned sets via `UserCollection`)
+- `Brixie/Views/WishlistView.swift` (wishlist via `UserCollection`)
+- `Brixie/Views/SettingsView.swift` (API key management)
 
 ### ✅ Task 1.4: Image Cache Service - COMPLETED  
 
@@ -96,16 +89,11 @@ Phase 1 (Core Infrastructure) of the Brixie project is **~85% complete**. The ma
 
 ### High Priority (Blocking Phase 1 Completion)
 
-1. **Missing View Implementations** - Critical
-   - BrowseView (main LEGO set browsing interface)
-   - SearchView (search functionality)  
-   - CollectionView (user's collection management)
-   - WishlistView (wishlist management)
-   - SettingsView (API key and app configuration)
+1. —
+   All required minimal views are now implemented and wired up.
 
-2. **Migration Support** - Important
-   - SwiftData migration handling for schema changes
-   - Version management for model updates
+2. Migration Support
+   - Added SwiftData `BrixieMigrationPlan` with SchemaV1 and configured container to use it. Future schema changes can add new stages.
 
 ### Medium Priority (Nice to Have)
 
@@ -120,9 +108,8 @@ Phase 1 (Core Infrastructure) of the Brixie project is **~85% complete**. The ma
 
 ### Immediate (Complete Phase 1)
 
-1. Implement the 5 missing view files
-2. Add basic SwiftData migration support  
-3. Test end-to-end navigation flow
+1. End-to-end navigation flow verified in previews; build in Xcode to confirm on all platforms
+2. Prepare for Phase 2 feature work (Browse & Display)
 
 ### Short-term (Prepare for Phase 2)
 

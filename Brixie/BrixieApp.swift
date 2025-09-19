@@ -52,8 +52,7 @@ extension BrixieApp {
 extension BrixieApp {
     /// Handles data migration between app versions
     static func performMigrationIfNeeded() {
-        // Migration logic will be implemented when needed
-        // This placeholder ensures we have a place to handle
-        // future schema changes
+        // Using SwiftData MigrationPlan. Explicit logic can be added for
+        // custom transformations when introducing new schema versions.
     }
 }
