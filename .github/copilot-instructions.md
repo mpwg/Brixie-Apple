@@ -2,7 +2,7 @@
 
 ## Brixie AI Coding Agent Guide
 
-Brixie is a **pure SwiftUI** multi-platform app for browsing LEGO sets via the Rebrickable API. It targets iOS 17+, macOS 14+ (Catalyst), and visionOS 1+, using Swift 6+ concurrency and SwiftData for persistence. The codebase is organized for clarity and maintainability.
+Brixie is a **pure SwiftUI** multi-platform app for browsing LEGO sets via the Rebrickable API. It targets iOS 26+, macOS 26+ (Catalyst), and visionOS 26+, using Swift 6+ concurrency and SwiftData for persistence. The codebase is organized for clarity and maintainability.
 
 **CRITICAL: SwiftUI-Only Architecture**
 
