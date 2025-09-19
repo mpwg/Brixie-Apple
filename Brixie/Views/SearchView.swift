@@ -110,7 +110,7 @@ struct SetSearchRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
+            AsyncCachedImage(thumbnailURL: URL(string: set.primaryImageURL ?? ""))
                 .frame(width: 60, height: 60)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .accessibilityHidden(true)

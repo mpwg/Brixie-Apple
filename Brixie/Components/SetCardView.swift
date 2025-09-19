@@ -12,7 +12,7 @@ struct SetCardView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: AppConstants.UI.smallSpacing) {
-            AsyncCachedImage(url: URL(string: set.imageURL ?? ""))
+            AsyncCachedImage(url: URL(string: set.imageURL ?? ""), imageType: .medium)
                 .frame(height: AppConstants.UI.cardImageHeight)
                 .accessibilityLabel("Image of LEGO set \(set.name)")
             

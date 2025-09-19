@@ -14,10 +14,12 @@ struct AsyncCachedImage: View {
     let url: URL?
     /// Content mode for image scaling
     let contentMode: ContentMode
-    /// Maximum image size for memory efficiency
+    /// Maximum image size for memory efficiency (deprecated - use imageType instead)
     let maxSize: CGSize?
     /// Whether to show loading placeholder
     let showPlaceholder: Bool
+    /// Image type for optimization (determines size and quality)
+    let imageType: ImageOptimizationService.ImageType
     
     /// Image cache service for loading and caching
     private let cacheService = ImageCacheService.shared
@@ -32,12 +34,32 @@ struct AsyncCachedImage: View {
         url: URL?,
         contentMode: ContentMode = .fit,
         maxSize: CGSize? = nil,
-        showPlaceholder: Bool = true
+        showPlaceholder: Bool = true,
+        imageType: ImageOptimizationService.ImageType = .medium
     ) {
         self.url = url
         self.contentMode = contentMode
         self.maxSize = maxSize
         self.showPlaceholder = showPlaceholder
+        self.imageType = imageType
+    }
+    
+    /// Convenience initializer for thumbnail images (small lists/grids)
+    init(
+        thumbnailURL url: URL?,
+        contentMode: ContentMode = .fit,
+        showPlaceholder: Bool = true
+    ) {
+        self.init(url: url, contentMode: contentMode, showPlaceholder: showPlaceholder, imageType: .thumbnail)
+    }
+    
+    /// Convenience initializer for full-size images (detail views)
+    init(
+        fullSizeURL url: URL?,
+        contentMode: ContentMode = .fit,
+        showPlaceholder: Bool = true
+    ) {
+        self.init(url: url, contentMode: contentMode, showPlaceholder: showPlaceholder, imageType: .full)
     }
     
     var body: some View {
@@ -135,8 +157,8 @@ struct AsyncCachedImage: View {
                 return
             }
             
-            // Load from cache service (handles disk cache and network)
-            if let imageData = await cacheService.imageData(from: url) {
+            // Load optimized image data from cache service
+            if let imageData = await cacheService.optimizedImageData(from: url, imageType: imageType) {
                 let loadedImage = await createOptimizedImage(from: imageData)
                 
                 await MainActor.run {
@@ -179,16 +201,16 @@ struct AsyncCachedImage: View {
         return await Task.detached(priority: .utility) {
             guard let uiImage = UIImage(data: data) else { return nil }
             
-            // Apply size optimization if specified
-            let processedImage: UIImage
+            // The image data is already optimized by ImageOptimizationService
+            // so we just need to create the SwiftUI Image
+            // Legacy maxSize support for backward compatibility
             if let maxSize = maxSize, 
                uiImage.size.width > maxSize.width || uiImage.size.height > maxSize.height {
-                processedImage = await uiImage.resized(to: maxSize) ?? uiImage
+                let processedImage = await uiImage.resized(to: maxSize) ?? uiImage
+                return Image(uiImage: processedImage)
             } else {
-                processedImage = uiImage
+                return Image(uiImage: uiImage)
             }
-            
-            return Image(uiImage: processedImage)
         }.value
     }
 }

@@ -113,7 +113,74 @@ final class ImageCacheService {
     
     // MARK: - Public Methods
     
-    /// Get image data from cache or download if needed
+    /// Get optimized image data from cache or download and optimize if needed
+    func optimizedImageData(
+        from url: URL, 
+        imageType: ImageOptimizationService.ImageType = .medium
+    ) async -> Data? {
+        logger.entering(parameters: ["url": url.lastPathComponent, "type": "\(imageType)"])
+        let startTime = CFAbsoluteTimeGetCurrent()
+        
+        let optimizationService = ImageOptimizationService.shared
+        let cacheKey = optimizationService.cacheKey(for: url, imageType: imageType)
+        let memoryCacheKey = NSString(string: cacheKey)
+        
+        // Check memory cache for optimized image
+        if let cachedData = memoryCache.object(forKey: memoryCacheKey) as Data? {
+            logger.cache("MEMORY_OPT", key: url.lastPathComponent, hit: true)
+            logger.debug("🎯 Memory cache hit for optimized \(url.lastPathComponent) (\(cachedData.count) bytes)")
+            logger.exitWith(result: "memory cache hit (optimized) - \(cachedData.count) bytes")
+            return cachedData
+        }
+        
+        logger.cache("MEMORY_OPT", key: url.lastPathComponent, hit: false)
+        
+        // Check disk cache for optimized image
+        if let optimizedData = await loadOptimizedImageFromDisk(url: url, imageType: imageType) {
+            logger.cache("DISK_OPT", key: url.lastPathComponent, hit: true)
+            logger.debug("💾 Disk cache hit for optimized \(url.lastPathComponent) (\(optimizedData.count) bytes)")
+            
+            // Store in memory cache
+            memoryCache.setObject(optimizedData as NSData, forKey: memoryCacheKey, cost: optimizedData.count)
+            
+            let duration = CFAbsoluteTimeGetCurrent() - startTime
+            logger.debug("⏱️ Optimized disk cache retrieval took \(duration, format: .fixed(precision: 3))s")
+            logger.exitWith(result: "disk cache hit (optimized) - \(optimizedData.count) bytes")
+            return optimizedData
+        }
+        
+        logger.cache("DISK_OPT", key: url.lastPathComponent, hit: false)
+        
+        // Get original image data (this will download if needed)
+        guard let originalData = await imageData(from: url) else {
+            logger.warning("⚠️ Failed to get original image data for optimization")
+            logger.exitWith(result: "failed - no original data")
+            return nil
+        }
+        
+        // Optimize the image
+        logger.debug("🔄 Optimizing image \(url.lastPathComponent) for \(imageType)")
+        guard let optimizedData = await optimizationService.optimizeImage(
+            data: originalData,
+            for: imageType
+        ) else {
+            logger.warning("⚠️ Image optimization failed, using original data")
+            logger.exitWith(result: "optimization failed - using original")
+            return originalData
+        }
+        
+        // Cache the optimized data
+        await storeOptimizedImageToDisk(data: optimizedData, url: url, imageType: imageType)
+        memoryCache.setObject(optimizedData as NSData, forKey: memoryCacheKey, cost: optimizedData.count)
+        
+        let duration = CFAbsoluteTimeGetCurrent() - startTime
+        logger.info("📥 Optimized image request completed for \(url.lastPathComponent) in \(duration, format: .fixed(precision: 3))s (\(optimizedData.count) bytes)")
+        logger.exitWith(result: "optimization complete - \(optimizedData.count) bytes")
+        
+        return optimizedData
+    }
+    
+    /// Get image data from cache or download if needed (legacy method)
     func imageData(from url: URL) async -> Data? {
         logger.entering(parameters: ["url": url.lastPathComponent])
         let startTime = CFAbsoluteTimeGetCurrent()
@@ -375,6 +442,86 @@ final class ImageCacheService {
             }
         }
     }
+    
+    // MARK: - Optimized Disk Cache Methods
+    
+    /// Load optimized image data from disk cache
+    private func loadOptimizedImageFromDisk(
+        url: URL, 
+        imageType: ImageOptimizationService.ImageType
+    ) async -> Data? {
+        let optimizationService = ImageOptimizationService.shared
+        let cacheKey = optimizationService.cacheKey(for: url, imageType: imageType)
+        let cacheDir = cacheDirectory
+        
+        return await withCheckedContinuation { continuation in
+            diskQueue.async { [weak self] in
+                let fileURL = cacheDir.appendingPathComponent(cacheKey)
+                
+                guard let data = try? Data(contentsOf: fileURL) else {
+                    Task { @MainActor in
+                        self?.logger.debug("💾 No optimized disk cache found for \(cacheKey)")
+                    }
+                    continuation.resume(returning: nil)
+                    return
+                }
+                
+                Task { @MainActor in
+                    self?.logger.debug("💾 Loaded \(data.count) bytes from optimized disk cache for \(cacheKey)")
+                }
+                
+                continuation.resume(returning: data)
+            }
+        }
+    }
+    
+    /// Save optimized image data to disk cache
+    private func storeOptimizedImageToDisk(
+        data: Data, 
+        url: URL, 
+        imageType: ImageOptimizationService.ImageType
+    ) async {
+        let optimizationService = ImageOptimizationService.shared
+        let cacheKey = optimizationService.cacheKey(for: url, imageType: imageType)
+        let cacheDir = cacheDirectory
+        let typeDirName = imageType.directoryName  // Access outside the closure
+        
+        await withCheckedContinuation { continuation in
+            diskQueue.async { [weak self] in
+                // Create subdirectory for image type if needed
+                let typeDir = cacheDir.appendingPathComponent(typeDirName)
+                if !FileManager.default.fileExists(atPath: typeDir.path) {
+                    try? FileManager.default.createDirectory(
+                        at: typeDir,
+                        withIntermediateDirectories: true,
+                        attributes: nil
+                    )
+                }
+                
+                let fileURL = cacheDir.appendingPathComponent(cacheKey)
+                
+                do {
+                    try data.write(to: fileURL)
+                    
+                    Task { @MainActor in
+                        guard let self = self else { return }
+                        self.currentCacheSize += data.count
+                        self.logger.cache("STORE_DISK_OPT", key: cacheKey)
+                        self.logger.debug("💾 Saved \(data.count) bytes to optimized disk cache: \(cacheKey)")
+                        self.cleanupCacheIfNeeded()
+                    }
+                } catch {
+                    Task { @MainActor in
+                        self?.logger.error("❌ Failed to save optimized image \(cacheKey) to disk: \(error.localizedDescription)")
+                    }
+                }
+                
+                continuation.resume()
+            }
+        }
+    }
+    
+    // MARK: - Helper Methods
     
     /// Generate filename for cached image
     nonisolated private static func fileName(for url: URL) -> String {

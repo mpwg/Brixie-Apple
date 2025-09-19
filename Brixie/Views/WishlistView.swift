@@ -180,7 +180,7 @@ private struct WishlistSetRowView: View {
     
     var body: some View {
         HStack {
-            AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
+            AsyncCachedImage(thumbnailURL: URL(string: set.primaryImageURL ?? ""))
                 .frame(width: 48, height: 48)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .accessibilityHidden(true)

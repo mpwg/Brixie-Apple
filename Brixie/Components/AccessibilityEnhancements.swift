@@ -139,7 +139,8 @@ struct AccessibleSetCard: View {
         VStack(alignment: .leading, spacing: AccessibilityEnhancements.accessibleSpacing(8)) {
             AsyncCachedImage(
                 url: URL(string: set.imageURL ?? ""),
-                maxSize: sizeCategory.isAccessibilityCategory ? CGSize(width: 200, height: 200) : nil
+                maxSize: sizeCategory.isAccessibilityCategory ? CGSize(width: 200, height: 200) : nil,
+                imageType: .medium
             )
             .frame(height: sizeCategory.isAccessibilityCategory ? 160 : 120)
             .accessibilityLabel("Image of LEGO set \(set.name)")
