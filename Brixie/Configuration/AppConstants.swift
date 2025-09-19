@@ -539,8 +539,13 @@ extension AppConstants {
     
     /// Commonly used UserDefaults keys as a collection
     enum UserDefaultsKeys {
+        /// Key for storing last sync date in UserDefaults
         static let lastSyncDate = Storage.lastSyncDateKey
+        
+        /// Key for storing search history in UserDefaults  
         static let searchHistory = Storage.searchHistoryKey
+        
+        /// Key for storing API key in UserDefaults
         static let apiKey = Storage.apiKeyKey
     }
     
@@ -549,11 +554,22 @@ extension AppConstants {
         /// Standard duration for common animations
         static let standardDuration = Animation.normal
         
+        /// Quick ease-in-out animation (0.2s)
         static let quickEaseInOut = SwiftUI.Animation.easeInOut(duration: Animation.quick)
+        
+        /// Normal ease-in-out animation (0.3s)
         static let normalEaseInOut = SwiftUI.Animation.easeInOut(duration: Animation.normal)
+        
+        /// Slow ease-in-out animation (0.5s)
         static let slowEaseInOut = SwiftUI.Animation.easeInOut(duration: Animation.slow)
+        
+        /// Tab switching animation (0.3s ease-in-out)
         static let tabSwitch = SwiftUI.Animation.easeInOut(duration: Animation.tabSwitchDuration)
+        
+        /// Repeating loading pulse animation (1.0s with autoreverses)
         static let loadingPulse = SwiftUI.Animation.easeInOut(duration: Animation.long).repeatForever(autoreverses: true)
+        
+        /// Default spring animation with standard response and damping
         static let springDefault = SwiftUI.Animation.spring(
             response: Animation.springResponse,
             dampingFraction: Animation.springDamping,
@@ -563,60 +579,115 @@ extension AppConstants {
     
     /// Common spacing values for UI layout
     enum Spacing {
+        /// Extra small spacing (4pt)
         static let xs: CGFloat = 4
+        
+        /// Small spacing (8pt) - references UI.smallSpacing
         static let small = UI.smallSpacing
+        
+        /// Standard spacing (16pt) - references UI.standardSpacing
         static let standard = UI.standardSpacing
+        
+        /// Large spacing (24pt) - references UI.largeSpacing
         static let large = UI.largeSpacing
+        
+        /// Extra large spacing (32pt)
         static let xl: CGFloat = 32
     }
     
     /// Common corner radius values
     enum CornerRadius {
+        /// Small corner radius (8pt) - references UI.smallCornerRadius
         static let small = UI.smallCornerRadius
+        
+        /// Standard corner radius (12pt) - references UI.standardCornerRadius  
         static let standard = UI.standardCornerRadius
+        
+        /// Large corner radius (16pt)
         static let large: CGFloat = 16
+        
+        /// Extra large corner radius (20pt)
         static let extraLarge: CGFloat = 20
+        
+        /// Button corner radius (6pt)
         static let button: CGFloat = 6
+        
+        /// Card corner radius (12pt)
         static let card: CGFloat = 12
+        
+        /// Thumbnail corner radius (8pt)
         static let thumbnail: CGFloat = 8
+        
+        /// Skeleton loading corner radius (4pt)
         static let skeleton: CGFloat = 4
     }
     
     /// Common scale values for animations
     enum Scale {
+        /// Pressed button scale factor (0.98) - references VisualEffects.pressedScaleFactor
         static let pressed = VisualEffects.pressedScaleFactor
+        
+        /// Selected icon scale factor (1.1) - references VisualEffects.selectedIconScale
         static let selected = VisualEffects.selectedIconScale
+        
+        /// Progress view scale factor (1.2) - references VisualEffects.progressViewScale
         static let progress = VisualEffects.progressViewScale
+        
+        /// Error icon scale factor (0.8) - references VisualEffects.errorIconScale
         static let error = VisualEffects.errorIconScale
+        
+        /// Small scale for animations (0.8) - same as error scale
         static let small = VisualEffects.errorIconScale  // 0.8 - small scale for animations
+        
+        /// Base animation scale (1.0) - references Limits.baseAnimationScale
         static let base = Limits.baseAnimationScale
     }
     
     /// Common numeric values
     enum Numbers {
+        /// Zero value as Double (0.0) for animation contexts - references Limits.zeroValue
         static let zeroValue = Limits.zeroValue
+        
+        /// Zero value as Int (0) for counts and indices - references Limits.zeroInt
         static let zeroInt = Limits.zeroInt
+        
+        /// Percentage multiplier (100.0) for percentage calculations - references Achievements.percentageMultiplier
         static let percentMultiplier = Achievements.percentageMultiplier
     }
     
     /// Common delays in nanoseconds for Task.sleep
     enum Delays {
+        /// Quick interaction delay (0.1s in nanoseconds) - references Timing.quickDelay
         static let quick = Timing.quickDelay
+        
+        /// Search debounce delay (0.3s in nanoseconds) - references Timing.searchDebounceDelay
         static let search = Timing.searchDebounceDelay
+        
+        /// Haptic feedback delay (0.05s in nanoseconds) - references Timing.hapticDelay
         static let haptic = Timing.hapticDelay
+        
+        /// Offline action retry delay (0.5s in nanoseconds) - references API.offlineRetryDelay
         static let offline = API.offlineRetryDelay
     }
     
     /// HTTP status codes
     enum HTTPStatus {
+        /// HTTP success status code (200) - references Limits.httpSuccessCode
         static let success = Limits.httpSuccessCode
     }
     
     /// Common frame sizes
     enum FrameSize {
+        /// Thumbnail frame size (60x60pt) - combines ImageSize.thumbnailWidth/Height
         static let thumbnail = CGSize(width: ImageSize.thumbnailWidth, height: ImageSize.thumbnailHeight)
+        
+        /// Collection icon frame size (48x48pt) - uses ImageSize.collectionIconSize
         static let collectionIcon = CGSize(width: ImageSize.collectionIconSize, height: ImageSize.collectionIconSize)
+        
+        /// Preview frame size (200x200pt) - combines ImageSize.previewWidth/Height
         static let preview = CGSize(width: ImageSize.previewWidth, height: ImageSize.previewHeight)
+        
+        /// Large icon frame size (64x64pt) - uses Accessibility.largeIconSize
         static let largeIcon = CGSize(width: Accessibility.largeIconSize, height: Accessibility.largeIconSize)
     }
 }
