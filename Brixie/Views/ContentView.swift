@@ -8,10 +8,6 @@
 import SwiftUI
 import SwiftData
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
 /// Main content view with platform-specific navigation
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -133,13 +129,10 @@ struct ContentView: View {
     
     /// Determines whether to use tab or sidebar navigation
     private var useTabNavigation: Bool {
-        #if os(iOS)
-        // Use tab navigation on iPhone or iPad in compact width
-        return UIDevice.current.userInterfaceIdiom == .phone || horizontalSizeClass == .compact
-        #else
-        // Always use sidebar on macOS and visionOS
-        return false
-        #endif
+        // Use SwiftUI's horizontal size class for responsive navigation
+        // Tab navigation for compact width (iPhone, iPad split view)
+        // Sidebar navigation for regular width (iPad full screen, macOS)
+        return horizontalSizeClass == .compact
     }
     
     /// Returns the appropriate view for the selected tab
