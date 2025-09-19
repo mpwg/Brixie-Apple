@@ -254,28 +254,6 @@ struct BrowseView: View {
         }
     }
     
-    // MARK: - Helper Views
-    
-    /// Navigation button for compact layout
-    private struct NavigationButton<Content: View>: View {
-        let action: () -> Void
-        @ViewBuilder let content: () -> Content
-        
-        var body: some View {
-            Button(action: action) {
-                HStack {
-                    content()
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        }
-    }
-    
     // MARK: - Data Helpers
     
     /// Filtered root themes based on search
@@ -379,252 +357,25 @@ struct BrowseView: View {
     }
 }
 
-// MARK: - Component Views
+// MARK: - Helper Views
 
-/// Theme row for sidebar
-private struct ThemeRowView: View {
-    let theme: Theme
-    let isSelected: Bool
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(theme.name)
-                    .font(.body)
-                    .lineLimit(1)
-                    .foregroundStyle(isSelected ? .white : .primary)
-                
-                if theme.hasSubthemes {
-                    Text("\(theme.subthemes.count) categories")
-                        .font(.caption)
-                        .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
-                } else {
-                    Text("\(theme.totalSetCount) sets")
-                        .font(.caption)
-                        .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
-                }
-            }
-            
-            Spacer()
-            
-            if theme.hasSubthemes {
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
-            }
-        }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(isSelected ? .blue : .clear)
-        )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(theme.name), \(theme.hasSubthemes ? "\(theme.subthemes.count) categories" : "\(theme.totalSetCount) sets")")
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-}
-
-/// Subtheme row view
-private struct SubthemeRowView: View {
-    let subtheme: Theme
-    
-    var body: some View {
-        HStack {
-            Text(subtheme.name)
-                .font(.body)
-            
-            Spacer()
-            
-            Text("\(subtheme.totalSetCount)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(.quaternary, in: Capsule())
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(subtheme.name), \(subtheme.totalSetCount) sets")
-    }
-}
-
-/// Theme subthemes view
-private struct ThemeSubthemesView: View {
-    let theme: Theme
-    let onSubthemeSelected: (Theme) -> Void
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Header
-            HStack {
-                Text(theme.name)
-                    .font(.largeTitle.bold())
-                    .accessibilityAddTraits(.isHeader)
-                Spacer()
-            }
-            .padding(.horizontal)
-            
-            if theme.subthemes.isEmpty {
-                ContentUnavailableView("No Subcategories", 
-                                     systemImage: "folder",
-                                     description: Text("This theme has no subcategories"))
-            } else {
-                // Grid of subthemes
-                LazyVGrid(columns: [
-                    GridItem(.adaptive(minimum: 280), spacing: 16)
-                ], spacing: 16) {
-                    ForEach(theme.subthemes.sorted(by: { $0.name < $1.name })) { subtheme in
-                        SubthemeCardView(subtheme: subtheme) {
-                            onSubthemeSelected(subtheme)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-            }
-            
-            Spacer()
-        }
-    }
-}
-
-/// Subtheme card view
-private struct SubthemeCardView: View {
-    let subtheme: Theme
+/// Navigation button for compact layout
+private struct NavigationButton<Content: View>: View {
     let action: () -> Void
+    @ViewBuilder let content: () -> Content
     
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text(subtheme.name)
-                        .font(.headline)
-                        .multilineTextAlignment(.leading)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                
-                HStack {
-                    Text("\(subtheme.totalSetCount) sets")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                }
-            }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(subtheme.name), \(subtheme.totalSetCount) sets")
-        .accessibilityAddTraits(.isButton)
-    }
-}
-
-/// Theme sets view
-private struct ThemeSetsView: View {
-    let theme: Theme
-    let sets: [LegoSet]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Header
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(theme.name)
-                        .font(.largeTitle.bold())
-                        .accessibilityAddTraits(.isHeader)
-                    Text("\(sets.count) sets")
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                }
+                content()
                 Spacer()
-            }
-            .padding(.horizontal)
-            
-            if sets.isEmpty {
-                ContentUnavailableView("No Sets", 
-                                     systemImage: "cube",
-                                     description: Text("No LEGO sets found in this theme"))
-            } else {
-                List(sets) { set in
-                    NavigationLink(destination: SetDetailView(set: set)) {
-                        SetRowView(set: set)
-                    }
-                }
-            }
-        }
-    }
-}
-
-/// Subtheme sets view
-private struct SubthemeSetsView: View {
-    let subtheme: Theme
-    let sets: [LegoSet]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Header
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(subtheme.name)
-                        .font(.largeTitle.bold())
-                        .accessibilityAddTraits(.isHeader)
-                    if let parent = subtheme.parentTheme {
-                        Text(parent.name)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    Text("\(sets.count) sets")
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-            }
-            .padding(.horizontal)
-            
-            if sets.isEmpty {
-                ContentUnavailableView("No Sets", 
-                                     systemImage: "cube",
-                                     description: Text("No LEGO sets found in this category"))
-            } else {
-                List(sets) { set in
-                    NavigationLink(destination: SetDetailView(set: set)) {
-                        SetRowView(set: set)
-                    }
-                }
-            }
-        }
-    }
-}
-
-/// Set row view for lists
-private struct SetRowView: View {
-    let set: LegoSet
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
-                .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .accessibilityHidden(true)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(set.name)
-                    .font(.headline)
-                    .lineLimit(1)
-                
-                Text("#\(set.setNumber) • \(set.year)")
-                    .font(.subheadline)
+                Image(systemName: "chevron.right")
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            
-            Spacer()
+            .contentShape(Rectangle())
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(set.name), set number \(set.setNumber), year \(set.year)")
+        .buttonStyle(.plain)
     }
 }
 

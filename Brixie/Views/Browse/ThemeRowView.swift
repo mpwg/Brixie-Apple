@@ -1,0 +1,63 @@
+//
+//  ThemeRowView.swift
+//  Brixie
+//
+//  Created by GitHub Copilot on 19/09/2025.
+//
+
+import SwiftUI
+
+/// Theme row for sidebar
+struct ThemeRowView: View {
+    let theme: Theme
+    let isSelected: Bool
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(theme.name)
+                    .font(.body)
+                    .lineLimit(1)
+                    .foregroundStyle(isSelected ? .white : .primary)
+                
+                if theme.hasSubthemes {
+                    Text("\(theme.subthemes.count) categories")
+                        .font(.caption)
+                        .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                } else {
+                    Text("\(theme.totalSetCount) sets")
+                        .font(.caption)
+                        .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                }
+            }
+            
+            Spacer()
+            
+            if theme.hasSubthemes {
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+            }
+        }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(isSelected ? .blue : .clear)
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(theme.name), \(theme.hasSubthemes ? "\(theme.subthemes.count) categories" : "\(theme.totalSetCount) sets")")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+#Preview {
+    // Mock theme for preview
+    let theme = Theme(id: 1, name: "Star Wars", parentId: nil)
+    
+    VStack {
+        ThemeRowView(theme: theme, isSelected: false)
+        ThemeRowView(theme: theme, isSelected: true)
+    }
+    .padding()
+}
