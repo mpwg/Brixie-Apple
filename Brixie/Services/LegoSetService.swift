@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 import SwiftUI
 import RebrickableLegoAPIClient
+import OSLog
 
 /// Service for managing LEGO set data from Rebrickable API and local cache
 @MainActor
@@ -58,11 +59,18 @@ final class LegoSetService {
         
         // If we have cached data and it's recent, return it
         if !cachedSets.isEmpty && isDataFresh() {
+            // Ensure relationships are established even for cached data
+            try await establishSetThemeRelationships()
             return cachedSets
         }
         
         // Otherwise, fetch from API
-        return try await fetchSetsFromAPI(limit: limit, offset: offset)
+        let fetchedSets = try await fetchSetsFromAPI(limit: limit, offset: offset)
+        
+        // Establish relationships after fetching from API
+        try await establishSetThemeRelationships()
+        
+        return fetchedSets
     }
     
     /// Fetch sets by theme
@@ -472,6 +480,51 @@ extension LegoSetService {
             case .barcode:
                 return NSLocalizedString("Barcode", comment: "Search by barcode")
             }
+        }
+    }
+    
+    // MARK: - Relationship Management
+    
+    /// Establish relationships between sets and themes
+    private func establishSetThemeRelationships() async throws {
+        guard let modelContext = modelContext else {
+            throw ServiceError.notConfigured
+        }
+        
+        // Fetch all themes and sets
+        let allThemes = try modelContext.fetch(FetchDescriptor<Theme>())
+        let allSets = try modelContext.fetch(FetchDescriptor<LegoSet>())
+        
+        // Create lookup dictionary for efficient theme access
+        var themeById: [Int: Theme] = [:]
+        for theme in allThemes {
+            themeById[theme.id] = theme
+        }
+        
+        Logger.legoSetService.info("Establishing set-theme relationships for \(allSets.count) sets")
+        
+        // Establish set-theme relationships
+        var relationshipsEstablished = 0
+        for set in allSets {
+            if let theme = themeById[set.themeId] {
+                // Set the theme relationship if not already set
+                if set.theme != theme {
+                    set.theme = theme
+                    relationshipsEstablished += 1
+                }
+                
+                // Add set to theme's sets if not already there
+                if !theme.sets.contains(set) {
+                    theme.sets.append(set)
+                }
+            }
+        }
+        
+        if relationshipsEstablished > 0 {
+            Logger.legoSetService.info("Established \(relationshipsEstablished) new set-theme relationships")
+            try modelContext.save()
+        } else {
+            Logger.legoSetService.debug("All set-theme relationships already established")
         }
     }
     
