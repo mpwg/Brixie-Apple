@@ -12,13 +12,9 @@ struct SetDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                AsyncCachedImage(url: URL(string: set.primaryImageURL ?? "")) {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 200)
-                }
-                .frame(height: 200)
-                .accessibilityLabel("Image of LEGO set \(set.name)")
+                AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
+                    .frame(height: 200)
+                    .accessibilityLabel("Image of LEGO set \(set.name)")
                 
                 Text(set.name)
                     .font(.title)
@@ -33,26 +29,6 @@ struct SetDetailView: View {
                 Text("Parts: \(set.numParts)")
                     .font(.subheadline)
                     .accessibilityIdentifier("setDetailParts")
-                
-                if let gallery = set.imageGallery, !gallery.isEmpty {
-                    Text("Gallery")
-                        .font(.headline)
-                        .accessibilityAddTraits(.isHeader)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(gallery, id: \.self) { url in
-                                AsyncCachedImage(url: url) {
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(width: 120, height: 120)
-                                }
-                                .frame(width: 120, height: 120)
-                                .accessibilityLabel("Gallery image for \(set.name)")
-                            }
-                        }
-                    }
-                    .accessibilityIdentifier("setGallery")
-                }
                 
                 // Collection Management Buttons
                 HStack(spacing: 12) {
@@ -103,7 +79,7 @@ struct SetDetailView: View {
                                     .foregroundStyle(.secondary)
                             }
                             
-                            if let condition = collection.condition {
+                            if collection.condition != nil {
                                 Text("Condition: \(collection.conditionStars)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -122,7 +98,6 @@ struct SetDetailView: View {
                         }
                         
                         // Missing parts management for owned sets
-                        /* TODO: Enable when MissingPart model is added to Xcode project
                         if collection.isOwned {
                             Button(action: {
                                 showingMissingParts = true
@@ -132,7 +107,6 @@ struct SetDetailView: View {
                             .buttonStyle(.bordered)
                             .accessibilityIdentifier("manageMissingParts")
                         }
-                        */
                     }
                     .padding()
                     .background(Color.gray.opacity(0.1))
@@ -148,13 +122,11 @@ struct SetDetailView: View {
             .padding()
         }
         .accessibilityElement(children: .contain)
-        /* TODO: Enable when MissingPart model is added to Xcode project
         .sheet(isPresented: $showingMissingParts) {
             if let collection = set.userCollection {
                 MissingPartsView(userCollection: collection)
             }
         }
-        */
     }
     
     private var shareText: String {

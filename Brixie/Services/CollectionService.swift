@@ -19,14 +19,10 @@ final class CollectionService {
     
     /// Add or update a set in the user's collection
     func addToCollection(_ set: LegoSet, in context: ModelContext, isOwned: Bool = true, isWishlist: Bool = false) {
-        // Check if collection entry already exists
-        let descriptor = FetchDescriptor<UserCollection>(
-            predicate: #Predicate<UserCollection> { collection in
-                collection.legoSet?.setNumber == set.setNumber
-            }
-        )
-        
-        let existingCollection = try? context.fetch(descriptor).first
+        // Get all UserCollections and filter manually since SwiftData predicates have limitations
+        let descriptor = FetchDescriptor<UserCollection>()
+        let collections = (try? context.fetch(descriptor)) ?? []
+        let existingCollection = collections.first { $0.legoSet?.setNumber == set.setNumber }
         
         if let existing = existingCollection {
             // Update existing entry
@@ -180,7 +176,7 @@ final class CollectionService {
     
     /// Get recent acquisitions
     func getRecentAcquisitions(from context: ModelContext, limit: Int = 10) -> [UserCollection] {
-        let descriptor = FetchDescriptor<UserCollection>(
+        var descriptor = FetchDescriptor<UserCollection>(
             predicate: #Predicate<UserCollection> { collection in
                 collection.isOwned && collection.dateAcquired != nil
             },

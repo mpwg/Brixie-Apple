@@ -6,7 +6,10 @@
 //
 
 import SwiftUI
+#if canImport(VisionKit) && !targetEnvironment(macCatalyst)
 import VisionKit
+import Vision
+#endif
 import AVFoundation
 
 struct BarcodeScannerView: View {
@@ -19,6 +22,7 @@ struct BarcodeScannerView: View {
     var body: some View {
         NavigationView {
             Group {
+#if canImport(VisionKit) && !targetEnvironment(macCatalyst)
                 if DataScannerViewController.isSupported && DataScannerViewController.isAvailable {
                     switch cameraPermissionStatus {
                     case .authorized:
@@ -36,6 +40,9 @@ struct BarcodeScannerView: View {
                 } else {
                     UnsupportedDeviceView()
                 }
+#else
+                MacCatalystUnsupportedView()
+#endif
             }
             .navigationTitle("Barcode Scanner")
             .navigationBarTitleDisplayMode(.inline)
@@ -77,15 +84,16 @@ struct BarcodeScannerView: View {
     }
 }
 
+#if canImport(VisionKit) && !targetEnvironment(macCatalyst)
 struct DataScannerView: UIViewControllerRepresentable {
     let onBarcodeScanned: (String) -> Void
     
     func makeUIViewController(context: Context) -> DataScannerViewController {
         let recognizedDataTypes: Set<DataScannerViewController.RecognizedDataType> = [
             .barcode(symbologies: [
-                .ean13, .ean8, .upce, .upca,
+                .ean13, .ean8, .upce,
                 .code128, .code39, .code93,
-                .interleaved2of5, .itf14,
+                .itf14,
                 .dataMatrix, .pdf417, .qr
             ])
         ]
@@ -131,6 +139,7 @@ struct DataScannerView: UIViewControllerRepresentable {
         }
     }
 }
+#endif
 
 struct ManualBarcodeEntryView: View {
     @Environment(\.dismiss) private var dismiss
@@ -222,9 +231,7 @@ struct PermissionDeniedView: View {
     
     private func openSettings() {
         if let settingsURL = URL(string: "app-settings:") {
-            Task {
-                await openURL(settingsURL)
-            }
+            openURL(settingsURL)
         }
     }
 }
@@ -241,6 +248,27 @@ struct UnsupportedDeviceView: View {
                 .fontWeight(.semibold)
             
             Text("The barcode scanner is not available on this device. You can still enter barcodes manually.")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .padding()
+    }
+}
+
+struct MacCatalystUnsupportedView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "laptopcomputer")
+                .font(.system(size: 64))
+                .foregroundStyle(.blue)
+            
+            Text("Scanner Not Available on Mac")
+                .font(.title2)
+                .fontWeight(.semibold)
+            
+            Text("Barcode scanning is not supported on Mac. You can enter barcodes manually using the Manual Entry button.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

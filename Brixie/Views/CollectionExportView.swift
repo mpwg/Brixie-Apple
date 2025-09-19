@@ -239,7 +239,7 @@ struct CollectionExportView: View {
                 lines.append("Purchase Price: \(purchasePrice)")
             }
             
-            if includeCondition, let condition = set.userCollection?.condition {
+            if includeCondition, set.userCollection?.condition != nil {
                 lines.append("Condition: \(set.userCollection?.conditionStars ?? "")")
             }
             
@@ -324,7 +324,7 @@ private enum ExportFormat: CaseIterable {
 }
 
 private struct ExportDocument: FileDocument {
-    static var readableContentTypes: [UTType] = []
+            static let readableContentTypes: [UTType] = []
     let content: String
     
     init(content: String) {

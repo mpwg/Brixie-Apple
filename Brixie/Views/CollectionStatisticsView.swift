@@ -108,7 +108,7 @@ struct CollectionStatisticsView: View {
                     color: stats.totalValueGain >= 0 ? .green : .red
                 )
                 
-                StatCardView(
+                unsafe StatCardView(
                     title: "ROI",
                     value: String(format: "%.1f%%", stats.investmentROI),
                     icon: "percent",
@@ -143,7 +143,7 @@ struct CollectionStatisticsView: View {
                     color: .blue
                 )
                 
-                StatCardView(
+                unsafe StatCardView(
                     title: "Completion Rate",
                     value: String(format: "%.1f%%", completionPercentage),
                     icon: "checkmark.circle",

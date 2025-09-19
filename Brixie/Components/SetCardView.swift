@@ -9,13 +9,9 @@ struct SetCardView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            AsyncCachedImage(url: set.imageURL) {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(height: 120)
-            }
-            .frame(height: 120)
-            .accessibilityLabel("Image of LEGO set \(set.name)")
+            AsyncCachedImage(url: URL(string: set.imageURL ?? ""))
+                .frame(height: 120)
+                .accessibilityLabel("Image of LEGO set \(set.name)")
             
             Text(set.name)
                 .font(.headline)

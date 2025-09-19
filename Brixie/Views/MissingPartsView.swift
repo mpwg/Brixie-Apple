@@ -149,11 +149,7 @@ private struct MissingPartsSummaryView: View {
             }
             
             if let totalCost = userCollection.totalReplacementCost {
-                let formatter = NumberFormatter()
-                formatter.numberStyle = .currency
-                let formattedCost = formatter.string(from: totalCost as NSDecimalNumber) ?? "$0"
-                
-                Text("Total replacement cost: \(formattedCost)")
+                Text("Total replacement cost: \(totalCost, format: .currency(code: "USD"))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
