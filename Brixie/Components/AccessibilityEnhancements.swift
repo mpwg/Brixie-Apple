@@ -104,12 +104,12 @@ struct HighContrastModifier: ViewModifier {
 
 struct KeyboardNavigationModifier: ViewModifier {
     // Keep labels flexible for call-sites; accept common ordering with explicit labels
-    let onSpace: (() -> Void)?
-    let onReturn: (() -> Void)?
     let onUpArrow: (() -> Void)?
     let onDownArrow: (() -> Void)?
     let onLeftArrow: (() -> Void)?
     let onRightArrow: (() -> Void)?
+    let onSpace: (() -> Void)?
+    let onReturn: (() -> Void)?
     let onEscape: (() -> Void)?
     
     func body(content: Content) -> some View {
