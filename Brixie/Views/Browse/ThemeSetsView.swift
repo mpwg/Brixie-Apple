@@ -48,7 +48,7 @@ struct ThemeSetsView: View {
             
             if isLoading && sets.isEmpty {
                 ScrollView {
-                    SkeletonLoadingView(itemCount: 8, itemHeight: 80)
+                    SkeletonLoadingView(itemCount: AppConstants.Layout.defaultSkeletonItemCount, itemHeight: AppConstants.Layout.standardListItemHeight)
                         .padding(.horizontal)
                 }
                 .accessibilityLabel("Loading LEGO sets for \(theme.name)")
