@@ -287,12 +287,3 @@ final class ImageOptimizationService {
         return data as Data
     }
 }
-
-// MARK: - Logger Extension
-
-extension Logger {
-    static let imageOptimization = Logger(
-        subsystem: Bundle.main.bundleIdentifier ?? "com.brixie",
-        category: "ImageOptimization"
-    )
-}
