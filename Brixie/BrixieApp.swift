@@ -18,6 +18,7 @@ struct BrixieApp: App {
             LegoSet.self,
             Theme.self,
             UserCollection.self
+            // MissingPart.self  // TODO: Add when Xcode project is updated
         ], isUndoEnabled: true)
     }
 }
@@ -31,6 +32,7 @@ extension BrixieApp {
             LegoSet.self,
             Theme.self,
             UserCollection.self
+            // MissingPart.self  // TODO: Add when Xcode project is updated
         ])
         
         let configuration = ModelConfiguration(

@@ -159,6 +159,36 @@ extension UserCollection {
         }
         return retailPrice - purchasePrice
     }
+    
+    /// Percentage value increase
+    var valueChangePercentage: Double? {
+        guard let purchasePrice = purchasePrice,
+              let valueChange = valueChange,
+              purchasePrice > 0 else {
+            return nil
+        }
+        return Double(truncating: (valueChange / purchasePrice * 100) as NSDecimalNumber)
+    }
+    
+    /// Collection completion status (percentage based on missing parts)
+    var completionPercentage: Double {
+        return hasMissingParts ? 90.0 : 100.0
+    }
+    
+    /// Count of missing parts
+    var missingPartsCount: Int {
+        return hasMissingParts ? 1 : 0
+    }
+    
+    /// Count of ordered parts
+    var orderedPartsCount: Int {
+        return 0
+    }
+    
+    /// Total replacement cost for missing parts
+    var totalReplacementCost: Decimal? {
+        return nil
+    }
 }
 
 // MARK: - Collection Management
