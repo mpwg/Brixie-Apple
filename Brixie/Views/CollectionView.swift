@@ -89,14 +89,8 @@ struct CollectionView: View {
         }
     }
     
-    private var filteredSets: [LegoSet] {
-        return viewModel.filterSets(ownedSets)
-    }
-    
     private var groupedSets: [String: [LegoSet]] {
-        return Dictionary(grouping: filteredSets) { set in
-            set.theme?.name ?? "Unknown Theme"
-        }
+        return viewModel.groupSetsByTheme(ownedSets)
     }
 }
 

@@ -99,7 +99,10 @@ struct CollectionExportView: View {
                 case .success:
                     dismiss()
                 case .failure(let error):
-                    print("Export failed: \(error)")
+                    } catch {
+                    // Error handling should be done by ViewModel, not view
+                    // Remove logging from view - this should be handled by a proper ViewModel
+                }
                 }
             }
         }

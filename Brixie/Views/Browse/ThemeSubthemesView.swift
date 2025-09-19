@@ -51,6 +51,7 @@ struct ThemeSubthemesView: View {
     let theme = Theme(id: 1, name: "Star Wars", parentId: nil)
     
     ThemeSubthemesView(theme: theme) { subtheme in
-        print("Selected subtheme: \(subtheme.name)")
+                // Selection logic should be handled by ViewModel, not view
+        onSubthemeSelected(subtheme)
     }
 }

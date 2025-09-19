@@ -67,6 +67,14 @@ final class CollectionViewModel {
             set.theme?.name.localizedStandardContains(trimmed) == true
         }
     }
+    
+    /// Group filtered sets by theme
+    func groupSetsByTheme(_ sets: [LegoSet]) -> [String: [LegoSet]] {
+        let filteredSets = filterSets(sets)
+        return Dictionary(grouping: filteredSets) { set in
+            set.theme?.name ?? "Unknown Theme"
+        }
+    }
 }
 
 /// Sort options for collection views

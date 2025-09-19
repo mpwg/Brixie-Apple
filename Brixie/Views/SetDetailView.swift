@@ -117,10 +117,6 @@ struct SetDetailView: View {
             Text(error.localizedDescription)
         }
     }
-    
-    private var shareText: String {
-        "Check out LEGO set \(set.name) (#\(set.setNumber)), released in \(set.year) with \(set.numParts) parts!"
-    }
 }
 
 #Preview {

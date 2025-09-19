@@ -37,7 +37,7 @@ struct BrowseView: View {
             .navigationTitle("Browse")
             .toolbar { toolbar }
             .onAppear {
-                viewModel.configure(with: modelContext)
+                viewModel.configure(with: modelContext, themes: allThemes, sets: allSets)
             }
             .task {
                 if allThemes.isEmpty || allSets.isEmpty {
@@ -153,17 +153,16 @@ struct BrowseView: View {
         VStack {
             if let selectedSubtheme = viewModel.selectedSubtheme {
                 // Show sets for selected subtheme
-                SubthemeSetsView(subtheme: selectedSubtheme, sets: setsForSubtheme(selectedSubtheme))
+                SubthemeSetsView(subtheme: selectedSubtheme, sets: viewModel.setsForSubtheme(selectedSubtheme))
             } else if let selectedTheme = viewModel.selectedTheme {
-                let _ = Logger.database.debug("Selected theme \(selectedTheme.name): hasSubthemes=\(selectedTheme.hasSubthemes), subthemes.count=\(selectedTheme.subthemes.count), sets.count=\(selectedTheme.sets.count)")
+                viewModel.logThemeDetails(selectedTheme)
                 // Show subthemes or sets for selected theme
                 if selectedTheme.hasSubthemes {
                     ThemeSubthemesView(theme: selectedTheme) { subtheme in
                         viewModel.selectSubtheme(subtheme)
                     }
                 } else {
-                    let setsForTheme = setsForTheme(selectedTheme)
-                    let _ = Logger.database.debug("Sets for theme \(selectedTheme.name): \(setsForTheme.count) sets found")
+                    let setsForTheme = viewModel.setsForTheme(selectedTheme)
                     ThemeSetsView(theme: selectedTheme, sets: setsForTheme)
                 }
             } else {
@@ -174,7 +173,7 @@ struct BrowseView: View {
             }
         }
         .onAppear {
-            Logger.viewCycle.info("MainContentView appeared - selectedTheme: \(viewModel.selectedTheme?.name ?? "nil", privacy: .private)")
+            viewModel.logMainContentViewAppearance()
         }
     }
     
@@ -258,63 +257,10 @@ struct BrowseView: View {
     
     /// Filtered root themes based on search
     private var filteredRootThemes: [Theme] {
-        let rootThemes = allThemes.filter { $0.isRootTheme }
+        // Log theme statistics using the ViewModel
+        viewModel.logThemeStatistics()
         
-        // Log theme statistics using the service
-        Task {
-            do {
-                let stats = try ThemeService.shared.getThemeStatistics()
-                Logger.database.info("Theme Stats - Total: \(stats.totalThemes), Root: \(stats.rootThemes), Fresh: \(stats.isDataFresh)")
-                if let lastSync = stats.lastSyncDate {
-                    Logger.database.debug("Last theme sync: \(lastSync.formatted())")
-                }
-            } catch {
-                Logger.error.error("Failed to get theme statistics: \(error)")
-            }
-        }
-        
-        if !rootThemes.isEmpty {
-            let themeNames = rootThemes.prefix(5).map { "\($0.name) (ID: \($0.id), subthemes: \($0.subthemes.count), sets: \($0.sets.count))" }.joined(separator: ", ")
-            Logger.database.debug("First 5 root themes: \(themeNames)")
-        }
-        
-        if searchText.isEmpty {
-            return rootThemes.sorted { $0.name < $1.name }
-        } else {
-            let filtered = rootThemes
-                .filter { $0.name.localizedCaseInsensitiveContains(searchText) }
-                .sorted { $0.name < $1.name }
-            Logger.search.debug("Search '\(searchText, privacy: .private)' returned \(filtered.count) themes")
-            return filtered
-        }
-    }
-    
-    /// Get sets for a specific theme
-    private func setsForTheme(_ theme: Theme) -> [LegoSet] {
-        Logger.database.debug("setsForTheme(\(theme.name)) - Theme ID: \(theme.id)")
-        Logger.database.debug("Total sets available: \(allSets.count)")
-        
-        // Log first few sets for debugging
-        for (index, set) in allSets.prefix(5).enumerated() {
-            Logger.database.debug("Set \(index): \(set.name) - themeId: \(set.themeId), theme?.id: \(set.theme?.id ?? -1)")
-        }
-        
-        // Try relationship-based filter first, fallback to themeId
-        let filteredSets = allSets.filter { 
-            $0.theme?.id == theme.id || $0.themeId == theme.id
-        }
-        
-        Logger.database.debug("setsForTheme(\(theme.name)): filtered \(filteredSets.count) sets from \(allSets.count) total sets")
-        
-        return filteredSets
-    }
-    
-    /// Get sets for a specific subtheme
-    private func setsForSubtheme(_ subtheme: Theme) -> [LegoSet] {
-        // Use both relationship and themeId for filtering
-        return allSets.filter { 
-            $0.theme?.id == subtheme.id || $0.themeId == subtheme.id
-        }
+        return viewModel.filteredRootThemes(searchText: searchText)
     }
 
     // MARK: - Toolbar
@@ -343,12 +289,8 @@ struct BrowseView: View {
             // Debug button to clear themes (temporary)
             Button("Clear Cache") {
                 Task {
-                    do {
-                        try ThemeService.shared.clearCachedThemes()
-                        await viewModel.refresh()
-                    } catch {
-                        Logger.error.error("Failed to clear themes: \(error.localizedDescription, privacy: .public)")
-                    }
+                    await viewModel.clearCachedThemes()
+                    await viewModel.refresh()
                 }
             }
             .foregroundStyle(.red)

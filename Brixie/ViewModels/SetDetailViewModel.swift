@@ -49,4 +49,9 @@ final class SetDetailViewModel {
     func hideMissingParts() {
         showingMissingParts = false
     }
+    
+    /// Generate share text for a LEGO set
+    func generateShareText(for set: LegoSet) -> String {
+        return "Check out LEGO set \(set.name) (#\(set.setNumber)), released in \(set.year) with \(set.numParts) parts!"
+    }
 }

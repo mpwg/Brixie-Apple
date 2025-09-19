@@ -50,6 +50,6 @@ struct ManualBarcodeEntryView: View {
 
 #Preview {
     ManualBarcodeEntryView { barcode in
-        print("Entered barcode: \(barcode)")
+
     }
 }
