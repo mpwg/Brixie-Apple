@@ -263,7 +263,7 @@ final class ThemeService {
         // Fetch all themes from API using pagination
         var allApiThemes: [RebrickableLegoAPIClient.Theme] = []
         var currentPage = 1
-        let pageSize = 1000 // Use large page size to minimize API calls
+        let pageSize = AppConstants.API.maxPageSize // Use large page size to minimize API calls
         
         Logger.network.info("Starting theme fetch with pagination")
         
@@ -343,8 +343,8 @@ final class ThemeService {
     /// Check if theme data is fresh (less than 24 hours old)
     private func isThemeDataFresh() -> Bool {
         guard let lastSync = lastThemeSyncDate else { return false }
-        let ageHours = Date().timeIntervalSince(lastSync) / 3600.0
-        return ageHours < 24.0
+        let ageHours = Date().timeIntervalSince(lastSync) / AppConstants.TimeIntervals.secondsPerHour
+        return ageHours < AppConstants.TimeIntervals.cacheSyncValidHours
     }
     
     /// Get the age of cached theme data in hours

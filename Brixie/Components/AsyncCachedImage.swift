@@ -93,18 +93,18 @@ struct AsyncCachedImage: View {
         ZStack {
             Color(.systemGray6)
             
-            VStack(spacing: 8) {
+            VStack(spacing: AppConstants.UI.smallSpacing) {
                 Image(systemName: "photo")
                     .font(.title2)
                     .foregroundColor(.secondary)
                 
                 ProgressView()
-                    .scaleEffect(0.8)
+                    .scaleEffect(AppConstants.VisualEffects.errorIconScale)
             }
         }
-        .opacity(0.8)
+        .opacity(AppConstants.VisualEffects.placeholderOpacity)
         .background(LinearGradient(
-            colors: [Color.clear, Color(.systemGray6).opacity(0.3), Color.clear],
+            colors: [Color.clear, Color(.systemGray6).opacity(AppConstants.VisualEffects.shimmerOpacity), Color.clear],
             startPoint: .leading,
             endPoint: .trailing
         ))
@@ -114,7 +114,7 @@ struct AsyncCachedImage: View {
         ZStack {
             Color(.systemGray6)
             
-            VStack(spacing: 4) {
+            VStack(spacing: AppConstants.Layout.cardContentSpacing) {
                 Image(systemName: "photo.badge.exclamationmark")
                     .font(.title2)
                     .foregroundColor(.red)
@@ -263,9 +263,9 @@ extension UIImage {
 #if DEBUG
 struct AsyncCachedImage_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppConstants.UI.largeSpacing) {
             AsyncCachedImage(url: URL(string: "https://example.com/image.jpg"))
-                .frame(width: 200, height: 200)
+                .frame(width: AppConstants.ImageSize.previewWidth, height: AppConstants.ImageSize.previewHeight)
         }
         .padding()
     }

@@ -13,44 +13,44 @@ struct SkeletonLoadingView: View {
     let itemHeight: CGFloat
     @State private var isAnimating = false
     
-    init(itemCount: Int = 8, itemHeight: CGFloat = 60) {
+    init(itemCount: Int = AppConstants.Layout.defaultSkeletonItemCount, itemHeight: CGFloat = AppConstants.Layout.standardListItemHeight) {
         self.itemCount = itemCount
         self.itemHeight = itemHeight
     }
     
     var body: some View {
-        LazyVStack(spacing: 12) {
+        LazyVStack(spacing: AppConstants.Layout.listRowSpacing) {
             ForEach(0..<itemCount, id: \.self) { _ in
                 skeletonRow
             }
         }
         .onAppear {
-            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+            withAnimation(.easeInOut(duration: AppConstants.Timing.skeletonAnimationDuration).repeatForever(autoreverses: true)) {
                 isAnimating = true
             }
         }
     }
     
     private var skeletonRow: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: AppConstants.Layout.listRowSpacing) {
             // Image placeholder
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: AppConstants.CornerRadius.thumbnail)
                 .fill(.quaternary)
                 .frame(width: itemHeight, height: itemHeight)
-                .opacity(isAnimating ? 0.5 : 0.8)
+                .opacity(isAnimating ? AppConstants.Opacity.shimmerPrimary : AppConstants.Opacity.shimmerSecondary)
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: AppConstants.Layout.skeletonRowSpacing) {
                 // Title placeholder
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: AppConstants.CornerRadius.skeleton)
                     .fill(.quaternary)
-                    .frame(height: 16)
-                    .opacity(isAnimating ? 0.5 : 0.8)
+                    .frame(height: AppConstants.ImageSize.skeletonPlaceholderHeight)
+                    .opacity(isAnimating ? AppConstants.Opacity.shimmerPrimary : AppConstants.Opacity.shimmerSecondary)
                 
                 // Subtitle placeholder
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: AppConstants.CornerRadius.skeleton)
                     .fill(.quaternary)
-                    .frame(maxWidth: .infinity, maxHeight: 12)
-                    .opacity(isAnimating ? 0.3 : 0.6)
+                    .frame(maxWidth: .infinity, maxHeight: AppConstants.ImageSize.skeletonSecondaryHeight)
+                    .opacity(isAnimating ? AppConstants.Opacity.skeletonMin : AppConstants.Opacity.skeletonMax)
             }
             
             Spacer()
@@ -63,8 +63,8 @@ struct SkeletonLoadingView: View {
 /// Theme-specific skeleton loading view
 struct ThemeSkeletonView: View {
     var body: some View {
-        VStack(spacing: 12) {
-            ForEach(0..<5, id: \.self) { _ in
+        VStack(spacing: AppConstants.Layout.listRowSpacing) {
+            ForEach(0..<AppConstants.Layout.themePreviewItemCount, id: \.self) { _ in
                 themeSkeletonRow
             }
         }
@@ -73,14 +73,14 @@ struct ThemeSkeletonView: View {
     
     private var themeSkeletonRow: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                RoundedRectangle(cornerRadius: 4)
+            VStack(alignment: .leading, spacing: AppConstants.Layout.skeletonRowSpacing) {
+                RoundedRectangle(cornerRadius: AppConstants.CornerRadius.skeleton)
                     .fill(.quaternary)
-                    .frame(height: 16)
+                    .frame(height: AppConstants.ImageSize.skeletonPlaceholderHeight)
                 
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: AppConstants.CornerRadius.skeleton)
                     .fill(.quaternary)
-                    .frame(maxWidth: 100, maxHeight: 12)
+                    .frame(maxWidth: AppConstants.ImageSize.skeletonMaxWidth, maxHeight: AppConstants.ImageSize.skeletonSecondaryHeight)
             }
             
             Spacer()
@@ -89,7 +89,7 @@ struct ThemeSkeletonView: View {
                 .font(.caption)
                 .foregroundStyle(.quaternary)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, AppConstants.UI.smallSpacing)
         .accessibilityHidden(true)
     }
 }

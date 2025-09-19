@@ -95,7 +95,7 @@ struct HighContrastModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .opacity(reduceTransparency ? 1.0 : 0.95)
+            .opacity(reduceTransparency ? AppConstants.Opacity.visible : AppConstants.Opacity.highContrast)
             .background(reduceTransparency ? Color(.systemBackground) : Color.clear)
     }
 }
@@ -170,7 +170,7 @@ struct AccessibleSetCard: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.systemBackground))
                 .shadow(
-                    color: .black.opacity(differentiateWithoutColor ? 0.3 : 0.1),
+                    color: .black.opacity(differentiateWithoutColor ? AppConstants.Opacity.accessibilityBorder : AppConstants.Opacity.accessibilityBackground),
                     radius: differentiateWithoutColor ? 1 : 2
                 )
         }

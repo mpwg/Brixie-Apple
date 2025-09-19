@@ -283,7 +283,7 @@ struct OfflineIndicator: View {
             }
             .padding(.horizontal, AppConstants.UI.smallSpacing)
             .padding(.vertical, AppConstants.Spacing.xs)
-            .background(Color.orange.opacity(0.1))
+            .background(Color.orange.opacity(AppConstants.Opacity.subtle))
             .cornerRadius(AppConstants.UI.smallCornerRadius)
         }
     }

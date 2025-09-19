@@ -181,7 +181,7 @@ private struct CollectionSetRowView: View {
                         .font(.caption2)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.2))
+                        .background(Color.blue.opacity(AppConstants.Opacity.light))
                         .cornerRadius(4)
                     
                     Text("\(set.numParts) parts")

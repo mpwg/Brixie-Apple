@@ -9,9 +9,9 @@ struct SetDetailView: View {
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: AppConstants.Spacing.standard) {
                 AsyncCachedImage(fullSizeURL: URL(string: set.primaryImageURL ?? ""))
-                    .frame(height: 200)
+                    .frame(height: AppConstants.ImageSize.previewHeight)
                     .accessibilityLabel("Image of LEGO set \(set.name)")
                 
                 Text(set.name)

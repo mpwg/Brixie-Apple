@@ -31,7 +31,7 @@ struct SetCardView: View {
                 .accessibilityIdentifier("setParts")
                 
             // Collection Status Indicators
-            HStack(spacing: 4) {
+            HStack(spacing: AppConstants.Layout.cardContentSpacing) {
                 if set.userCollection?.isOwned == true {
                     Image(systemName: "heart.fill")
                         .foregroundStyle(.red)
@@ -56,9 +56,9 @@ struct SetCardView: View {
                 Spacer()
                 
                 // Quick action buttons
-                HStack(spacing: 2) {
+                HStack(spacing: AppConstants.Layout.buttonRowSpacing) {
                     Button(action: {
-                        withAnimation(.easeInOut(duration: 0.3)) {
+                        withAnimation(AppConstants.CommonAnimations.normalEaseInOut) {
                             collectionService.toggleOwned(set, in: modelContext)
                         }
                         // Add haptic feedback when available
@@ -70,14 +70,14 @@ struct SetCardView: View {
                         Image(systemName: set.userCollection?.isOwned == true ? "heart.fill" : "heart")
                             .font(.caption)
                             .foregroundStyle(set.userCollection?.isOwned == true ? .red : .secondary)
-                            .scaleEffect(set.userCollection?.isOwned == true ? 1.1 : 1.0)
+                            .scaleEffect(set.userCollection?.isOwned == true ? AppConstants.Scale.selected : AppConstants.Scale.base)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(set.userCollection?.isOwned == true ? "Remove from collection" : "Add to collection")
-                    .animation(.easeInOut(duration: 0.3), value: set.userCollection?.isOwned == true)
+                    .animation(AppConstants.CommonAnimations.normalEaseInOut, value: set.userCollection?.isOwned == true)
                     
                     Button(action: {
-                        withAnimation(.easeInOut(duration: 0.3)) {
+                        withAnimation(AppConstants.CommonAnimations.normalEaseInOut) {
                             collectionService.toggleWishlist(set, in: modelContext)
                         }
                         #if canImport(UIKit)
@@ -88,29 +88,29 @@ struct SetCardView: View {
                         Image(systemName: set.userCollection?.isWishlist == true ? "star.fill" : "star")
                             .font(.caption)
                             .foregroundStyle(set.userCollection?.isWishlist == true ? .yellow : .secondary)
-                            .scaleEffect(set.userCollection?.isWishlist == true ? 1.1 : 1.0)
+                            .scaleEffect(set.userCollection?.isWishlist == true ? AppConstants.Scale.selected : AppConstants.Scale.base)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(set.userCollection?.isWishlist == true ? "Remove from wishlist" : "Add to wishlist")
-                    .animation(.easeInOut(duration: 0.3), value: set.userCollection?.isWishlist == true)
+                    .animation(AppConstants.CommonAnimations.normalEaseInOut, value: set.userCollection?.isWishlist == true)
                 }
             }
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .background(RoundedRectangle(cornerRadius: AppConstants.CornerRadius.card).fill(Color(.systemBackground)))
+        .scaleEffect(isPressed ? AppConstants.Scale.pressed : AppConstants.Scale.base)
         .shadow(
-            color: .black.opacity(isHovering ? 0.15 : 0.1), 
-            radius: isHovering ? 6 : 2,
-            y: isHovering ? 3 : 1
+            color: .black.opacity(isHovering ? AppConstants.VisualEffects.hoverShadowOpacity : AppConstants.VisualEffects.standardShadowOpacity), 
+            radius: isHovering ? AppConstants.VisualEffects.hoverShadowRadius : AppConstants.VisualEffects.standardShadowRadius,
+            y: isHovering ? AppConstants.VisualEffects.hoverShadowY : AppConstants.VisualEffects.standardShadowY
         )
         .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(AppConstants.CommonAnimations.quickEaseInOut) {
                 isHovering = hovering
             }
         }
         .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.1)) {
+            withAnimation(AppConstants.CommonAnimations.quickEaseInOut) {
                 isPressed = true
             }
             
@@ -119,8 +119,8 @@ struct SetCardView: View {
             impactFeedback.impactOccurred()
             #endif
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.easeInOut(duration: 0.1)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + TimeInterval(AppConstants.Delays.quick) / 1_000_000_000) {
+                withAnimation(AppConstants.CommonAnimations.quickEaseInOut) {
                     isPressed = false
                 }
             }

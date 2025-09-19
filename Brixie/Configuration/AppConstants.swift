@@ -42,6 +42,9 @@ enum AppConstants {
         
         /// Maximum number of images to keep in memory
         static let maxImagesInMemory = 50
+        
+        /// Maximum number of data objects in memory cache
+        static let maxDataObjectsInMemory = 100
     }
     
     // MARK: - User Interface
@@ -60,6 +63,9 @@ enum AppConstants {
         
         /// Large spacing between sections
         static let largeSpacing: Double = 24
+        
+        /// Large padding for major layout sections
+        static let largePadding: Double = 32
         
         /// Standard card height for set images
         static let cardImageHeight: Double = 120
@@ -111,6 +117,69 @@ enum AppConstants {
         
         /// Scale multiplier for pressed state
         static let pressedScale: Double = 1.2
+        
+        /// Bouncy spring response
+        static let bouncySpringResponse: Double = 0.6
+        
+        /// Bouncy spring damping
+        static let bouncySpringDamping: Double = 0.6
+        
+        /// Gentle spring response
+        static let gentleSpringResponse: Double = 0.8
+        
+        /// Gentle spring damping (no overshoot)
+        static let gentleSpringDamping: Double = 1.0
+        
+        /// List animation duration (insert)
+        static let listInsertDuration: Double = 0.4
+        
+        /// List animation duration (remove)
+        static let listRemoveDuration: Double = 0.3
+        
+        /// Sheet presentation duration
+        static let sheetDuration: Double = 0.4
+        
+        /// Long animation duration for loading states
+        static let longDuration: Double = 1.0
+        
+        /// Rotation animation duration
+        static let rotationDuration: Double = 1.5
+    }
+    
+    // MARK: - Image Quality Settings
+    enum ImageQuality {
+        /// High quality image compression (for full-size images)
+        static let high: Double = 0.95
+        
+        /// Medium quality image compression (for standard images)
+        static let medium: Double = 0.85
+        
+        /// Low quality image compression (for background/preview)
+        static let low: Double = 0.75
+        
+        /// Standard HEIC quality
+        static let standardHEIC: Double = 0.8
+        
+        /// Standard JPEG quality
+        static let standardJPEG: Double = 0.8
+        
+        /// Maximum quality (lossless)
+        static let maximum: Double = 1.0
+        
+        /// Minimum quality
+        static let minimum: Double = 0.1
+    }
+    
+    // MARK: - Time Intervals
+    enum TimeIntervals {
+        /// Hours in a day
+        static let hoursPerDay: Double = 24.0
+        
+        /// Seconds per hour
+        static let secondsPerHour: Double = 3600.0
+        
+        /// Cache sync validity period (hours)
+        static let cacheSyncValidHours: Double = 24.0
     }
     
     // MARK: - Search & History
@@ -129,6 +198,42 @@ enum AppConstants {
         
         /// Number of popular searches to show in suggestions
         static let popularSuggestionsCount = 5
+        
+        /// Number of matching recent searches to show
+        static let matchingRecentCount = 3
+        
+        /// Number of matching default suggestions to show
+        static let matchingDefaultCount = 2
+        
+        /// Maximum part count for filters
+        static let maxPartCount = 10000
+        
+        /// Part count step for sliders
+        static let partCountStep = 50
+    }
+    
+    // MARK: - Achievement Thresholds
+    enum Achievements {
+        /// Sets needed for Collector achievement
+        static let collectorSets = 100
+        
+        /// Sets needed for Enthusiast achievement
+        static let enthusiastSets = 50
+        
+        /// Sets needed for Builder achievement
+        static let builderSets = 10
+        
+        /// Parts needed for Parts Master achievement
+        static let partsMasterThreshold = 10000
+        
+        /// ROI percentage for Smart Investor achievement
+        static let smartInvestorROI = 50.0
+        
+        /// Themes needed for Theme Explorer achievement
+        static let themeExplorerCount = 10
+        
+        /// Percentage multiplier for calculations
+        static let percentageMultiplier = 100.0
         
         /// Number of matching recent searches to show
         static let matchingRecentCount = 3
@@ -188,6 +293,222 @@ enum AppConstants {
         static let accessiblePadding: Double = 16
     }
     
+    // MARK: - Visual Effects
+    enum VisualEffects {
+        /// Standard shadow opacity
+        static let standardShadowOpacity: Double = 0.1
+        
+        /// Hover shadow opacity
+        static let hoverShadowOpacity: Double = 0.15
+        
+        /// Standard shadow radius
+        static let standardShadowRadius: Double = 2
+        
+        /// Hover shadow radius
+        static let hoverShadowRadius: Double = 6
+        
+        /// Standard shadow offset Y
+        static let standardShadowY: Double = 1
+        
+        /// Hover shadow offset Y
+        static let hoverShadowY: Double = 3
+        
+        /// Pressed scale factor
+        static let pressedScaleFactor: Double = 0.98
+        
+        /// Selected icon scale factor
+        static let selectedIconScale: Double = 1.1
+        
+        /// Standard placeholder opacity
+        static let placeholderOpacity: Double = 0.8
+        
+        /// Shimmer gradient opacity
+        static let shimmerOpacity: Double = 0.3
+        
+        /// Progress view scale factor
+        static let progressViewScale: Double = 1.2
+        
+        /// Error icon scale effect
+        static let errorIconScale: Double = 0.8
+        
+        /// Loading icon scale base
+        static let loadingIconScaleBase: Double = 1.0
+    }
+    
+    // MARK: - Layout Dimensions
+    enum Layout {
+        /// Standard list item height
+        static let standardListItemHeight: Double = 60
+        
+        /// Set card image size
+        static let setCardImageSize: Double = 60
+        
+        /// Icon button size for collection actions
+        static let iconButtonSize: Double = 48
+        
+        /// Large preview image size
+        static let largePreviewSize: Double = 200
+        
+        /// Skeleton loading item count
+        static let defaultSkeletonItemCount = 8
+        
+        /// Theme grid item count for preview
+        static let themePreviewItemCount = 5
+        
+        /// Grid spacing in grids and lists
+        static let gridSpacing: Double = 16
+        
+        /// List row vertical spacing
+        static let listRowSpacing: Double = 12
+        
+        /// Card content vertical spacing
+        static let cardContentSpacing: Double = 4
+        
+        /// Small field width for filters
+        static let smallFieldWidth: Double = 50
+        
+        /// Medium field width for labels
+        static let mediumFieldWidth: Double = 60
+        
+        /// Button row horizontal spacing  
+        static let buttonRowSpacing: Double = 2
+        
+        /// Stats container spacing
+        static let statsSpacing: Double = 20
+        
+        /// Skeleton row internal spacing
+        static let skeletonRowSpacing: Double = 4
+    }
+    
+    // MARK: - Image Dimensions
+    enum ImageSize {
+        /// Thumbnail width
+        static let thumbnailWidth: Double = 60
+        
+        /// Thumbnail height  
+        static let thumbnailHeight: Double = 60
+        
+        /// Icon size for collection status
+        static let collectionIconSize: Double = 48
+        
+        /// Large icon size
+        static let largeIconSize: Double = 64
+        
+        /// Preview image width for sharing
+        static let previewWidth: Double = 200
+        
+        /// Preview image height for sharing
+        static let previewHeight: Double = 200
+        
+        /// Skeleton placeholder dimensions
+        static let skeletonPlaceholderHeight: Double = 16
+        
+        /// Skeleton secondary placeholder height
+        static let skeletonSecondaryHeight: Double = 12
+        
+        /// Maximum skeleton placeholder width
+        static let skeletonMaxWidth: Double = 100
+    }
+    
+    // MARK: - Timing & Delays
+    enum Timing {
+        /// Quick interaction delay (ms)
+        static let quickDelay: UInt64 = 100_000_000 // 0.1 seconds in nanoseconds
+        
+        /// Standard loading delay
+        static let standardDelay: Double = 1.0
+        
+        /// Skeleton animation duration
+        static let skeletonAnimationDuration: Double = 1.5
+        
+        /// Search debounce delay (ms)
+        static let searchDebounceDelay: UInt64 = 300_000_000 // 0.3 seconds
+        
+        /// Haptic feedback delay
+        static let hapticDelay: UInt64 = 50_000_000 // 0.05 seconds
+        
+        /// Auto refresh interval (seconds)
+        static let autoRefreshInterval: TimeInterval = 300 // 5 minutes
+    }
+    
+    // MARK: - Numeric Limits & Thresholds
+    enum Limits {
+        /// Maximum items to show in wishlists sharing  
+        static let maxSharedWishlistItems = 10
+        
+        /// Maximum fraction digits for price formatting
+        static let maxPriceDecimalPlaces = 0
+        
+        /// HTTP success status code
+        static let httpSuccessCode = 200
+        
+        /// Cache cleanup threshold (80% of max size)
+        static let cacheCleanupThreshold: Double = 0.8
+        
+        /// Percentage display precision
+        static let percentagePrecision = 1
+        
+        /// Performance measurement precision (decimal places)
+        static let performancePrecision = 3
+        
+        /// Base scale for animation calculations
+        static let baseAnimationScale: Double = 1.0
+        
+        /// Zero value for default/fallback cases
+        static let zeroValue = 0
+        
+        /// Directory index for documents path
+        static let documentsDirectoryIndex = 0
+    }
+    
+    // MARK: - Opacity & Transparency
+    enum Opacity {
+        /// Secondary text opacity
+        static let secondaryText: Double = 0.8
+        
+        /// Disabled element opacity
+        static let disabled: Double = 0.6
+        
+        /// Skeleton animation minimum opacity
+        static let skeletonMin: Double = 0.3
+        
+        /// Skeleton animation maximum opacity
+        static let skeletonMax: Double = 0.8
+        
+        /// Loading shimmer primary
+        static let shimmerPrimary: Double = 0.5
+        
+        /// Loading shimmer secondary
+        static let shimmerSecondary: Double = 0.8
+        
+        /// Full opacity for accessibility compliance
+        static let full: Double = 1.0
+        
+        /// Visible (no transparency)
+        static let visible: Double = 1.0
+        
+        /// Light overlay or background
+        static let light: Double = 0.2
+        
+        /// Medium transparency
+        static let medium: Double = 0.5
+        
+        /// Subtle background overlay
+        static let backgroundOverlay: Double = 0.95
+        
+        /// Subtle effect opacity
+        static let subtle: Double = 0.1
+        
+        /// Accessibility high contrast opacity
+        static let highContrast: Double = 0.95
+        
+        /// Accessibility border opacity (differentiate without color)
+        static let accessibilityBorder: Double = 0.3
+        
+        /// Accessibility background opacity (differentiate without color)
+        static let accessibilityBackground: Double = 0.1
+    }
+    
     // MARK: - Sample Data
     enum SampleData {
         /// Sample LEGO part number for testing
@@ -198,6 +519,21 @@ enum AppConstants {
         
         /// Sample subtheme ID for testing
         static let sampleSubthemeId = 2
+        
+        /// Sample set number for testing
+        static let sampleSetNumber = "75301"
+        
+        /// Sample theme name
+        static let sampleThemeName = "Star Wars"
+        
+        /// Sample set year
+        static let sampleYear = 2021
+        
+        /// Sample piece count
+        static let samplePieceCount = 474
+        
+        /// Sample theme ID for set
+        static let sampleSetThemeId = 158
     }
 }
 
@@ -213,6 +549,9 @@ extension AppConstants {
     
     /// Common animation configurations
     enum CommonAnimations {
+        /// Standard duration for common animations
+        static let standardDuration = Animation.normal
+        
         static let quickEaseInOut = SwiftUI.Animation.easeInOut(duration: Animation.quick)
         static let normalEaseInOut = SwiftUI.Animation.easeInOut(duration: Animation.normal)
         static let slowEaseInOut = SwiftUI.Animation.easeInOut(duration: Animation.slow)
@@ -240,5 +579,46 @@ extension AppConstants {
         static let standard = UI.standardCornerRadius
         static let large: Double = 16
         static let extraLarge: Double = 20
+        static let button: Double = 6
+        static let card: Double = 12
+        static let thumbnail: Double = 8
+        static let skeleton: Double = 4
+    }
+    
+    /// Common scale values for animations
+    enum Scale {
+        static let pressed = VisualEffects.pressedScaleFactor
+        static let selected = VisualEffects.selectedIconScale
+        static let progress = VisualEffects.progressViewScale
+        static let error = VisualEffects.errorIconScale
+        static let small = VisualEffects.errorIconScale  // 0.8 - small scale for animations
+        static let base = Limits.baseAnimationScale
+    }
+    
+    /// Common numeric values
+    enum Numbers {
+        static let zeroValue = Limits.zeroValue
+        static let percentMultiplier = Achievements.percentageMultiplier
+    }
+    
+    /// Common delays in nanoseconds for Task.sleep
+    enum Delays {
+        static let quick = Timing.quickDelay
+        static let search = Timing.searchDebounceDelay
+        static let haptic = Timing.hapticDelay
+        static let offline = API.offlineRetryDelay
+    }
+    
+    /// HTTP status codes
+    enum HTTPStatus {
+        static let success = Limits.httpSuccessCode
+    }
+    
+    /// Common frame sizes
+    enum FrameSize {
+        static let thumbnail = CGSize(width: ImageSize.thumbnailWidth, height: ImageSize.thumbnailHeight)
+        static let collectionIcon = CGSize(width: ImageSize.collectionIconSize, height: ImageSize.collectionIconSize)
+        static let preview = CGSize(width: ImageSize.previewWidth, height: ImageSize.previewHeight)
+        static let largeIcon = CGSize(width: Accessibility.largeIconSize, height: Accessibility.largeIconSize)
     }
 }

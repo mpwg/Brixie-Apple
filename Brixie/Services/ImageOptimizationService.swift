@@ -99,7 +99,7 @@ final class ImageOptimizationService {
             case .heic(let quality), .jpeg(let quality):
                 return quality
             case .original:
-                return 1.0
+                return Float(AppConstants.ImageQuality.maximum)
             }
         }
     }
@@ -125,10 +125,10 @@ final class ImageOptimizationService {
         
         // Set preferred format
         if supportsHEIC {
-            preferredFormat = .heic(quality: 0.85)
+            preferredFormat = .heic(quality: Float(AppConstants.ImageQuality.medium))
             logger.info("🎯 ImageOptimizationService initialized with HEIC support")
         } else {
-            preferredFormat = .jpeg(quality: 0.8)
+            preferredFormat = .jpeg(quality: Float(AppConstants.ImageQuality.standardJPEG))
             logger.info("🎯 ImageOptimizationService initialized with JPEG fallback")
         }
     }
@@ -193,11 +193,11 @@ final class ImageOptimizationService {
     func getOptimalFormat(for imageType: ImageType) -> OutputFormat {
         switch imageType {
         case .thumbnail:
-            return supportsHEIC ? .heic(quality: 0.8) : .jpeg(quality: 0.75)
+            return supportsHEIC ? .heic(quality: Float(AppConstants.ImageQuality.standardHEIC)) : .jpeg(quality: Float(AppConstants.ImageQuality.low))
         case .medium:
-            return supportsHEIC ? .heic(quality: 0.85) : .jpeg(quality: 0.8)
+            return supportsHEIC ? .heic(quality: Float(AppConstants.ImageQuality.medium)) : .jpeg(quality: Float(AppConstants.ImageQuality.standardJPEG))
         case .full:
-            return supportsHEIC ? .heic(quality: 0.95) : .jpeg(quality: 0.9)
+            return supportsHEIC ? .heic(quality: Float(AppConstants.ImageQuality.high)) : .jpeg(quality: Float(AppConstants.ImageQuality.medium))
         }
     }
     

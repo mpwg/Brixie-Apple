@@ -174,7 +174,7 @@ struct CollectionStatisticsView: View {
                     
                     Spacer()
                     
-                    Text("\(Int(Double(sets.count) / Double(stats.ownedSetsCount) * 100))%")
+                    Text("\(Int(Double(sets.count) / Double(stats.ownedSetsCount) * AppConstants.Achievements.percentageMultiplier))%")
                         .font(.title3)
                         .bold()
                 }
@@ -203,36 +203,36 @@ struct CollectionStatisticsView: View {
         var achievements: [Achievement] = []
         
         // Collection size achievements
-        if stats.ownedSetsCount >= 100 {
-            achievements.append(Achievement(title: "Collector", description: "Own 100+ sets", icon: "star.fill", isUnlocked: true))
-        } else if stats.ownedSetsCount >= 50 {
-            achievements.append(Achievement(title: "Enthusiast", description: "Own 50+ sets", icon: "heart.fill", isUnlocked: true))
-        } else if stats.ownedSetsCount >= 10 {
-            achievements.append(Achievement(title: "Builder", description: "Own 10+ sets", icon: "hammer.fill", isUnlocked: true))
+        if stats.ownedSetsCount >= AppConstants.Achievements.collectorSets {
+            achievements.append(Achievement(title: "Collector", description: "Own \(AppConstants.Achievements.collectorSets)+ sets", icon: "star.fill", isUnlocked: true))
+        } else if stats.ownedSetsCount >= AppConstants.Achievements.enthusiastSets {
+            achievements.append(Achievement(title: "Enthusiast", description: "Own \(AppConstants.Achievements.enthusiastSets)+ sets", icon: "heart.fill", isUnlocked: true))
+        } else if stats.ownedSetsCount >= AppConstants.Achievements.builderSets {
+            achievements.append(Achievement(title: "Builder", description: "Own \(AppConstants.Achievements.builderSets)+ sets", icon: "hammer.fill", isUnlocked: true))
         }
         
         // Parts achievements
-        if stats.totalParts >= 10000 {
-            achievements.append(Achievement(title: "Parts Master", description: "Own 10,000+ parts", icon: "puzzlepiece.extension.fill", isUnlocked: true))
+        if stats.totalParts >= AppConstants.Achievements.partsMasterThreshold {
+            achievements.append(Achievement(title: "Parts Master", description: "Own \(AppConstants.Achievements.partsMasterThreshold.formatted())+ parts", icon: "puzzlepiece.extension.fill", isUnlocked: true))
         }
         
         // Theme diversity
     let themeCount = CollectionService.shared.getOwnedSetsByTheme(from: modelContext).count
-        if themeCount >= 10 {
-            achievements.append(Achievement(title: "Theme Explorer", description: "Collect from 10+ themes", icon: "globe", isUnlocked: true))
+        if themeCount >= AppConstants.Achievements.themeExplorerCount {
+            achievements.append(Achievement(title: "Theme Explorer", description: "Collect from \(AppConstants.Achievements.themeExplorerCount)+ themes", icon: "globe", isUnlocked: true))
         }
         
         // Investment achievements
-        if stats.investmentROI >= 50 {
-            achievements.append(Achievement(title: "Smart Investor", description: "50%+ ROI", icon: "chart.line.uptrend.xyaxis", isUnlocked: true))
+        if stats.investmentROI >= AppConstants.Achievements.smartInvestorROI {
+            achievements.append(Achievement(title: "Smart Investor", description: "\(Int(AppConstants.Achievements.smartInvestorROI))%+ ROI", icon: "chart.line.uptrend.xyaxis", isUnlocked: true))
         }
         
         return achievements
     }
     
     private var completionPercentage: Double {
-        guard stats.totalParts > 0 else { return 100 }
-        return Double(stats.totalParts - stats.missingPartsCount) / Double(stats.totalParts) * 100
+        guard stats.totalParts > 0 else { return AppConstants.Achievements.percentageMultiplier }
+        return Double(stats.totalParts - stats.missingPartsCount) / Double(stats.totalParts) * AppConstants.Achievements.percentageMultiplier
     }
     
     private func formatPrice(_ price: Decimal) -> String {
@@ -303,7 +303,7 @@ private struct AchievementCardView: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
-        .opacity(achievement.isUnlocked ? 1.0 : 0.5)
+        .opacity(achievement.isUnlocked ? AppConstants.Opacity.visible : AppConstants.Opacity.medium)
     }
 }
 

@@ -13,13 +13,13 @@ struct SetRowView: View {
     let set: LegoSet
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: AppConstants.Layout.listRowSpacing) {
             AsyncCachedImage(thumbnailURL: URL(string: set.primaryImageURL ?? ""))
-                .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .frame(width: AppConstants.ImageSize.thumbnailWidth, height: AppConstants.ImageSize.thumbnailHeight)
+                .clipShape(RoundedRectangle(cornerRadius: AppConstants.CornerRadius.thumbnail))
                 .accessibilityHidden(true)
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: AppConstants.Layout.cardContentSpacing) {
                 Text(set.name)
                     .font(.headline)
                     .lineLimit(1)
@@ -39,11 +39,11 @@ struct SetRowView: View {
 #Preview {
     // Mock set for preview  
     let mockSet = LegoSet(
-        setNumber: "75301",
+        setNumber: AppConstants.SampleData.sampleSetNumber,
         name: "Luke Skywalker's X-wing Fighter",
-        year: 2021,
-        themeId: 158,
-        numParts: 474
+        year: AppConstants.SampleData.sampleYear,
+        themeId: AppConstants.SampleData.sampleSetThemeId,
+        numParts: AppConstants.SampleData.samplePieceCount
     )
     
     SetRowView(set: mockSet)

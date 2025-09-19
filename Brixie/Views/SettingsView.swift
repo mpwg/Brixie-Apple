@@ -24,7 +24,7 @@ struct SettingsView: View {
                         .accessibilityLabel("Rebrickable API Key")
 
                     if isValidating {
-                        HStack { ProgressView().scaleEffect(0.8); Text("Validating...").foregroundColor(.secondary) }
+                        HStack { ProgressView().scaleEffect(AppConstants.Scale.small); Text("Validating...").foregroundColor(.secondary) }
                     } else if let isValid = validationResult {
                         Label(
                             isValid ? "Valid API Key" : "Invalid API Key",

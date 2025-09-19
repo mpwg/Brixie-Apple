@@ -60,12 +60,12 @@ final class ImageCacheService {
         
         // Configure memory caches
         memoryCache.totalCostLimit = AppConstants.Cache.memoryDataCacheLimit
-        memoryCache.countLimit = 100 // Max 100 data objects in memory
+        memoryCache.countLimit = AppConstants.Cache.maxDataObjectsInMemory // Max data objects in memory
         
         imageCache.totalCostLimit = AppConstants.Cache.memoryImageCacheLimit
         imageCache.countLimit = AppConstants.Cache.maxImagesInMemory
         
-        logger.info("⚙️ Memory caches configured: data cache \(AppConstants.Cache.memoryDataCacheLimit / (1024 * 1024))MB/100 items, image cache \(AppConstants.Cache.memoryImageCacheLimit / (1024 * 1024))MB/\(AppConstants.Cache.maxImagesInMemory) items")
+        logger.info("⚙️ Memory caches configured: data cache \(AppConstants.Cache.memoryDataCacheLimit / (1024 * 1024))MB/\(AppConstants.Cache.maxDataObjectsInMemory) items, image cache \(AppConstants.Cache.memoryImageCacheLimit / (1024 * 1024))MB/\(AppConstants.Cache.maxImagesInMemory) items")
         
         // Calculate initial disk cache size
         calculateDiskCacheSize()
@@ -360,7 +360,7 @@ final class ImageCacheService {
             
             // Validate response
             guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else {
+                  httpResponse.statusCode == AppConstants.HTTPStatus.success else {
                 logger.error("❌ Invalid response for image \(url.lastPathComponent): \(response)")
                 logger.exitWith(result: "invalid response")
                 return nil
@@ -603,13 +603,14 @@ final class ImageCacheService {
                             return 
                         }
                         let currentSize = self.currentCacheSize
+                        let cleanupThreshold = AppConstants.Limits.cacheCleanupThreshold
                         
                         // Continue cleanup on background queue
                         Task.detached {
                             var totalSize = currentSize
                             var bytesFreed = 0  // Moved into detached scope
                             var filesDeleted = 0  // Moved into detached scope
-                            let targetSize = Int(Double(maxSize) * 0.8) // Clean to 80% of limit
+                            let targetSize = Int(Double(maxSize) * cleanupThreshold) // Clean to 80% of limit
                             
                             for url in sortedContents {
                                 guard totalSize > targetSize else { break }

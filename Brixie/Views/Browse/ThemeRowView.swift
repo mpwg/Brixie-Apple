@@ -14,7 +14,7 @@ struct ThemeRowView: View {
     
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: AppConstants.Layout.buttonRowSpacing) {
                 Text(theme.name)
                     .font(.body)
                     .lineLimit(1)
@@ -23,11 +23,11 @@ struct ThemeRowView: View {
                 if theme.hasSubthemes {
                     Text("\(theme.subthemes.count) categories")
                         .font(.caption)
-                        .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                        .foregroundStyle(isSelected ? .white.opacity(AppConstants.Opacity.secondaryText) : .secondary)
                 } else {
                     Text("\(theme.totalSetCount) sets")
                         .font(.caption)
-                        .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                        .foregroundStyle(isSelected ? .white.opacity(AppConstants.Opacity.secondaryText) : .secondary)
                 }
                 
                 // Debug info (temporary)
@@ -43,13 +43,13 @@ struct ThemeRowView: View {
             if theme.hasSubthemes {
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                    .foregroundStyle(isSelected ? .white.opacity(AppConstants.Opacity.secondaryText) : .secondary)
             }
         }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 8)
+        .padding(.vertical, AppConstants.Layout.cardContentSpacing)
+        .padding(.horizontal, AppConstants.UI.smallSpacing)
         .background(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: AppConstants.CornerRadius.button)
                 .fill(isSelected ? .blue : .clear)
         )
         .accessibilityElement(children: .combine)
@@ -60,7 +60,7 @@ struct ThemeRowView: View {
 
 #Preview {
     // Mock theme for preview
-    let theme = Theme(id: 1, name: "Star Wars", parentId: nil)
+    let theme = Theme(id: AppConstants.SampleData.sampleThemeId, name: AppConstants.SampleData.sampleThemeName, parentId: nil)
     
     VStack {
         ThemeRowView(theme: theme, isSelected: false)
