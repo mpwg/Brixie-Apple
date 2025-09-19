@@ -26,6 +26,19 @@ final class Theme {
     /// Display order for sorting themes
     var sortOrder: Int?
     
+    // MARK: - Pagination Properties
+    
+    /// Total number of sets available for this theme (from API)
+    var totalSetCount: Int = 0
+    
+    /// Number of sets currently loaded/cached for this theme
+    var loadedSetCount: Int = 0
+    
+    /// Whether all sets have been loaded for this theme
+    var hasLoadedAllSets: Bool {
+        return totalSetCount > 0 && loadedSetCount >= totalSetCount
+    }
+    
     // MARK: - Relationships
     
     /// LEGO sets belonging to this theme
@@ -68,13 +81,6 @@ extension Theme {
     /// Whether this theme has subthemes
     var hasSubthemes: Bool {
         return !subthemes.isEmpty
-    }
-    
-    /// Total number of sets in this theme and all subthemes
-    var totalSetCount: Int {
-        let directSets = sets.count
-        let subthemeSets = subthemes.reduce(0) { $0 + $1.totalSetCount }
-        return directSets + subthemeSets
     }
     
     /// Hierarchical display name showing parent context

@@ -26,6 +26,30 @@ final class BrowseViewModel {
     private var allThemes: [Theme] = []
     private var allSets: [LegoSet] = []
     
+    // MARK: - Theme-specific Data
+    private var themeSetsCache: [Int: [LegoSet]] = [:]
+    var isLoadingThemeSets: Bool = false
+    
+    // MARK: - Pagination State
+    /// Track the pagination state for each theme
+    private var themePaginationState: [Int: PaginationState] = [:]
+    
+    /// Pagination state for a theme
+    private struct PaginationState {
+        let totalCount: Int
+        var loadedCount: Int
+        var nextURL: String?
+        var isLoadingMore: Bool = false
+        
+        var hasMore: Bool { 
+            loadedCount < totalCount && nextURL != nil 
+        }
+        
+        var hasLoadedAll: Bool {
+            loadedCount >= totalCount
+        }
+    }
+    
     // MARK: - Dependencies
     private let legoSetService: LegoSetService
     private let themeService: ThemeService
@@ -164,6 +188,21 @@ final class BrowseViewModel {
     /// Get sets for a specific theme
     func setsForTheme(_ theme: Theme) -> [LegoSet] {
         Logger.database.debug("setsForTheme(\(theme.name)) - Theme ID: \(theme.id)")
+        
+        // Check cache first
+        if let cachedSets = themeSetsCache[theme.id] {
+            Logger.database.debug("setsForTheme(\(theme.name)): returning \(cachedSets.count) cached sets")
+            
+            // Update theme's loaded count if we have pagination state
+            if let paginationState = themePaginationState[theme.id] {
+                theme.loadedSetCount = paginationState.loadedCount
+                Logger.database.debug("setsForTheme(\(theme.name)): updated loadedSetCount to \(theme.loadedSetCount)")
+            }
+            
+            return cachedSets
+        }
+        
+        // Try to find sets in allSets (for backward compatibility)
         Logger.database.debug("Total sets available: \(self.allSets.count)")
         
         // Log first few sets for debugging
@@ -178,7 +217,154 @@ final class BrowseViewModel {
         
         Logger.database.debug("setsForTheme(\(theme.name)): filtered \(filteredSets.count) sets from \(self.allSets.count) total sets")
         
+        // Cache the result even if empty (to avoid repeated filtering)
+        themeSetsCache[theme.id] = filteredSets
+        
+        // Initialize pagination state if we have sets but no pagination info
+        if !filteredSets.isEmpty && themePaginationState[theme.id] == nil {
+            // Use theme's totalSetCount if available, otherwise assume we have all sets
+            let totalCount = theme.totalSetCount > 0 ? theme.totalSetCount : filteredSets.count
+            themePaginationState[theme.id] = PaginationState(
+                totalCount: totalCount,
+                loadedCount: filteredSets.count,
+                nextURL: totalCount > filteredSets.count ? "unknown" : nil
+            )
+            theme.loadedSetCount = filteredSets.count
+        }
+        
+        // If no sets found, trigger async load
+        if filteredSets.isEmpty {
+            Logger.database.debug("setsForTheme(\(theme.name)): No sets found, triggering async load")
+            Task {
+                await loadSetsForTheme(theme)
+            }
+        }
+        
         return filteredSets
+    }
+    
+    /// Load sets for a specific theme from API
+    func loadSetsForTheme(_ theme: Theme, limit: Int = 20) async {
+        guard !isLoadingThemeSets else {
+            Logger.database.debug("loadSetsForTheme(\(theme.name)): Already loading, skipping")
+            return
+        }
+        
+        isLoadingThemeSets = true
+        Logger.database.debug("loadSetsForTheme(\(theme.name)): Starting API fetch")
+        
+        do {
+            let result = try await legoSetService.fetchSetsWithPagination(forThemeId: theme.id, limit: limit)
+            Logger.database.info("loadSetsForTheme(\(theme.name)): Fetched \(result.sets.count) sets from API, total: \(result.totalCount)")
+            
+            // Update theme model with total count
+            theme.totalSetCount = result.totalCount
+            theme.loadedSetCount = result.sets.count
+            
+            // Initialize pagination state
+            themePaginationState[theme.id] = PaginationState(
+                totalCount: result.totalCount,
+                loadedCount: result.sets.count,
+                nextURL: result.sets.count < result.totalCount ? "next" : nil
+            )
+            
+            // Update cache
+            themeSetsCache[theme.id] = result.sets
+            
+            // Add to allSets if not already present
+            for set in result.sets {
+                if !allSets.contains(where: { $0.setNumber == set.setNumber }) {
+                    allSets.append(set)
+                }
+            }
+            
+            Logger.database.debug("loadSetsForTheme(\(theme.name)): Updated cache and pagination state with \(result.sets.count)/\(result.totalCount) sets")
+            
+        } catch {
+            Logger.database.error("loadSetsForTheme(\(theme.name)): Failed to fetch sets - \(error)")
+            self.error = BrixieError.from(error)
+        }
+        
+        isLoadingThemeSets = false
+    }
+    
+    // MARK: - Pagination Methods
+    
+    /// Check if more sets can be loaded for a theme
+    func canLoadMoreSets(for theme: Theme) -> Bool {
+        guard let paginationState = themePaginationState[theme.id] else {
+            // No pagination state means we haven't loaded anything yet
+            return theme.totalSetCount == 0 || theme.totalSetCount > (themeSetsCache[theme.id]?.count ?? 0)
+        }
+        return paginationState.hasMore
+    }
+    
+    /// Check if we're currently loading more sets for a theme
+    func isLoadingMoreSets(for theme: Theme) -> Bool {
+        return themePaginationState[theme.id]?.isLoadingMore == true
+    }
+    
+    /// Load more sets for endless scrolling
+    func loadMoreSetsForTheme(_ theme: Theme) async {
+        guard canLoadMoreSets(for: theme) else {
+            Logger.database.debug("loadMoreSetsForTheme(\(theme.name)): Cannot load more sets")
+            return
+        }
+        
+        guard let paginationState = themePaginationState[theme.id], !paginationState.isLoadingMore else {
+            Logger.database.debug("loadMoreSetsForTheme(\(theme.name)): Already loading more")
+            return
+        }
+        
+        // Update state to show we're loading more
+        themePaginationState[theme.id]?.isLoadingMore = true
+        
+        Logger.database.debug("loadMoreSetsForTheme(\(theme.name)): Loading more sets, current count: \(paginationState.loadedCount)/\(paginationState.totalCount)")
+        
+        do {
+            // Calculate offset for pagination
+            let offset = paginationState.loadedCount
+            let result = try await legoSetService.fetchSetsWithPagination(forThemeId: theme.id, limit: 20, offset: offset)
+            
+            Logger.database.info("loadMoreSetsForTheme(\(theme.name)): Fetched \(result.sets.count) additional sets")
+            
+            // Append to existing cache
+            var existingSets = themeSetsCache[theme.id] ?? []
+            let newSets = result.sets.filter { newSet in
+                !existingSets.contains { $0.setNumber == newSet.setNumber }
+            }
+            existingSets.append(contentsOf: newSets)
+            themeSetsCache[theme.id] = existingSets
+            
+            // Update pagination state
+            let newLoadedCount = existingSets.count
+            let hasMore = newLoadedCount < result.totalCount && !result.sets.isEmpty
+            
+            themePaginationState[theme.id] = PaginationState(
+                totalCount: result.totalCount,
+                loadedCount: newLoadedCount,
+                nextURL: hasMore ? "next" : nil,
+                isLoadingMore: false
+            )
+            
+            // Update theme model
+            theme.totalSetCount = result.totalCount
+            theme.loadedSetCount = newLoadedCount
+            
+            // Add to allSets if not already present
+            for set in newSets {
+                if !allSets.contains(where: { $0.setNumber == set.setNumber }) {
+                    allSets.append(set)
+                }
+            }
+            
+            Logger.database.debug("loadMoreSetsForTheme(\(theme.name)): Now have \(newLoadedCount)/\(result.totalCount) sets")
+            
+        } catch {
+            Logger.database.error("loadMoreSetsForTheme(\(theme.name)): Failed to load more sets - \(error)")
+            themePaginationState[theme.id]?.isLoadingMore = false
+            self.error = BrixieError.from(error)
+        }
     }
     
     /// Get sets for a specific subtheme

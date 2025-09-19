@@ -99,8 +99,14 @@ final class LegoSetService {
         }
     }
     
-    /// Fetch sets by theme
+    /// Fetch sets by theme with pagination info
     func fetchSets(forThemeId themeId: Int, limit: Int = 20, offset: Int = 0) async throws -> [LegoSet] {
+        let result = try await fetchSetsWithPagination(forThemeId: themeId, limit: limit, offset: offset)
+        return result.sets
+    }
+    
+    /// Fetch sets by theme returning both sets and pagination information
+    func fetchSetsWithPagination(forThemeId themeId: Int, limit: Int = 20, offset: Int = 0) async throws -> (sets: [LegoSet], totalCount: Int) {
         guard let context = modelContext else {
             throw ServiceError.notConfigured
         }
@@ -114,7 +120,8 @@ final class LegoSetService {
         let cachedSets = try context.fetch(descriptor)
         
         if !cachedSets.isEmpty && isDataFresh() {
-            return Array(cachedSets.prefix(limit))
+            let paginatedSets = Array(cachedSets.dropFirst(offset).prefix(limit))
+            return (sets: paginatedSets, totalCount: cachedSets.count)
         }
         
         // Fetch from API
@@ -172,12 +179,14 @@ final class LegoSetService {
             // Save context
             try context.save()
             
-            return convertedSets
+            // Return both sets and total count from API response
+            return (sets: convertedSets, totalCount: apiResponse.count)
             
         } catch {
             // If API fails, return cached data if available
             if !cachedSets.isEmpty {
-                return Array(cachedSets.prefix(limit))
+                let paginatedSets = Array(cachedSets.dropFirst(offset).prefix(limit))
+                return (sets: paginatedSets, totalCount: cachedSets.count)
             }
             
             // Convert API errors to service errors

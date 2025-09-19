@@ -165,10 +165,18 @@ struct BrowseView: View {
                     }
                 } else {
                     let setsForTheme = viewModel.setsForTheme(selectedTheme)
-                    ThemeSetsView(theme: selectedTheme, sets: setsForTheme)
-                        .onAppear {
-                            viewModel.logThemeDetails(selectedTheme)
-                        }
+                    ThemeSetsView(
+                        theme: selectedTheme, 
+                        sets: setsForTheme,
+                        isLoading: viewModel.isLoadingThemeSets,
+                        browseViewModel: viewModel
+                    )
+                    .onAppear {
+                        viewModel.logThemeDetails(selectedTheme)
+                    }
+                    .refreshable {
+                        await viewModel.loadSetsForTheme(selectedTheme)
+                    }
                 }
             } else {
                 // No theme selected - show welcome message
@@ -227,7 +235,15 @@ struct BrowseView: View {
                         }
                     }
                 } else {
-                    ThemeSetsView(theme: selectedTheme, sets: viewModel.setsForTheme(selectedTheme))
+                    ThemeSetsView(
+                        theme: selectedTheme, 
+                        sets: viewModel.setsForTheme(selectedTheme),
+                        isLoading: viewModel.isLoadingThemeSets,
+                        browseViewModel: viewModel
+                    )
+                    .refreshable {
+                        await viewModel.loadSetsForTheme(selectedTheme)
+                    }
                 }
             }
         }
