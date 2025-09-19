@@ -29,6 +29,13 @@ struct ThemeRowView: View {
                         .font(.caption)
                         .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
                 }
+                
+                // Debug info (temporary)
+                #if DEBUG
+                Text("ID: \(theme.id)")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+                #endif
             }
             
             Spacer()

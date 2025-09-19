@@ -47,7 +47,11 @@ struct ThemeSetsView: View {
             .padding(.horizontal)
             
             if isLoading && sets.isEmpty {
-                LoadingView(message: "Loading LEGO sets for \(theme.name)...", isError: false)
+                ScrollView {
+                    SkeletonLoadingView(itemCount: 8, itemHeight: 80)
+                        .padding(.horizontal)
+                }
+                .accessibilityLabel("Loading LEGO sets for \(theme.name)")
             } else if sets.isEmpty {
                 ContentUnavailableView("No Sets", 
                                      systemImage: "cube",

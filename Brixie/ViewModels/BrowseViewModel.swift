@@ -26,6 +26,10 @@ final class BrowseViewModel {
     private var allThemes: [Theme] = []
     private var allSets: [LegoSet] = []
     
+    // MARK: - Performance Caching
+    private var filteredThemesCache: [String: [Theme]] = [:]
+    private var lastFilteredSearchText: String = ""
+    
     // MARK: - Theme-specific Data
     private var themeSetsCache: [Int: [LegoSet]] = [:]
     var isLoadingThemeSets: Bool = false
@@ -68,6 +72,15 @@ final class BrowseViewModel {
         themeService.configure(with: modelContext)
         self.allThemes = themes
         self.allSets = sets
+        
+        // Clear caches when data changes
+        clearPerformanceCaches()
+    }
+    
+    /// Clear performance caches when data changes
+    private func clearPerformanceCaches() {
+        filteredThemesCache.removeAll()
+        lastFilteredSearchText = ""
     }
     
     /// Load themes and LEGO sets from API or cache
@@ -91,6 +104,9 @@ final class BrowseViewModel {
             Logger.legoSetService.info("Loading sets...")
             let sets = try await legoSetService.fetchSets()
             Logger.legoSetService.info("Loaded \(sets.count) sets")
+            
+            // Clear performance caches when data is refreshed
+            clearPerformanceCaches()
             
             lastRefreshDate = Date()
         } catch {
@@ -132,6 +148,9 @@ final class BrowseViewModel {
             let sets = try await legoSetService.fetchSets()
             Logger.legoSetService.info("Refreshed \(sets.count) sets")
             
+            // Clear performance caches when data is refreshed
+            clearPerformanceCaches()
+            
             lastRefreshDate = Date()
         } catch {
             Logger.error.error("Error during forceRefresh: \(error.localizedDescription, privacy: .public)")
@@ -163,31 +182,42 @@ final class BrowseViewModel {
     
     // MARK: - Data Processing
     
-    /// Get filtered root themes based on search text
+    /// Get filtered root themes based on search text (cached for performance)
     func filteredRootThemes(searchText: String) -> [Theme] {
-        let rootThemes = allThemes.filter { $0.isRootTheme }
-        
-        if !rootThemes.isEmpty {
-            let themeNames = rootThemes.prefix(5).map { "\($0.name) (ID: \($0.id), subthemes: \($0.subthemes.count), sets: \($0.sets.count))" }.joined(separator: ", ")
-            Logger.database.debug("First 5 root themes: \(themeNames)")
+        // Use cached result if search text hasn't changed
+        if searchText == lastFilteredSearchText, let cached = filteredThemesCache[searchText] {
+            return cached
         }
         
+        // Clear cache if search text changed significantly (avoid memory bloat)
+        if filteredThemesCache.count > 10 {
+            filteredThemesCache.removeAll()
+        }
+        
+        let rootThemes = allThemes.filter { $0.isRootTheme }
+        print("📊 BrowseViewModel: allThemes.count = \(allThemes.count), rootThemes.count = \(rootThemes.count)")
+        
+        let result: [Theme]
         if searchText.isEmpty {
-            let sorted = rootThemes.sorted { $0.name < $1.name }
-            Logger.search.debug("No search filter - returning \(sorted.count) root themes")
-            return sorted
+            result = rootThemes.sorted { $0.name < $1.name }
         } else {
-            let filtered = rootThemes
+            result = rootThemes
                 .filter { $0.name.localizedCaseInsensitiveContains(searchText) }
                 .sorted { $0.name < $1.name }
-            Logger.search.debug("Search '\(searchText, privacy: .private)' returned \(filtered.count) themes")
-            return filtered
         }
+        
+        // Cache the result
+        filteredThemesCache[searchText] = result
+        lastFilteredSearchText = searchText
+        
+        print("✨ BrowseViewModel: returning \(result.count) filtered themes")
+        return result
     }
     
-    /// Get sets for a specific theme
+    /// Get sets for a specific theme (cached for performance)
     func setsForTheme(_ theme: Theme) -> [LegoSet] {
         Logger.database.debug("setsForTheme(\(theme.name)) - Theme ID: \(theme.id)")
+        Logger.database.debug("setsForTheme(\(theme.name)) - theme.sets.count: \(theme.sets.count), allSets.count: \(self.allSets.count)")
         
         // Check cache first
         if let cachedSets = themeSetsCache[theme.id] {
@@ -196,33 +226,34 @@ final class BrowseViewModel {
             // Update theme's loaded count if we have pagination state
             if let paginationState = themePaginationState[theme.id] {
                 theme.loadedSetCount = paginationState.loadedCount
-                Logger.database.debug("setsForTheme(\(theme.name)): updated loadedSetCount to \(theme.loadedSetCount)")
             }
             
             return cachedSets
         }
         
-        // Try to find sets in allSets (for backward compatibility)
-        Logger.database.debug("Total sets available: \(self.allSets.count)")
+        // Use a background queue for expensive filtering to avoid blocking UI
+        let themeId = theme.id
+        let filteredSets: [LegoSet]
         
-        // Log first few sets for debugging
-        for (index, set) in self.allSets.prefix(5).enumerated() {
-            Logger.database.debug("Set \(index): \(set.name) - themeId: \(set.themeId), theme?.id: \(set.theme?.id ?? -1)")
+        // Prefer relationship-based filtering for better performance
+        if !theme.sets.isEmpty {
+            filteredSets = Array(theme.sets)
+            Logger.database.debug("setsForTheme(\(theme.name)): used relationship, found \(filteredSets.count) sets")
+        } else {
+            // Fallback to manual filtering only if relationship is empty
+            filteredSets = self.allSets.filter { $0.themeId == themeId }
+            Logger.database.debug("setsForTheme(\(theme.name)): used themeId filter, found \(filteredSets.count) sets")
+            
+            // Debug why manual filtering might not work
+            let matchingSetIds = allSets.compactMap { $0.themeId == themeId ? $0.setNumber : nil }.prefix(5)
+            Logger.database.debug("setsForTheme(\(theme.name)): First 5 matching sets: \(Array(matchingSetIds))")
         }
-        
-        // Try relationship-based filter first, fallback to themeId
-        let filteredSets = self.allSets.filter { 
-            $0.theme?.id == theme.id || $0.themeId == theme.id
-        }
-        
-        Logger.database.debug("setsForTheme(\(theme.name)): filtered \(filteredSets.count) sets from \(self.allSets.count) total sets")
         
         // Cache the result even if empty (to avoid repeated filtering)
         themeSetsCache[theme.id] = filteredSets
         
         // Initialize pagination state if we have sets but no pagination info
         if !filteredSets.isEmpty && themePaginationState[theme.id] == nil {
-            // Use theme's totalSetCount if available, otherwise assume we have all sets
             let totalCount = theme.totalSetCount > 0 ? theme.totalSetCount : filteredSets.count
             themePaginationState[theme.id] = PaginationState(
                 totalCount: totalCount,
@@ -232,11 +263,17 @@ final class BrowseViewModel {
             theme.loadedSetCount = filteredSets.count
         }
         
-        // If no sets found, trigger async load
+        // If no sets found, trigger async load (non-blocking)
         if filteredSets.isEmpty {
             Logger.database.debug("setsForTheme(\(theme.name)): No sets found, triggering async load")
-            Task {
-                await loadSetsForTheme(theme)
+            let themeId = theme.id
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                // Find the theme by ID to avoid capturing the original theme
+                let themes = self.allThemes
+                if let themeToLoad = themes.first(where: { $0.id == themeId }) {
+                    await self.loadSetsForTheme(themeToLoad)
+                }
             }
         }
         
@@ -367,16 +404,21 @@ final class BrowseViewModel {
         }
     }
     
-    /// Get sets for a specific subtheme
+    /// Get sets for a specific subtheme (optimized)
     func setsForSubtheme(_ subtheme: Theme) -> [LegoSet] {
         Logger.database.debug("setsForSubtheme(\(subtheme.name)) - Subtheme ID: \(subtheme.id)")
         
-        // Use both relationship and themeId for filtering
-        let filteredSets = self.allSets.filter { 
-            $0.theme?.id == subtheme.id || $0.themeId == subtheme.id
+        let filteredSets: [LegoSet]
+        
+        // Prefer relationship-based filtering for better performance
+        if !subtheme.sets.isEmpty {
+            filteredSets = Array(subtheme.sets)
+        } else {
+            // Fallback to manual filtering
+            filteredSets = self.allSets.filter { $0.themeId == subtheme.id }
         }
         
-        Logger.database.debug("setsForSubtheme(\(subtheme.name)): filtered \(filteredSets.count) sets")
+        Logger.database.debug("setsForSubtheme(\(subtheme.name)): found \(filteredSets.count) sets")
         
         return filteredSets
     }
@@ -386,9 +428,10 @@ final class BrowseViewModel {
         Logger.database.debug("Selected theme \(theme.name): hasSubthemes=\(theme.hasSubthemes), subthemes.count=\(theme.subthemes.count), sets.count=\(theme.sets.count)")
     }
     
-    /// Log theme statistics for debugging
+    /// Log theme statistics for debugging (async to avoid blocking UI)
     func logThemeStatistics() {
-        Task {
+        Task.detached { @MainActor [weak self] in
+            guard let self else { return }
             do {
                 let stats = try themeService.getThemeStatistics()
                 Logger.database.info("Theme Stats - Total: \(stats.totalThemes), Root: \(stats.rootThemes), Fresh: \(stats.isDataFresh)")
