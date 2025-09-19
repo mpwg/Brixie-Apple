@@ -21,6 +21,7 @@ Starting with iOS 17, iPadOS 17, macOS 14, tvOS 17, and watchOS 10, SwiftUI prov
 ### 1. Replace ObservableObject with @Observable
 
 **BEFORE:**
+
 ```swift
 import SwiftUI
 
@@ -30,6 +31,7 @@ class DataModel: ObservableObject {
 ```
 
 **AFTER:**
+
 ```swift
 import SwiftUI
 
@@ -39,6 +41,7 @@ import SwiftUI
 ```
 
 **AI Agent Rules:**
+
 - Always replace `class ClassName: ObservableObject` with `@Observable class ClassName`
 - Remove `: ObservableObject` from class declaration
 - Add `@Observable` macro before `class` keyword
@@ -47,6 +50,7 @@ import SwiftUI
 ### 2. Remove @Published Property Wrapper
 
 **BEFORE:**
+
 ```swift
 @Observable class DataModel {
     @Published var items: [Item] = []
@@ -55,6 +59,7 @@ import SwiftUI
 ```
 
 **AFTER:**
+
 ```swift
 @Observable class DataModel {
     var items: [Item] = []
@@ -63,6 +68,7 @@ import SwiftUI
 ```
 
 **AI Agent Rules:**
+
 - Remove `@Published` from ALL properties in `@Observable` classes
 - Properties are automatically observable if accessible to observers
 - Use `@ObservationIgnored` for properties that should NOT be tracked
@@ -70,29 +76,32 @@ import SwiftUI
 ### 3. Use @ObservationIgnored for Non-Observable Properties
 
 **Example:**
+
 ```swift
 @Observable class DataModel {
     var observedProperty: String = ""
-    
+
     @ObservationIgnored
     private var internalCache: [String: Any] = [:]
-    
+
     @ObservationIgnored
     let configuration: Config = Config()
 }
 ```
 
 **AI Agent Rules:**
+
 - Apply `@ObservationIgnored` to properties that should not trigger view updates
 - Use for internal caches, configuration objects, or computed properties that don't need observation
 
 ### 4. Replace @StateObject with @State
 
 **BEFORE:**
+
 ```swift
 struct ContentView: View {
     @StateObject private var viewModel = ViewModel()
-    
+
     var body: some View {
         // view content
     }
@@ -100,10 +109,11 @@ struct ContentView: View {
 ```
 
 **AFTER:**
+
 ```swift
 struct ContentView: View {
     @State private var viewModel = ViewModel()
-    
+
     var body: some View {
         // view content
     }
@@ -111,6 +121,7 @@ struct ContentView: View {
 ```
 
 **AI Agent Rules:**
+
 - Replace `@StateObject` with `@State` when the type uses `@Observable`
 - Keep the same access level (`private`, `internal`, etc.)
 - Keep the same initialization pattern
@@ -118,6 +129,7 @@ struct ContentView: View {
 ### 5. Replace @EnvironmentObject with @Environment
 
 **BEFORE:**
+
 ```swift
 // Setting environment
 ContentView()
@@ -130,18 +142,20 @@ struct ContentView: View {
 ```
 
 **AFTER:**
+
 ```swift
 // Setting environment
 ContentView()
     .environment(dataModel)
 
-// Reading environment  
+// Reading environment
 struct ContentView: View {
     @Environment(DataModel.self) private var dataModel
 }
 ```
 
 **AI Agent Rules:**
+
 - Replace `.environmentObject(instance)` with `.environment(instance)`
 - Replace `@EnvironmentObject var name: Type` with `@Environment(Type.self) private var name`
 - Use the type itself in `@Environment(Type.self)`, not an instance
@@ -150,10 +164,11 @@ struct ContentView: View {
 ### 6. Remove @ObservedObject (Most Cases)
 
 **BEFORE:**
+
 ```swift
 struct DetailView: View {
     @ObservedObject var item: Item
-    
+
     var body: some View {
         Text(item.title)
     }
@@ -161,10 +176,11 @@ struct DetailView: View {
 ```
 
 **AFTER:**
+
 ```swift
 struct DetailView: View {
     var item: Item
-    
+
     var body: some View {
         Text(item.title)
     }
@@ -172,6 +188,7 @@ struct DetailView: View {
 ```
 
 **AI Agent Rules:**
+
 - Remove `@ObservedObject` and make it a regular property
 - SwiftUI automatically tracks observable properties read by the view's `body`
 - Only use `@Bindable` when you need to create bindings (see next rule)
@@ -179,10 +196,11 @@ struct DetailView: View {
 ### 7. Use @Bindable When You Need Bindings
 
 **BEFORE:**
+
 ```swift
 struct EditView: View {
     @ObservedObject var item: Item
-    
+
     var body: some View {
         TextField("Title", text: $item.title)
     }
@@ -190,10 +208,11 @@ struct EditView: View {
 ```
 
 **AFTER:**
+
 ```swift
 struct EditView: View {
     @Bindable var item: Item
-    
+
     var body: some View {
         TextField("Title", text: $item.title)
     }
@@ -201,6 +220,7 @@ struct EditView: View {
 ```
 
 **AI Agent Rules:**
+
 - Use `@Bindable` ONLY when you need to create bindings with `$` syntax
 - If the view only reads properties (no `$` usage), use a regular property instead
 - `@Bindable` is for editing/binding scenarios, not just observation
@@ -210,18 +230,23 @@ struct EditView: View {
 When encountering observable objects, follow this decision tree:
 
 1. **Is this a class that manages state?**
+
    - YES → Apply `@Observable` macro, remove `ObservableObject`
 
 2. **Are there @Published properties?**
+
    - YES → Remove `@Published` from all properties
 
 3. **Are there properties that shouldn't trigger updates?**
+
    - YES → Add `@ObservationIgnored` to those properties
 
 4. **Is this a @StateObject in a view?**
+
    - YES → Change to `@State`
 
 5. **Is this an @EnvironmentObject?**
+
    - YES → Change to `@Environment(Type.self) private var name`
    - Also change `.environmentObject(instance)` to `.environment(instance)`
 
@@ -234,10 +259,11 @@ When encountering observable objects, follow this decision tree:
 ### Parent-Child Data Flow
 
 **BEFORE:**
+
 ```swift
 struct ParentView: View {
     @StateObject private var dataModel = DataModel()
-    
+
     var body: some View {
         ChildView(dataModel: dataModel)
     }
@@ -245,7 +271,7 @@ struct ParentView: View {
 
 struct ChildView: View {
     @ObservedObject var dataModel: DataModel
-    
+
     var body: some View {
         Text(dataModel.title)
     }
@@ -253,10 +279,11 @@ struct ChildView: View {
 ```
 
 **AFTER:**
+
 ```swift
 struct ParentView: View {
     @State private var dataModel = DataModel()
-    
+
     var body: some View {
         ChildView(dataModel: dataModel)
     }
@@ -264,7 +291,7 @@ struct ParentView: View {
 
 struct ChildView: View {
     var dataModel: DataModel
-    
+
     var body: some View {
         Text(dataModel.title)
     }
@@ -274,11 +301,12 @@ struct ChildView: View {
 ### Environment Usage
 
 **BEFORE:**
+
 ```swift
 @main
 struct App: App {
     @StateObject private var appState = AppState()
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -289,7 +317,7 @@ struct App: App {
 
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
-    
+
     var body: some View {
         Text(appState.currentUser.name)
     }
@@ -297,11 +325,12 @@ struct ContentView: View {
 ```
 
 **AFTER:**
+
 ```swift
-@main  
+@main
 struct App: App {
     @State private var appState = AppState()
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -312,7 +341,7 @@ struct App: App {
 
 struct ContentView: View {
     @Environment(AppState.self) private var appState
-    
+
     var body: some View {
         Text(appState.currentUser.name)
     }
@@ -322,10 +351,11 @@ struct ContentView: View {
 ### Editing with Bindings
 
 **BEFORE:**
+
 ```swift
 struct ProfileEditView: View {
     @ObservedObject var user: User
-    
+
     var body: some View {
         Form {
             TextField("Name", text: $user.name)
@@ -337,10 +367,11 @@ struct ProfileEditView: View {
 ```
 
 **AFTER:**
+
 ```swift
 struct ProfileEditView: View {
     @Bindable var user: User
-    
+
     var body: some View {
         Form {
             TextField("Name", text: $user.name)
@@ -370,7 +401,7 @@ struct ProfileEditView: View {
 Before completing migration of any file, verify:
 
 - [ ] All `@Observable` classes have no `@Published` properties
-- [ ] All `@StateObject` changed to `@State` for `@Observable` types  
+- [ ] All `@StateObject` changed to `@State` for `@Observable` types
 - [ ] All `@EnvironmentObject` changed to `@Environment(Type.self)` pattern
 - [ ] All `.environmentObject()` changed to `.environment()`
 - [ ] `@ObservedObject` only used where `@Bindable` is now appropriate
