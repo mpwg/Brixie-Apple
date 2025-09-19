@@ -4,7 +4,7 @@
 		{
 			"label": "Build Brixie Xcode project",
 			"type": "shell",
-			"command": "xcodebuild -project Brixie.xcodeproj -scheme Brixie -destination 'platform=iOS Simulator,name=iPhone 15' build",
+			"command": "bundle exec fastlane build",
 			"problemMatcher": [
 				"$gcc"
 			],

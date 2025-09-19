@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Animation constants and presets for consistent app-wide animations
+@MainActor
 struct AnimationPresets {
     // MARK: - Duration Constants
     static let quick = 0.2
@@ -27,33 +28,8 @@ struct AnimationPresets {
 }
 
 /// Custom view transitions for different presentation contexts
-struct ViewTransitions {
-    // MARK: - Standard Transitions
-    static let slide = AnyTransition.slide
-    static let opacity = AnyTransition.opacity
-    static let scale = AnyTransition.scale
-    
-    // MARK: - Custom Transitions
-    static let slideAndFade = AnyTransition.asymmetric(
-        insertion: .slide.combined(with: .opacity),
-        removal: .opacity.combined(with: .scale)
-    )
-    
-    static let cardPresentation = AnyTransition.asymmetric(
-        insertion: .move(edge: .bottom).combined(with: .opacity),
-        removal: .move(edge: .bottom).combined(with: .opacity)
-    )
-    
-    static let detailView = AnyTransition.asymmetric(
-        insertion: .move(edge: .trailing).combined(with: .opacity),
-        removal: .move(edge: .trailing).combined(with: .opacity)
-    )
-    
-    static let modalSheet = AnyTransition.asymmetric(
-        insertion: .move(edge: .bottom),
-        removal: .move(edge: .bottom)
-    )
-}
+// ViewTransitions has been removed to avoid cross-actor AnyTransition initialization issues.
+// Callers should use inline AnyTransition definitions (e.g. .asymmetric(insertion: .slide.combined(with: .opacity), removal: .opacity.combined(with: .scale))).
 
 /// Animated view modifier for smooth state changes
 struct AnimatedStateModifier<T: Equatable>: ViewModifier {

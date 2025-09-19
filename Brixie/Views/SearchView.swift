@@ -9,42 +9,34 @@ import SwiftUI
 import SwiftData
 
 struct SearchView: View {
-    @State private var query = ""
-    @State private var showingSuggestions = false
-    @State private var selectedThemes: Set<Int> = []
+    @State private var viewModel = SearchViewModel()
     @State private var showingFilters = false
     @State private var showingBarcodeScanner = false
-    @State private var minYear = 1958
-    @State private var maxYear = Calendar.current.component(.year, from: Date())
-    @State private var minParts = 1
-    @State private var maxParts = 10000
-    @State private var useYearFilter = false
-    @State private var usePartsFilter = false
     
     @Query(sort: \LegoSet.name) private var allSets: [LegoSet]
     @Query(sort: \Theme.name) private var themes: [Theme]
     
     @Environment(\.isSearching) private var isSearching
-    private let searchHistory = SearchHistoryService.shared
 
     var body: some View {
         NavigationStack {
-            if isSearching && query.isEmpty {
+            if isSearching && viewModel.query.isEmpty {
                 // Show suggestions when search is active but no query
                 SearchSuggestionsView(
-                    suggestions: searchHistory.getSuggestions(for: ""),
+                    suggestions: viewModel.getSuggestions(for: ""),
                     onSuggestionSelected: { suggestion in
-                        query = suggestion
-                        submitSearch()
+                        viewModel.query = suggestion
+                        viewModel.submitSearch()
+                        viewModel.filterSets(from: allSets)
                     }
                 )
-            } else if filteredResults.isEmpty && !query.isEmpty {
+            } else if viewModel.filteredResults.isEmpty && !viewModel.query.isEmpty {
                 // Show no results state
-                ContentUnavailableView.search(text: query)
+                ContentUnavailableView.search(text: viewModel.query)
             } else {
                 // Show results
                 List {
-                    ForEach(filteredResults) { set in
+                    ForEach(viewModel.filteredResults.isEmpty ? allSets : viewModel.filteredResults) { set in
                         NavigationLink(destination: SetDetailView(set: set)) {
                             SetSearchRowView(set: set)
                         }
@@ -54,20 +46,24 @@ struct SearchView: View {
         }
         .navigationTitle("Search")
         .searchable(
-            text: $query,
+            text: $viewModel.query,
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "Search sets, themes, or numbers"
         ) {
             // Search suggestions in search scope
-            if !query.isEmpty {
-                ForEach(searchHistory.getSuggestions(for: query), id: \.self) { suggestion in
+            if !viewModel.query.isEmpty {
+                ForEach(viewModel.getSuggestions(for: viewModel.query), id: \.self) { suggestion in
                     Text(suggestion)
                         .searchCompletion(suggestion)
                 }
             }
         }
         .onSubmit(of: .search) {
-            submitSearch()
+            viewModel.submitSearch()
+            viewModel.filterSets(from: allSets)
+        }
+        .onChange(of: viewModel.query) {
+            viewModel.filterSets(from: allSets)
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -82,7 +78,7 @@ struct SearchView: View {
                     Button {
                         showingFilters = true
                     } label: {
-                        Image(systemName: selectedThemes.isEmpty && !useYearFilter && !usePartsFilter ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+                        Image(systemName: viewModel.hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                     }
                     .accessibilityLabel("Filters")
                 }
@@ -90,70 +86,24 @@ struct SearchView: View {
         }
         .sheet(isPresented: $showingFilters) {
             SearchFiltersView(
-                selectedThemes: $selectedThemes,
+                selectedThemes: $viewModel.selectedThemes,
                 themes: themes,
-                minYear: $minYear,
-                maxYear: $maxYear,
-                minParts: $minParts,
-                maxParts: $maxParts,
-                useYearFilter: $useYearFilter,
-                usePartsFilter: $usePartsFilter
+                minYear: $viewModel.minYear,
+                maxYear: $viewModel.maxYear,
+                minParts: $viewModel.minParts,
+                maxParts: $viewModel.maxParts,
+                useYearFilter: $viewModel.useYearFilter,
+                usePartsFilter: $viewModel.usePartsFilter
             )
         }
         .sheet(isPresented: $showingBarcodeScanner) {
             BarcodeScannerView { barcode in
-                query = barcode
+                viewModel.query = barcode
                 showingBarcodeScanner = false
-                submitSearch()
+                viewModel.submitSearch()
+                viewModel.filterSets(from: allSets)
             }
         }
-    }
-    
-    // MARK: - Private Methods
-    
-    private func submitSearch() {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmed.isEmpty {
-            searchHistory.addToHistory(trimmed)
-        }
-    }
-
-    private var filteredResults: [LegoSet] {
-        var results = allSets
-        
-        // Filter by search query
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmed.isEmpty {
-            results = results.filter { set in
-                set.name.localizedStandardContains(trimmed) ||
-                set.setNumber.localizedStandardContains(trimmed) ||
-                set.theme?.name.localizedStandardContains(trimmed) == true
-            }
-        }
-        
-        // Filter by selected themes
-        if !selectedThemes.isEmpty {
-            results = results.filter { set in
-                guard let themeId = set.theme?.id else { return false }
-                return selectedThemes.contains(themeId)
-            }
-        }
-        
-        // Filter by year range
-        if useYearFilter {
-            results = results.filter { set in
-                set.year >= minYear && set.year <= maxYear
-            }
-        }
-        
-        // Filter by parts count
-        if usePartsFilter {
-            results = results.filter { set in
-                set.numParts >= minParts && set.numParts <= maxParts
-            }
-        }
-        
-        return results
     }
 }
 

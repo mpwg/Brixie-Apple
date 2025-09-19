@@ -28,9 +28,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		402471882E659269001A8343 /* Brixie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Brixie.app; path = "/Users/mat/code/brixie-apple/build/Debug/Brixie.app"; sourceTree = "<absolute>"; };
-		402471992E65926A001A8343 /* BrixieTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = BrixieTests.xctest; path = "/Users/mat/code/brixie-apple/build/Debug/Brixie.app/Contents/PlugIns/BrixieTests.xctest"; sourceTree = "<absolute>"; };
-		402471A32E65926A001A8343 /* BrixieUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = BrixieUITests.xctest; path = "/Users/mat/code/brixie-apple/build/Debug/BrixieUITests-Runner.app/Contents/PlugIns/BrixieUITests.xctest"; sourceTree = "<absolute>"; };
+		40B9C0862E7D4D5600F3F09C /* Brixie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Brixie.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		40B9C0872E7D4D5600F3F09C /* BrixieTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BrixieTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		40B9C0882E7D4D5600F3F09C /* BrixieUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BrixieUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -77,6 +77,9 @@
 				409A58AA2E7D4AF000935E1F /* BrixieUITests */,
 				409A589F2E7D4AE500935E1F /* BrixieTests */,
 				409A58742E7D4ACA00935E1F /* Brixie */,
+				40B9C0862E7D4D5600F3F09C /* Brixie.app */,
+				40B9C0872E7D4D5600F3F09C /* BrixieTests.xctest */,
+				40B9C0882E7D4D5600F3F09C /* BrixieUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -101,7 +104,7 @@
 				40E9B59B2E675D0200906173 /* RebrickableLegoAPIClient */,
 			);
 			productName = Brixie;
-			productReference = 402471882E659269001A8343 /* Brixie.app */;
+			productReference = 40B9C0862E7D4D5600F3F09C /* Brixie.app */;
 			productType = "com.apple.product-type.application";
 		};
 		402471982E65926A001A8343 /* BrixieTests */ = {
@@ -122,7 +125,7 @@
 			);
 			name = BrixieTests;
 			productName = BrixieTests;
-			productReference = 402471992E65926A001A8343 /* BrixieTests.xctest */;
+			productReference = 40B9C0872E7D4D5600F3F09C /* BrixieTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		402471A22E65926A001A8343 /* BrixieUITests */ = {
@@ -143,7 +146,7 @@
 			);
 			name = BrixieUITests;
 			productName = BrixieUITests;
-			productReference = 402471A32E65926A001A8343 /* BrixieUITests.xctest */;
+			productReference = 40B9C0882E7D4D5600F3F09C /* BrixieUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -269,7 +272,6 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Brixie/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.reference";
 				INFOPLIST_KEY_REBRICKABLE_API_KEY = "$(REBRICKABLE_API_KEY)";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -333,7 +335,6 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Brixie/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.reference";
 				INFOPLIST_KEY_REBRICKABLE_API_KEY = "$(REBRICKABLE_API_KEY)";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

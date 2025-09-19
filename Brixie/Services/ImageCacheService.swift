@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 /// Image caching service with memory and disk storage
-@Observable @MainActor
+@MainActor
 final class ImageCacheService {
     /// Singleton instance
     static let shared = ImageCacheService()

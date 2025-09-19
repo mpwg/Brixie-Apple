@@ -4,7 +4,6 @@ import Foundation
 
 /// Manages offline state detection and queued actions
 @MainActor
-@Observable
 internal final class OfflineManager {
     static let shared = OfflineManager()
     
@@ -259,7 +258,7 @@ struct OfflineIndicator: View {
             .padding(.vertical, 4)
             .background(Color.orange.opacity(0.1))
             .cornerRadius(8)
-            .transition(ViewTransitions.slideAndFade)
+            .transition(.asymmetric(insertion: .slide.combined(with: .opacity), removal: .opacity.combined(with: .scale)))
         }
     }
 }

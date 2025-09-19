@@ -12,7 +12,7 @@ import Charts
 struct CollectionStatisticsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    private let collectionService = CollectionService.shared
+    @State private var viewModel = CollectionViewModel()
     
     var body: some View {
         NavigationStack {
@@ -39,7 +39,7 @@ struct CollectionStatisticsView: View {
     }
     
     private var stats: CollectionStats {
-        collectionService.getCollectionStats(from: modelContext)
+        viewModel.getCollectionStats(from: modelContext)
     }
     
     private var overviewSection: some View {

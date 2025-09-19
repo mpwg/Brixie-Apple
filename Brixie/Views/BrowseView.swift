@@ -11,13 +11,12 @@ import SwiftData
 struct BrowseView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \LegoSet.year, order: .reverse, animation: .default) private var sets: [LegoSet]
-    @State private var isRefreshing = false
-    @State private var service = LegoSetService.shared
+    @State private var viewModel = BrowseViewModel()
 
     var body: some View {
         NavigationStack {
             Group {
-                if isRefreshing {
+                if viewModel.isLoading {
                     LoadingView(message: "Loading LEGO sets...", isError: false)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if sets.isEmpty {
@@ -41,13 +40,25 @@ struct BrowseView: View {
                         }
                         .contentShape(Rectangle())
                     }
-                    .refreshable { await refresh() }
+                    .refreshable { 
+                        await viewModel.refresh()
+                    }
                 }
             }
             .navigationTitle("Browse")
             .toolbar { toolbar }
             .onAppear {
-                service.configure(with: modelContext)
+                viewModel.configure(with: modelContext)
+            }
+            .task {
+                if sets.isEmpty {
+                    await viewModel.loadSets()
+                }
+            }
+            .alert("Error", isPresented: .constant(viewModel.error != nil), presenting: viewModel.error) { error in
+                Button("OK") { viewModel.error = nil }
+            } message: { error in
+                Text(error.localizedDescription)
             }
         }
     }
@@ -64,24 +75,9 @@ struct BrowseView: View {
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
             Button {
-                Task { await refresh() }
+                Task { await viewModel.refresh() }
             } label: { Image(systemName: "arrow.clockwise") }
             .accessibilityLabel("Refresh sets")
-        }
-    }
-
-    private func refresh() async {
-        guard !isRefreshing else { return }
-        isRefreshing = true
-        defer { isRefreshing = false }
-        
-        // Try to fetch sets from the service
-        do {
-            let service = LegoSetService.shared
-            service.configure(with: modelContext)
-            let _ = try await service.fetchSets()
-        } catch {
-            print("Failed to fetch sets: \(error)")
         }
     }
 }

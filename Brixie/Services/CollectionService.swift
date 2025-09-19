@@ -9,7 +9,6 @@ import Foundation
 import SwiftData
 
 /// Service for managing user's LEGO collection
-@Observable
 final class CollectionService {
     static let shared = CollectionService()
     
