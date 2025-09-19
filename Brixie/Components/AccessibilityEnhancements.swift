@@ -183,12 +183,12 @@ struct AccessibleSetCard: View {
             onTap()
         }
         .modifier(KeyboardNavigationModifier(
-            onSpace: onTap,
-            onReturn: onTap,
             onUpArrow: nil,
             onDownArrow: nil,
             onLeftArrow: nil,
             onRightArrow: nil,
+            onSpace: onTap,
+            onReturn: onTap,
             onEscape: nil
         ))
         .modifier(HighContrastModifier())
@@ -263,12 +263,12 @@ extension View {
         onEscape: (() -> Void)? = nil
     ) -> some View {
         self.modifier(KeyboardNavigationModifier(
-            onSpace: onSpace,
-            onReturn: onReturn,
             onUpArrow: onUpArrow,
             onDownArrow: onDownArrow,
             onLeftArrow: onLeftArrow,
             onRightArrow: onRightArrow,
+            onSpace: onSpace,
+            onReturn: onReturn,
             onEscape: onEscape
         ))
     }
