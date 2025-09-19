@@ -122,7 +122,6 @@ struct SetDetailView: View {
                         }
                         
                         // Missing parts management for owned sets
-                        /* TODO: Enable when MissingPart model is added to Xcode project
                         if collection.isOwned {
                             Button(action: {
                                 showingMissingParts = true
@@ -132,7 +131,6 @@ struct SetDetailView: View {
                             .buttonStyle(.bordered)
                             .accessibilityIdentifier("manageMissingParts")
                         }
-                        */
                     }
                     .padding()
                     .background(Color.gray.opacity(0.1))
@@ -148,13 +146,11 @@ struct SetDetailView: View {
             .padding()
         }
         .accessibilityElement(children: .contain)
-        /* TODO: Enable when MissingPart model is added to Xcode project
         .sheet(isPresented: $showingMissingParts) {
             if let collection = set.userCollection {
                 MissingPartsView(userCollection: collection)
             }
         }
-        */
     }
     
     private var shareText: String {

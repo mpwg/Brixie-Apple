@@ -17,8 +17,8 @@ struct BrixieApp: App {
         .modelContainer(for: [
             LegoSet.self,
             Theme.self,
-            UserCollection.self
-            // MissingPart.self  // TODO: Add when Xcode project is updated
+            UserCollection.self,
+            MissingPart.self
         ], isUndoEnabled: true)
     }
 }
@@ -31,8 +31,8 @@ extension BrixieApp {
         let schema = Schema([
             LegoSet.self,
             Theme.self,
-            UserCollection.self
-            // MissingPart.self  // TODO: Add when Xcode project is updated
+            UserCollection.self,
+            MissingPart.self
         ])
         
         let configuration = ModelConfiguration(

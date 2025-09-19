@@ -59,6 +59,10 @@ final class UserCollection {
     @Relationship(deleteRule: .nullify)
     var legoSet: LegoSet?
     
+    /// Missing parts for this set
+    @Relationship(deleteRule: .cascade)
+    var missingParts: [MissingPart] = []
+    
     // MARK: - Initialization
     
     init(
@@ -172,22 +176,31 @@ extension UserCollection {
     
     /// Collection completion status (percentage based on missing parts)
     var completionPercentage: Double {
-        return hasMissingParts ? 90.0 : 100.0
+        guard let legoSet = legoSet, legoSet.numParts > 0 else { return 100.0 }
+        let missing = actualMissingPartsCount
+        return Double(legoSet.numParts - missing) / Double(legoSet.numParts) * 100.0
     }
     
-    /// Count of missing parts
+    /// Count of missing parts (from actual MissingPart entries)
     var missingPartsCount: Int {
-        return hasMissingParts ? 1 : 0
+        return actualMissingPartsCount
+    }
+    
+    /// Actual count from MissingPart relationship
+    private var actualMissingPartsCount: Int {
+        return missingParts.filter { !$0.isOrdered }.reduce(0) { $0 + $1.quantity }
     }
     
     /// Count of ordered parts
     var orderedPartsCount: Int {
-        return 0
+        return missingParts.filter { $0.isOrdered }.reduce(0) { $0 + $1.quantity }
     }
     
     /// Total replacement cost for missing parts
     var totalReplacementCost: Decimal? {
-        return nil
+        let costs = missingParts.compactMap { $0.replacementPrice }
+        guard !costs.isEmpty else { return nil }
+        return costs.reduce(0, +)
     }
 }
 
@@ -223,5 +236,22 @@ extension UserCollection {
     /// Update condition rating
     func updateCondition(_ rating: Int) {
         condition = max(1, min(5, rating)) // Clamp between 1-5
+    }
+    
+    /// Add a missing part
+    func addMissingPart(_ part: MissingPart) {
+        missingParts.append(part)
+        updateMissingPartsFlag()
+    }
+    
+    /// Remove a missing part
+    func removeMissingPart(_ part: MissingPart) {
+        missingParts.removeAll { $0.id == part.id }
+        updateMissingPartsFlag()
+    }
+    
+    /// Update hasMissingParts flag based on actual missing parts
+    func updateMissingPartsFlag() {
+        hasMissingParts = !missingParts.filter { !$0.isOrdered }.isEmpty
     }
 }
