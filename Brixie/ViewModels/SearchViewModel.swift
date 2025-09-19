@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import OSLog
 
 /// ViewModel for SearchView following MVVM pattern
 @Observable
@@ -23,6 +24,7 @@ final class SearchViewModel {
     var usePartsFilter: Bool = false
     var showingSuggestions: Bool = false
     var filteredResults: [LegoSet] = []
+    var showingBarcodeScanner: Bool = false
     
     // MARK: - Dependencies
     private let searchHistoryService: SearchHistoryService
@@ -101,5 +103,21 @@ final class SearchViewModel {
     /// Check if any filters are active
     var hasActiveFilters: Bool {
         return !selectedThemes.isEmpty || useYearFilter || usePartsFilter
+    }
+    
+    // MARK: - Barcode Scanner
+    
+    /// Show barcode scanner
+    func showBarcodeScanner() {
+        showingBarcodeScanner = true
+    }
+    
+    /// Handle barcode scan result
+    func handleBarcodeResult(_ barcode: String, with allSets: [LegoSet]) {
+        Logger.search.info("Scanned barcode: \(barcode)")
+        query = barcode
+        showingBarcodeScanner = false
+        submitSearch()
+        filterSets(from: allSets)
     }
 }

@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 import SwiftUI
 import RebrickableLegoAPIClient
+import OSLog
 
 /// Service for managing LEGO theme data from Rebrickable API and local cache
 /// Extracted from LegoSetService to follow single responsibility principle
@@ -16,6 +17,9 @@ import RebrickableLegoAPIClient
 final class ThemeService {
     /// Singleton instance
     static let shared = ThemeService()
+    
+    /// Logger for theme service operations
+    private let logger = Logger.themeService
     
     /// SwiftData model context for database operations
     private var modelContext: ModelContext?
@@ -35,49 +39,115 @@ final class ThemeService {
     // MARK: - Initialization
     
     init() {
+        logger.debug("🎯 ThemeService initialized")
         loadLastThemeSyncDate()
     }
     
     /// Configure with SwiftData model context
     func configure(with context: ModelContext) {
         self.modelContext = context
+        logger.info("⚙️ ThemeService configured with ModelContext")
     }
     
     // MARK: - Theme Operations
     
+    /// Clear all cached themes (for debugging)
+    func clearCachedThemes() throws {
+        logger.entering()
+        
+        guard let modelContext = modelContext else {
+            logger.error("❌ ModelContext not configured")
+            logger.exitWith(result: "error: not configured")
+            throw ThemeServiceError.notConfigured
+        }
+        
+        let descriptor = FetchDescriptor<Theme>()
+        let allThemes = try modelContext.fetch(descriptor)
+        let themeCount = allThemes.count
+        
+        for theme in allThemes {
+            modelContext.delete(theme)
+        }
+        
+        try modelContext.save()
+        logger.info("🗑️ Cleared \(themeCount) cached themes")
+        logger.userAction("cleared_theme_cache", context: ["themesCleared": themeCount])
+        
+        // Reset sync date to force fresh fetch
+        lastThemeSyncDate = nil
+        saveLastThemeSyncDate()
+        
+        logger.exitWith(result: "\(themeCount) themes cleared")
+    }
+    
+    /// Force refresh all themes from API (clears cache first)
+    func forceRefreshThemes() async throws -> [Theme] {
+        logger.entering()
+        
+        // Log cache state before clearing
+        if let cacheAge = getCacheAgeHours() {
+            logger.info("🔄 Force refresh requested. Current cache age: \(cacheAge, format: .fixed(precision: 2))h")
+        } else {
+            logger.info("🔄 Force refresh requested. No existing cache.")
+        }
+        logger.userAction("force_refresh_themes")
+        
+        // Clear existing cache
+        try clearCachedThemes()
+        logger.info("🧹 Cache cleared, forcing API fetch...")
+        
+        // Fetch fresh data from API
+        let freshThemes = try await fetchThemes()
+        
+        logger.exitWith(result: "\(freshThemes.count) themes refreshed from API")
+        return freshThemes
+    }
+    
     /// Fetch all themes from API or local cache
     func fetchThemes() async throws -> [Theme] {
+        logger.entering()
+        let startTime = CFAbsoluteTimeGetCurrent()
+        
         guard modelContext != nil else {
+            logger.error("❌ No model context configured")
+            logger.exitWith(result: "error: not configured")
             throw ThemeServiceError.notConfigured
         }
         
         guard apiConfig.isConfigured else {
+            logger.error("❌ API not configured")
+            logger.exitWith(result: "error: API not configured")
             throw ThemeServiceError.apiNotConfigured
         }
         
         isLoading = true
         defer { isLoading = false }
         
-        // Try to get cached themes first
-        let cachedThemes = try fetchCachedThemes()
-        
-        // If we have fresh data, return it
-        if isThemeDataFresh() && !cachedThemes.isEmpty {
-            return cachedThemes
-        }
-        
-        // Otherwise fetch from API
         do {
-            let apiThemes = try await fetchThemesFromAPI()
-            lastThemeSyncDate = Date()
-            saveLastThemeSyncDate()
-            return apiThemes
-        } catch {
-            currentError = error
-            // Return cached data if API fails
-            if !cachedThemes.isEmpty {
+            // Try to get cached themes first
+            let cachedThemes = try fetchCachedThemes()
+            
+            // If we have cached data and it's recent, return it
+            if !cachedThemes.isEmpty && isThemeDataFresh() {
+                let duration = CFAbsoluteTimeGetCurrent() - startTime
+                logger.info("📱 Using cached themes: \(cachedThemes.count) items (data is fresh)")
+                logger.debug("⏱️ Cache fetch completed in \(duration, format: .fixed(precision: 3))s")
+                logger.exitWith(result: "\(cachedThemes.count) cached themes")
                 return cachedThemes
             }
+            
+            logger.debug("🌐 Cached themes unavailable or stale, fetching from API")
+            // Otherwise, fetch from API
+            let fetchedThemes = try await fetchThemesFromAPI()
+            
+            let duration = CFAbsoluteTimeGetCurrent() - startTime
+            logger.info("✅ Fetched \(fetchedThemes.count) themes in \(duration, format: .fixed(precision: 3))s")
+            logger.exitWith(result: "\(fetchedThemes.count) API themes")
+            return fetchedThemes
+        } catch {
+            let duration = CFAbsoluteTimeGetCurrent() - startTime
+            logger.error("❌ Failed to fetch themes after \(duration, format: .fixed(precision: 3))s: \(error.localizedDescription)")
+            logger.exitWith(result: "error: \(error.localizedDescription)")
             throw error
         }
     }
@@ -149,6 +219,24 @@ final class ThemeService {
         }
     }
     
+    /// Get theme statistics for debugging/monitoring
+    func getThemeStatistics() throws -> ThemeStatistics {
+        guard let modelContext = modelContext else {
+            throw ThemeServiceError.notConfigured
+        }
+        
+        let descriptor = FetchDescriptor<Theme>()
+        let allThemes = try modelContext.fetch(descriptor)
+        let rootThemes = allThemes.filter { $0.parentId == nil }
+        
+        return ThemeStatistics(
+            totalThemes: allThemes.count,
+            rootThemes: rootThemes.count,
+            lastSyncDate: lastThemeSyncDate,
+            isDataFresh: isThemeDataFresh()
+        )
+    }
+    
     // MARK: - Private Methods
     
     /// Fetch themes from local cache
@@ -172,14 +260,38 @@ final class ThemeService {
             throw ThemeServiceError.apiNotConfigured
         }
         
-        // Fetch themes from API
-        let themesResponse = try await LegoAPI.legoThemesList(
-            page: nil,
-            pageSize: nil,
-            ordering: nil,
-            apiConfiguration: apiClientConfig
-        )
-        let apiThemes = themesResponse.results
+        // Fetch all themes from API using pagination
+        var allApiThemes: [RebrickableLegoAPIClient.Theme] = []
+        var currentPage = 1
+        let pageSize = AppConstants.API.maxPageSize // Use large page size to minimize API calls
+        
+        Logger.network.info("Starting theme fetch with pagination")
+        
+        while true {
+            Logger.network.debug("Fetching themes page \(currentPage)")
+            
+            let themesResponse = try await LegoAPI.legoThemesList(
+                page: currentPage,
+                pageSize: pageSize,
+                ordering: nil,
+                apiConfiguration: apiClientConfig
+            )
+            
+            let pageThemes = themesResponse.results
+            allApiThemes.append(contentsOf: pageThemes)
+            
+            Logger.network.debug("Page \(currentPage): got \(pageThemes.count) themes (total so far: \(allApiThemes.count))")
+            
+            // If we got fewer themes than the page size, we've reached the end
+            if pageThemes.count < pageSize {
+                Logger.network.info("Completed theme fetch: \(allApiThemes.count) themes across \(currentPage) pages")
+                break
+            }
+            
+            currentPage += 1
+        }
+        
+        let apiThemes = allApiThemes
         
         // Convert API themes to local themes
         var localThemes: [Theme] = []
@@ -209,8 +321,21 @@ final class ThemeService {
             }
         }
         
-        // Save changes
+        // Save changes to get stable IDs
         try modelContext.save()
+        
+        // Now establish parent-child relationships
+        Logger.themeService.info("Establishing theme relationships...")
+        try establishThemeRelationships()
+        
+        // Establish set-theme relationships
+        Logger.themeService.info("Establishing set-theme relationships...")
+        try establishSetThemeRelationships()
+        
+        // Final save after establishing relationships
+        try modelContext.save()
+        
+        Logger.themeService.info("All relationships established successfully")
         
         return localThemes
     }
@@ -218,7 +343,14 @@ final class ThemeService {
     /// Check if theme data is fresh (less than 24 hours old)
     private func isThemeDataFresh() -> Bool {
         guard let lastSync = lastThemeSyncDate else { return false }
-        return Date().timeIntervalSince(lastSync) < 24 * 60 * 60 // 24 hours
+        let ageHours = Date().timeIntervalSince(lastSync) / AppConstants.TimeIntervals.secondsPerHour
+        return ageHours < AppConstants.TimeIntervals.cacheSyncValidHours
+    }
+    
+    /// Get the age of cached theme data in hours
+    func getCacheAgeHours() -> Double? {
+        guard let lastSync = lastThemeSyncDate else { return nil }
+        return Date().timeIntervalSince(lastSync) / 3600.0
     }
     
     /// Load last theme sync date from UserDefaults
@@ -245,6 +377,75 @@ final class ThemeService {
             sortOrder: nil // Could be enhanced with ordering logic
         )
     }
+    
+    /// Establish parent-child relationships between themes
+    private func establishThemeRelationships() throws {
+        guard let modelContext = modelContext else {
+            throw ThemeServiceError.notConfigured
+        }
+        
+        // Fetch all themes
+        let allThemes = try modelContext.fetch(FetchDescriptor<Theme>())
+        
+        // Create lookup dictionary for efficient access
+        var themeById: [Int: Theme] = [:]
+        for theme in allThemes {
+            themeById[theme.id] = theme
+        }
+        
+        Logger.themeService.info("Establishing relationships for \(allThemes.count) themes")
+        
+        // Establish relationships
+        for theme in allThemes {
+            if let parentId = theme.parentId, let parentTheme = themeById[parentId] {
+                // Set parent-child relationship
+                theme.parentTheme = parentTheme
+                if !parentTheme.subthemes.contains(theme) {
+                    parentTheme.subthemes.append(theme)
+                }
+            }
+        }
+        
+        Logger.themeService.info("Theme relationships established")
+    }
+    
+    /// Establish relationships between sets and themes
+    private func establishSetThemeRelationships() throws {
+        guard let modelContext = modelContext else {
+            throw ThemeServiceError.notConfigured
+        }
+        
+        // Fetch all themes and sets
+        let allThemes = try modelContext.fetch(FetchDescriptor<Theme>())
+        let allSets = try modelContext.fetch(FetchDescriptor<LegoSet>())
+        
+        // Create lookup dictionary for efficient theme access
+        var themeById: [Int: Theme] = [:]
+        for theme in allThemes {
+            themeById[theme.id] = theme
+        }
+        
+        Logger.themeService.info("Establishing set-theme relationships for \(allSets.count) sets")
+        
+        // Establish set-theme relationships
+        var relationshipsEstablished = 0
+        for set in allSets {
+            if let theme = themeById[set.themeId] {
+                // Set the theme relationship if not already set
+                if set.theme != theme {
+                    set.theme = theme
+                    relationshipsEstablished += 1
+                }
+                
+                // Add set to theme's sets if not already there
+                if !theme.sets.contains(set) {
+                    theme.sets.append(set)
+                }
+            }
+        }
+        
+        Logger.themeService.info("Established \(relationshipsEstablished) set-theme relationships")
+    }
 }
 
 // MARK: - ThemeService Errors
@@ -267,4 +468,13 @@ enum ThemeServiceError: LocalizedError {
             return NSLocalizedString("Failed to parse theme data", comment: "Parse error")
         }
     }
+}
+
+// MARK: - Theme Statistics
+
+struct ThemeStatistics {
+    let totalThemes: Int
+    let rootThemes: Int
+    let lastSyncDate: Date?
+    let isDataFresh: Bool
 }

@@ -98,8 +98,10 @@ struct CollectionExportView: View {
                 switch result {
                 case .success:
                     dismiss()
-                case .failure(let error):
-                    print("Export failed: \(error)")
+                case .failure(_):
+                    // Error handling should be done by ViewModel, not view
+                    // Remove logging from view - this should be handled by a proper ViewModel
+                    break
                 }
             }
         }
@@ -157,7 +159,7 @@ struct CollectionExportView: View {
             if includePricing {
                 row.append(set.formattedPrice ?? "")
                 row.append(set.userCollection?.formattedPurchasePrice ?? "")
-                row.append(set.userCollection?.dateAcquired?.formatted(date: .abbreviated, time: .omitted) ?? "")
+                row.append(set.userCollection?.dateAcquired?.formatted(.dateTime.day().month().year()) ?? "")
             }
             
             if includeCondition {
@@ -324,7 +326,7 @@ private enum ExportFormat: CaseIterable {
 }
 
 private struct ExportDocument: FileDocument {
-            static let readableContentTypes: [UTType] = []
+    static let readableContentTypes: [UTType] = []
     let content: String
     
     init(content: String) {

@@ -1,11 +1,15 @@
 import SwiftUI
 import Network
 import Foundation
+import OSLog
 
 /// Manages offline state detection and queued actions
 @MainActor
 internal final class OfflineManager {
     static let shared = OfflineManager()
+    
+    /// Logger for offline manager operations
+    private let logger = Logger.offline
     
     // MARK: - Published Properties
     private(set) var isOffline = false
@@ -47,6 +51,7 @@ internal final class OfflineManager {
     }
     
     private init() {
+        logger.debug("🎯 OfflineManager initialized")
         loadQueuedActions()
         startMonitoring()
     }
@@ -54,26 +59,32 @@ internal final class OfflineManager {
     deinit {
         // Cancel the NWPathMonitor directly in deinit. This avoids capturing `self` in an
         // asynchronous task which the compiler warns could introduce data races.
+        logger.debug("🔄 OfflineManager deinitializing - stopping network monitor")
         monitor.cancel()
     } 
     
     // MARK: - Network Monitoring
     
     private func startMonitoring() {
+        logger.debug("📡 Starting network monitoring")
         monitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
                 self?.updateConnectionStatus(path)
             }
         }
         monitor.start(queue: queue)
+        logger.info("✅ Network monitoring started")
     }
     
     private func stopMonitoring() {
+        logger.debug("📡 Stopping network monitoring")
         monitor.cancel()
     }
     
     private func updateConnectionStatus(_ path: NWPath) {
         let wasOffline = isOffline
+        let previousConnectionType = connectionType
+        
         isOffline = path.status != .satisfied
         
         // Determine connection type
@@ -89,8 +100,20 @@ internal final class OfflineManager {
             connectionType = .unknown
         }
         
+        // Log connection changes
+        if wasOffline != isOffline || previousConnectionType != connectionType {
+            if isOffline {
+                logger.warning("📵 Connection lost - now offline")
+                logger.userAction("went_offline", context: ["previousConnection": previousConnectionType.rawValue])
+            } else {
+                logger.info("📶 Connection restored - now online via \(self.connectionType.displayName)")
+                logger.userAction("went_online", context: ["connectionType": self.connectionType.rawValue])
+            }
+        }
+        
         // Process queued actions when coming back online
         if wasOffline && !isOffline {
+            logger.info("🔄 Processing queued actions after coming back online")
             Task {
                 await processQueuedActions()
             }
@@ -209,7 +232,7 @@ internal struct QueuedAction: Identifiable, Codable {
     func execute() async throws {
         // This would contain the actual execution logic
         // For now, we'll just simulate the execution
-        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
+        try await Task.sleep(nanoseconds: AppConstants.API.offlineRetryDelay) // 0.5 second delay
         
         switch type {
         case .addToCollection, .removeFromCollection:
@@ -258,10 +281,10 @@ struct OfflineIndicator: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color.orange.opacity(0.1))
-            .cornerRadius(8)
+            .padding(.horizontal, AppConstants.UI.smallSpacing)
+            .padding(.vertical, AppConstants.Spacing.xs)
+            .background(Color.orange.opacity(AppConstants.Opacity.subtle))
+            .cornerRadius(AppConstants.UI.smallCornerRadius)
         }
     }
 }
@@ -291,9 +314,9 @@ struct QueuedActionsView: View {
                         }
                         .font(.caption)
                     }
-                    .padding(8)
+                    .padding(AppConstants.UI.smallSpacing)
                     .background(Color(.systemGray6))
-                    .cornerRadius(8)
+                    .cornerRadius(AppConstants.UI.smallCornerRadius)
                 }
                 
                 Button("Clear All") {

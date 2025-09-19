@@ -14,10 +14,12 @@ struct AsyncCachedImage: View {
     let url: URL?
     /// Content mode for image scaling
     let contentMode: ContentMode
-    /// Maximum image size for memory efficiency
+    /// Maximum image size for memory efficiency (deprecated - use imageType instead)
     let maxSize: CGSize?
     /// Whether to show loading placeholder
     let showPlaceholder: Bool
+    /// Image type for optimization (determines size and quality)
+    let imageType: ImageOptimizationService.ImageType
     
     /// Image cache service for loading and caching
     private let cacheService = ImageCacheService.shared
@@ -32,12 +34,32 @@ struct AsyncCachedImage: View {
         url: URL?,
         contentMode: ContentMode = .fit,
         maxSize: CGSize? = nil,
-        showPlaceholder: Bool = true
+        showPlaceholder: Bool = true,
+        imageType: ImageOptimizationService.ImageType = .medium
     ) {
         self.url = url
         self.contentMode = contentMode
         self.maxSize = maxSize
         self.showPlaceholder = showPlaceholder
+        self.imageType = imageType
+    }
+    
+    /// Convenience initializer for thumbnail images (small lists/grids)
+    init(
+        thumbnailURL url: URL?,
+        contentMode: ContentMode = .fit,
+        showPlaceholder: Bool = true
+    ) {
+        self.init(url: url, contentMode: contentMode, showPlaceholder: showPlaceholder, imageType: .thumbnail)
+    }
+    
+    /// Convenience initializer for full-size images (detail views)
+    init(
+        fullSizeURL url: URL?,
+        contentMode: ContentMode = .fit,
+        showPlaceholder: Bool = true
+    ) {
+        self.init(url: url, contentMode: contentMode, showPlaceholder: showPlaceholder, imageType: .full)
     }
     
     var body: some View {
@@ -71,18 +93,18 @@ struct AsyncCachedImage: View {
         ZStack {
             Color(.systemGray6)
             
-            VStack(spacing: 8) {
+            VStack(spacing: AppConstants.UI.smallSpacing) {
                 Image(systemName: "photo")
                     .font(.title2)
                     .foregroundColor(.secondary)
                 
                 ProgressView()
-                    .scaleEffect(0.8)
+                    .scaleEffect(AppConstants.VisualEffects.errorIconScale)
             }
         }
-        .opacity(0.8)
+        .opacity(AppConstants.VisualEffects.placeholderOpacity)
         .background(LinearGradient(
-            colors: [Color.clear, Color(.systemGray6).opacity(0.3), Color.clear],
+            colors: [Color.clear, Color(.systemGray6).opacity(AppConstants.VisualEffects.shimmerOpacity), Color.clear],
             startPoint: .leading,
             endPoint: .trailing
         ))
@@ -92,7 +114,7 @@ struct AsyncCachedImage: View {
         ZStack {
             Color(.systemGray6)
             
-            VStack(spacing: 4) {
+            VStack(spacing: AppConstants.Layout.cardContentSpacing) {
                 Image(systemName: "photo.badge.exclamationmark")
                     .font(.title2)
                     .foregroundColor(.red)
@@ -135,8 +157,8 @@ struct AsyncCachedImage: View {
                 return
             }
             
-            // Load from cache service (handles disk cache and network)
-            if let imageData = await cacheService.imageData(from: url) {
+            // Load optimized image data from cache service
+            if let imageData = await cacheService.optimizedImageData(from: url, imageType: imageType) {
                 let loadedImage = await createOptimizedImage(from: imageData)
                 
                 await MainActor.run {
@@ -179,16 +201,16 @@ struct AsyncCachedImage: View {
         return await Task.detached(priority: .utility) {
             guard let uiImage = UIImage(data: data) else { return nil }
             
-            // Apply size optimization if specified
-            let processedImage: UIImage
+            // The image data is already optimized by ImageOptimizationService
+            // so we just need to create the SwiftUI Image
+            // Legacy maxSize support for backward compatibility
             if let maxSize = maxSize, 
                uiImage.size.width > maxSize.width || uiImage.size.height > maxSize.height {
-                processedImage = await uiImage.resized(to: maxSize) ?? uiImage
+                let processedImage = await uiImage.resized(to: maxSize) ?? uiImage
+                return Image(uiImage: processedImage)
             } else {
-                processedImage = uiImage
+                return Image(uiImage: uiImage)
             }
-            
-            return Image(uiImage: processedImage)
         }.value
     }
 }
@@ -241,9 +263,9 @@ extension UIImage {
 #if DEBUG
 struct AsyncCachedImage_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppConstants.UI.largeSpacing) {
             AsyncCachedImage(url: URL(string: "https://example.com/image.jpg"))
-                .frame(width: 200, height: 200)
+                .frame(width: AppConstants.ImageSize.previewWidth, height: AppConstants.ImageSize.previewHeight)
         }
         .padding()
     }

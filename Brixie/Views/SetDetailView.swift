@@ -9,9 +9,9 @@ struct SetDetailView: View {
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
-                    .frame(height: 200)
+            VStack(alignment: .leading, spacing: AppConstants.Spacing.standard) {
+                AsyncCachedImage(fullSizeURL: URL(string: set.primaryImageURL ?? ""))
+                    .frame(height: AppConstants.ImageSize.previewHeight)
                     .accessibilityLabel("Image of LEGO set \(set.name)")
                 
                 Text(set.name)
@@ -116,10 +116,6 @@ struct SetDetailView: View {
         } message: { error in
             Text(error.localizedDescription)
         }
-    }
-    
-    private var shareText: String {
-        "Check out LEGO set \(set.name) (#\(set.setNumber)), released in \(set.year) with \(set.numParts) parts!"
     }
 }
 

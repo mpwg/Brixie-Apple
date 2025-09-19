@@ -11,7 +11,6 @@ import SwiftData
 struct SearchView: View {
     @State private var viewModel = SearchViewModel()
     @State private var showingFilters = false
-    @State private var showingBarcodeScanner = false
     
     @Query(sort: \LegoSet.name) private var allSets: [LegoSet]
     @Query(sort: \Theme.name) private var themes: [Theme]
@@ -69,7 +68,7 @@ struct SearchView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack {
                     Button {
-                        showingBarcodeScanner = true
+                        viewModel.showBarcodeScanner()
                     } label: {
                         Image(systemName: "barcode.viewfinder")
                     }
@@ -96,12 +95,9 @@ struct SearchView: View {
                 usePartsFilter: $viewModel.usePartsFilter
             )
         }
-        .sheet(isPresented: $showingBarcodeScanner) {
+        .sheet(isPresented: $viewModel.showingBarcodeScanner) {
             BarcodeScannerView { barcode in
-                viewModel.query = barcode
-                showingBarcodeScanner = false
-                viewModel.submitSearch()
-                viewModel.filterSets(from: allSets)
+                viewModel.handleBarcodeResult(barcode, with: allSets)
             }
         }
     }
@@ -114,7 +110,7 @@ struct SetSearchRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
+            AsyncCachedImage(thumbnailURL: URL(string: set.primaryImageURL ?? ""))
                 .frame(width: 60, height: 60)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .accessibilityHidden(true)

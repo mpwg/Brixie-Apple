@@ -89,14 +89,8 @@ struct CollectionView: View {
         }
     }
     
-    private var filteredSets: [LegoSet] {
-        return viewModel.filterSets(ownedSets)
-    }
-    
     private var groupedSets: [String: [LegoSet]] {
-        return Dictionary(grouping: filteredSets) { set in
-            set.theme?.name ?? "Unknown Theme"
-        }
+        return viewModel.groupSetsByTheme(ownedSets)
     }
 }
 
@@ -168,7 +162,7 @@ private struct CollectionSetRowView: View {
     
     var body: some View {
         HStack {
-            AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
+            AsyncCachedImage(thumbnailURL: URL(string: set.primaryImageURL ?? ""))
                 .frame(width: 48, height: 48)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .accessibilityHidden(true)
@@ -187,7 +181,7 @@ private struct CollectionSetRowView: View {
                         .font(.caption2)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.2))
+                        .background(Color.blue.opacity(AppConstants.Opacity.light))
                         .cornerRadius(4)
                     
                     Text("\(set.numParts) parts")

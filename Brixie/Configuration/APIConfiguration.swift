@@ -19,10 +19,10 @@ final class APIConfiguration {
     /// User-configured API key stored in UserDefaults
     private var storedAPIKey: String {
         get {
-            UserDefaults.standard.string(forKey: "rebrickableAPIKey") ?? ""
+            UserDefaults.standard.string(forKey: AppConstants.UserDefaultsKeys.apiKey) ?? ""
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "rebrickableAPIKey")
+            UserDefaults.standard.set(newValue, forKey: AppConstants.UserDefaultsKeys.apiKey)
         }
     }
     

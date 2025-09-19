@@ -133,7 +133,7 @@ private struct WishlistSummaryCardView: View {
     var body: some View {
         let stats = viewModel.getCollectionStats(from: modelContext)
         
-        HStack(spacing: 20) {
+        HStack(spacing: AppConstants.UI.largePadding) {
             VStack {
                 Text("\(stats.wishlistCount)")
                     .font(.title2)
@@ -180,8 +180,8 @@ private struct WishlistSetRowView: View {
     
     var body: some View {
         HStack {
-            AsyncCachedImage(url: URL(string: set.primaryImageURL ?? ""))
-                .frame(width: 48, height: 48)
+            AsyncCachedImage(thumbnailURL: URL(string: set.primaryImageURL ?? ""))
+                .frame(width: AppConstants.Layout.iconButtonSize, height: AppConstants.Layout.iconButtonSize)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .accessibilityHidden(true)
             
@@ -199,7 +199,7 @@ private struct WishlistSetRowView: View {
                         .font(.caption2)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.2))
+                        .background(Color.blue.opacity(AppConstants.Opacity.light))
                         .cornerRadius(4)
                     
                     Text("\(set.numParts) parts")

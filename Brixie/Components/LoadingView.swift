@@ -7,15 +7,15 @@ struct LoadingView: View {
     @State private var animationPhase = 0.0
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: AppConstants.UI.standardSpacing) {
             if isError {
                 Image(systemName: "exclamationmark.triangle")
                     .foregroundColor(.red)
                     .font(.largeTitle)
                     .accessibilityLabel("Error")
-                    .scaleEffect(1.0 + sin(animationPhase) * 0.1)
+                    .scaleEffect(1.0 + sin(animationPhase) * AppConstants.Animation.loadingScaleEffect)
                     .animation(
-                        Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true),
+                        Animation.easeInOut(duration: AppConstants.Animation.long).repeatForever(autoreverses: true),
                         value: animationPhase
                     )
                 Text(message)
@@ -23,7 +23,7 @@ struct LoadingView: View {
                     .accessibilityIdentifier("errorMessage")
             } else {
                 ProgressView()
-                    .scaleEffect(1.2)
+                    .scaleEffect(AppConstants.Animation.pressedScale)
                     .accessibilityHidden(true)
                 Text(message)
                     .accessibilityIdentifier("progressMessage")
@@ -35,7 +35,7 @@ struct LoadingView: View {
         .accessibilityElement(children: .contain)
         .onAppear {
             if isError {
-                animationPhase = 1.0
+                animationPhase = AppConstants.Animation.long
                 #if canImport(UIKit)
                 let notificationFeedback = UINotificationFeedbackGenerator()
                 notificationFeedback.notificationOccurred(.error)
@@ -47,9 +47,9 @@ struct LoadingView: View {
 
 struct SkeletonView: View {
     var body: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(Color.gray.opacity(0.15))
-            .frame(height: 24)
+        RoundedRectangle(cornerRadius: AppConstants.UI.smallCornerRadius)
+            .fill(Color.gray.opacity(AppConstants.UI.skeletonOpacity))
+            .frame(height: AppConstants.UI.skeletonHeight)
             .redacted(reason: .placeholder)
             .accessibilityHidden(true)
     }

@@ -84,6 +84,7 @@ Brixie is a **pure SwiftUI** multi-platform app for browsing LEGO sets via the R
 **IMPORTANT:** Always follow ALL instruction files in `.github/instructions/` before making any changes:
 
 - `swift.instructions.md` - Swift coding standards and patterns
+- `swiftui-observation.instructions.md` - Proper use of SwiftUI's @Observable framework and migration from ObservableObject
 - `spec-driven-workflow-v1.instructions.md` - Development workflow and documentation requirements
 - `conventional-commit.instructions.md` - Commit message formatting
 - `github-actions-ci-cd-best-practices.instructions.md` - CI/CD workflow guidelines

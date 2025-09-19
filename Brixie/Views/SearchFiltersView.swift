@@ -52,12 +52,12 @@ struct SearchFiltersView: View {
                                 Text("\(minYear)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                    .frame(width: 50)
+                                    .frame(width: AppConstants.Layout.smallFieldWidth)
                             }
                             
                             HStack {
                                 Text("To")
-                                    .frame(width: 60, alignment: .leading)
+                                    .frame(width: AppConstants.Layout.mediumFieldWidth, alignment: .leading)
                                 Slider(value: Binding(
                                     get: { Double(maxYear) },
                                     set: { maxYear = Int($0) }
@@ -65,7 +65,7 @@ struct SearchFiltersView: View {
                                 Text("\(maxYear)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                    .frame(width: 50)
+                                    .frame(width: AppConstants.Layout.smallFieldWidth)
                             }
                         }
                     }
@@ -91,11 +91,11 @@ struct SearchFiltersView: View {
                             
                             HStack {
                                 Text("Max")
-                                    .frame(width: 60, alignment: .leading)
+                                    .frame(width: AppConstants.Layout.mediumFieldWidth, alignment: .leading)
                                 Slider(value: Binding(
                                     get: { Double(maxParts) },
                                     set: { maxParts = Int($0) }
-                                ), in: Double(minParts)...10000, step: 50)
+                                ), in: Double(minParts)...AppConstants.Search.maxPartCount, step: AppConstants.Search.partCountStep)
                                 Text("\(maxParts)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -154,7 +154,7 @@ struct ThemeFilterRow: View {
             HStack {
                 if !subthemes.isEmpty {
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(.easeInOut(duration: AppConstants.CommonAnimations.standardDuration)) {
                             isExpanded.toggle()
                         }
                     } label: {
