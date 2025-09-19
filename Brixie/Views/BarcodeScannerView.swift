@@ -195,6 +195,7 @@ struct PermissionRequestView: View {
 }
 
 struct PermissionDeniedView: View {
+    @Environment(\.openURL) private var openURL
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "camera.fill.badge.ellipsis")
@@ -211,12 +212,20 @@ struct PermissionDeniedView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
-            if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
-                Link("Open Settings", destination: settingsUrl)
-                    .buttonStyle(.borderedProminent)
+            Button("Open Settings") {
+                openSettings()
             }
+            .buttonStyle(.borderedProminent)
         }
         .padding()
+    }
+    
+    private func openSettings() {
+        if let settingsURL = URL(string: "app-settings:") {
+            Task {
+                await openURL(settingsURL)
+            }
+        }
     }
 }
 
