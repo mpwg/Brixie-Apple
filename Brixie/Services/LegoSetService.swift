@@ -26,7 +26,7 @@ final class LegoSetService {
     var isLoading: Bool = false
     
     /// Current error state
-    var currentError: Error?
+    var currentError: (any Error)?
     
     /// Last sync date
     var lastSyncDate: Date?

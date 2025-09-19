@@ -142,7 +142,7 @@ extension APIConfiguration {
         case networkUnavailable
         case rateLimitExceeded
         case serverError(Int)
-        case unknown(Error)
+        case unknown(any Error)
         
         var errorDescription: String? {
             switch self {
@@ -163,7 +163,7 @@ extension APIConfiguration {
     }
     
     /// Convert common errors to APIError
-    static func mapError(_ error: Error) -> APIError {
+    static func mapError(_ error: any Error) -> APIError {
         // This will be expanded based on RebrickableAPI error types
         if let urlError = error as? URLError {
             switch urlError.code {

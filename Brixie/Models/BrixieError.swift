@@ -47,7 +47,7 @@ enum BrixieError: LocalizedError, Equatable {
     }
     
     /// Convert any Error to BrixieError
-    static func from(_ error: Error) -> BrixieError {
+    static func from(_ error: any Error) -> BrixieError {
         if let brixieError = error as? BrixieError {
             return brixieError
         }

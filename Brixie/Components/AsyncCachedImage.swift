@@ -25,7 +25,7 @@ struct AsyncCachedImage: View {
     /// Current image loading state
     @State private var image: Image?
     @State private var isLoading = false
-    @State private var loadingError: Error?
+    @State private var loadingError: (any Error)?
     @State private var imageTask: Task<Void, Never>?
     
     init(
