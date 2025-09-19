@@ -552,13 +552,13 @@ extension LegoSetService {
                 
                 // Check if theme already exists in context
                 let themeId = localTheme.id
-                let existingDescriptor4 = FetchDescriptor<Theme>(
+                let existingThemeDescriptor = FetchDescriptor<Theme>(
                     predicate: #Predicate<Theme> { theme in
                         theme.id == themeId
                     }
                 )
                 
-                if let existingTheme = try context.fetch(existingDescriptor4).first {
+                if let existingTheme = try context.fetch(existingThemeDescriptor).first {
                     // Update existing theme
                     existingTheme.name = localTheme.name
                     existingTheme.parentId = localTheme.parentId
