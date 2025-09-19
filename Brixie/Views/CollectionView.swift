@@ -35,13 +35,13 @@ struct CollectionView: View {
                 }
             }
             .navigationTitle("My Collection")
-            .searchable(text: $searchText, prompt: "Search collection...")
+            .searchable(text: $viewModel.searchText, prompt: "Search collection...")
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Menu {
                         Section("Sort By") {
-                            Picker("Sort", selection: $selectedSortOption) {
-                                ForEach(SortOption.allCases, id: \.self) { option in
+                            Picker("Sort", selection: $viewModel.selectedSortOption) {
+                                ForEach(CollectionSortOption.allCases, id: \.self) { option in
                                     Label(option.title, systemImage: option.icon)
                                         .tag(option)
                                 }
