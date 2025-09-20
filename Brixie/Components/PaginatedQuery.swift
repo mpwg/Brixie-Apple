@@ -30,6 +30,12 @@ struct PaginatedQuery<Item: PersistentModel, Content: View>: View {
     /// Whether we've reached the end of available data
     @State private var hasReachedEnd: Bool = false
     
+    /// Maximum number of items to keep in memory (memory optimization)
+    private let maxItemsInMemory: Int
+    
+    /// Whether to enable memory pressure handling
+    private let enableMemoryManagement: Bool
+    
     /// The SwiftData query configuration
     private let sort: [SortDescriptor<Item>]
     private let predicate: Predicate<Item>?
@@ -50,16 +56,22 @@ struct PaginatedQuery<Item: PersistentModel, Content: View>: View {
     ///   - sort: Sort descriptors for the query
     ///   - predicate: Optional predicate to filter results
     ///   - pageSize: Number of items to load per page (default: 20)
+    ///   - maxItemsInMemory: Maximum items to keep in memory (default: 500)
+    ///   - enableMemoryManagement: Whether to enable memory pressure handling (default: true)
     ///   - content: Content builder that receives loaded items
     init(
         sort: [SortDescriptor<Item>],
         predicate: Predicate<Item>? = nil,
         pageSize: Int = 20,
+        maxItemsInMemory: Int = 500,
+        enableMemoryManagement: Bool = true,
         @ViewBuilder content: @escaping ([Item]) -> Content
     ) {
         self.sort = sort
         self.predicate = predicate
         self.pageSize = pageSize
+        self.maxItemsInMemory = maxItemsInMemory
+        self.enableMemoryManagement = enableMemoryManagement
         self.content = content
     }
     
@@ -68,14 +80,25 @@ struct PaginatedQuery<Item: PersistentModel, Content: View>: View {
     ///   - sort: Single sort descriptor
     ///   - predicate: Optional predicate to filter results
     ///   - pageSize: Number of items to load per page (default: 20)
+    ///   - maxItemsInMemory: Maximum items to keep in memory (default: 500)
+    ///   - enableMemoryManagement: Whether to enable memory pressure handling (default: true)
     ///   - content: Content builder that receives loaded items
     init(
         sort: SortDescriptor<Item>,
         predicate: Predicate<Item>? = nil,
         pageSize: Int = 20,
+        maxItemsInMemory: Int = 500,
+        enableMemoryManagement: Bool = true,
         @ViewBuilder content: @escaping ([Item]) -> Content
     ) {
-        self.init(sort: [sort], predicate: predicate, pageSize: pageSize, content: content)
+        self.init(
+            sort: [sort], 
+            predicate: predicate, 
+            pageSize: pageSize, 
+            maxItemsInMemory: maxItemsInMemory,
+            enableMemoryManagement: enableMemoryManagement,
+            content: content
+        )
     }
     
     // MARK: - Body
@@ -86,6 +109,7 @@ struct PaginatedQuery<Item: PersistentModel, Content: View>: View {
                 if loadedItems.isEmpty {
                     loadInitialPage()
                 }
+                setupMemoryPressureHandling()
             }
             .refreshable {
                 await refresh()
@@ -150,6 +174,10 @@ struct PaginatedQuery<Item: PersistentModel, Content: View>: View {
             
             // Append new items to existing ones
             loadedItems.append(contentsOf: newItems)
+            
+            // Manage memory by trimming old items if needed
+            trimItemsForMemoryManagement()
+            
             currentPage += 1
             
         } catch {
@@ -157,6 +185,82 @@ struct PaginatedQuery<Item: PersistentModel, Content: View>: View {
         }
         
         isLoadingMore = false
+    }
+    
+    // MARK: - Memory Management
+    
+    /// Set up memory pressure handling if enabled
+    private func setupMemoryPressureHandling() {
+        guard enableMemoryManagement else { return }
+        
+        // Set up dispatch source for memory pressure events
+        let memorySource = DispatchSource.makeMemoryPressureSource(
+            eventMask: [.warning, .critical],
+            queue: DispatchQueue.main
+        )
+        
+        memorySource.setEventHandler {
+            let event = memorySource.mask
+            
+            Task { @MainActor in
+                switch event {
+                case .warning:
+                    self.logger.info("⚠️ Memory pressure warning - reducing loaded items")
+                    self.trimItemsForMemoryPressure(.moderate)
+                case .critical:
+                    self.logger.warning("🚨 Critical memory pressure - aggressive item cleanup")
+                    self.trimItemsForMemoryPressure(.critical)
+                default:
+                    break
+                }
+            }
+        }
+        
+        memorySource.activate()
+    }
+    
+    /// Trim items to stay within memory limits
+    private func trimItemsForMemoryManagement() {
+        guard enableMemoryManagement && loadedItems.count > maxItemsInMemory else { return }
+        
+        // Keep the most recent items (end of array)
+        let itemsToRemove = loadedItems.count - maxItemsInMemory
+        loadedItems.removeFirst(itemsToRemove)
+        
+        logger.debug("Memory management: trimmed \(itemsToRemove) items, keeping \(loadedItems.count)")
+    }
+    
+    /// Memory pressure levels for cleanup
+    private enum MemoryPressureLevel {
+        case moderate  // Remove older items
+        case critical  // Keep only visible items
+    }
+    
+    /// Trim items based on memory pressure level
+    private func trimItemsForMemoryPressure(_ level: MemoryPressureLevel) {
+        guard enableMemoryManagement else { return }
+        
+        let originalCount = loadedItems.count
+        
+        switch level {
+        case .moderate:
+            // Keep 70% of items
+            let keepCount = max(pageSize, Int(Double(loadedItems.count) * 0.7))
+            if loadedItems.count > keepCount {
+                loadedItems = Array(loadedItems.suffix(keepCount))
+            }
+        case .critical:
+            // Keep only 2 pages worth of items
+            let keepCount = max(pageSize, pageSize * 2)
+            if loadedItems.count > keepCount {
+                loadedItems = Array(loadedItems.suffix(keepCount))
+            }
+        }
+        
+        let removedCount = originalCount - loadedItems.count
+        if removedCount > 0 {
+            logger.warning("Memory pressure cleanup: removed \(removedCount) items, keeping \(loadedItems.count)")
+        }
     }
 }
 

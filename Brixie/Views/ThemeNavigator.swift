@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct ThemeNavigator: View {
+    // Themes query - pagination should be handled at the service level if needed
     @Query(sort: \Theme.name) var themes: [Theme]
     @State private var searchText: String = ""
     @State private var selectedTheme: Theme?

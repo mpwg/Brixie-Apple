@@ -70,20 +70,9 @@ final class ImageCacheService {
         // Calculate initial disk cache size
         calculateDiskCacheSize()
         
-        // Clean up cache on memory warnings if available
-        #if canImport(UIKit)
-        NotificationCenter.default.addObserver(
-            forName: UIApplication.didReceiveMemoryWarningNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.logger.warning("⚠️ Memory warning received - clearing memory cache")
-                self?.handleMemoryWarning()
-            }
-        }
-        logger.debug("📱 Memory warning observer registered")
-        #endif
+        // Clean up cache on memory warnings and pressure events
+        setupMemoryWarningObserver()
+        setupMemoryPressureMonitoring()
         
         logger.debug("✅ ImageCacheService initialized successfully")
     }
@@ -272,12 +261,105 @@ final class ImageCacheService {
         logger.userAction("cleared_memory_cache")
     }
     
+    // MARK: - Memory Management
+    
+    /// Set up iOS memory warning observer
+    private func setupMemoryWarningObserver() {
+        #if canImport(UIKit)
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.logger.warning("⚠️ iOS Memory warning received - clearing memory cache")
+                self?.handleMemoryWarning(.critical)
+            }
+        }
+        logger.debug("📱 iOS Memory warning observer registered")
+        #endif
+    }
+    
+    /// Set up cross-platform memory pressure monitoring
+    private func setupMemoryPressureMonitoring() {
+        // Set up dispatch source for memory pressure events
+        let memorySource = DispatchSource.makeMemoryPressureSource(eventMask: [.normal, .warning, .critical], queue: DispatchQueue.main)
+        
+        memorySource.setEventHandler { [weak self] in
+            guard let self = self else { return }
+            let event = memorySource.mask
+            
+            Task { @MainActor in
+                switch event {
+                case .normal:
+                    self.logger.debug("💚 Memory pressure returned to normal")
+                case .warning:
+                    self.logger.info("⚠️ Memory pressure warning - partial cache cleanup")
+                    self.handleMemoryWarning(.moderate)
+                case .critical:
+                    self.logger.warning("🚨 Critical memory pressure - aggressive cache cleanup")
+                    self.handleMemoryWarning(.critical)
+                default:
+                    break
+                }
+            }
+        }
+        
+        memorySource.activate()
+        logger.debug("🧠 Memory pressure monitoring activated")
+    }
+    
+    /// Memory pressure levels
+    private enum MemoryPressureLevel {
+        case moderate  // Keep some frequently used items
+        case critical  // Clear everything from memory
+    }
+    
+    /// Handle memory warning by clearing memory caches based on pressure level
+    @MainActor
+    private func handleMemoryWarning(_ level: MemoryPressureLevel = .critical) {
+        switch level {
+        case .moderate:
+            // Clear half of the cache by reducing limits temporarily
+            let originalDataLimit = memoryCache.totalCostLimit
+            let originalImageLimit = imageCache.totalCostLimit
+            let originalDataCount = memoryCache.countLimit
+            let originalImageCount = imageCache.countLimit
+            
+            memoryCache.totalCostLimit = originalDataLimit / 2
+            imageCache.totalCostLimit = originalImageLimit / 2
+            memoryCache.countLimit = originalDataCount / 2
+            imageCache.countLimit = originalImageCount / 2
+            
+            // Restore original limits after a brief period
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                self.memoryCache.totalCostLimit = originalDataLimit
+                self.imageCache.totalCostLimit = originalImageLimit
+                self.memoryCache.countLimit = originalDataCount
+                self.imageCache.countLimit = originalImageCount
+            }
+            
+            logger.info("⚠️ Moderate memory cleanup - reduced cache limits temporarily")
+            
+        case .critical:
+            // Aggressively clear all memory caches
+            memoryCache.removeAllObjects()
+            imageCache.removeAllObjects()
+            
+            // Cancel any pending download tasks to free up network resources
+            for task in downloadTasks.values {
+                task.cancel()
+            }
+            downloadTasks.removeAll()
+            
+            logger.warning("🚨 Critical memory cleanup - all memory caches cleared, downloads canceled")
+        }
+    }
+    
     /// Handle memory warning by clearing both memory caches but keeping disk cache
     @MainActor
     private func handleMemoryWarning() {
-        memoryCache.removeAllObjects()
-        imageCache.removeAllObjects()
-        logger.warning("⚠️ Memory caches cleared due to memory pressure - disk cache preserved")
+        handleMemoryWarning(.critical)
     }
     
     /// Clear disk cache

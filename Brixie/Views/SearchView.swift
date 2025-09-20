@@ -12,6 +12,7 @@ struct SearchView: View {
     @State private var viewModel = SearchViewModel()
     @State private var showingFilters = false
     
+    // Initial queries - pagination handled by ViewModels and PaginatedQuery
     @Query(sort: \LegoSet.name) private var allSets: [LegoSet]
     @Query(sort: \Theme.name) private var themes: [Theme]
     

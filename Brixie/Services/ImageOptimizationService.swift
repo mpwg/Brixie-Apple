@@ -240,6 +240,11 @@ final class ImageOptimizationService {
         return UIImage(cgImage: downsampledImage)
     }
     
+    /// Create UIImage from image data (static method for use in other components)
+    nonisolated static func createOptimizedImage(from data: Data) -> UIImage? {
+        return UIImage(data: data)
+    }
+    
     /// Create UIImage from data
     private func createUIImage(from data: Data) async -> UIImage? {
         return UIImage(data: data)
