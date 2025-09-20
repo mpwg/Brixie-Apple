@@ -13,14 +13,9 @@ struct BrowseView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
-    // Queries for data
-    @Query(sort: \Theme.name, animation: .default) private var allThemes: [Theme]
-    @Query(sort: \LegoSet.year, order: .reverse, animation: .default) private var allSets: [LegoSet]
-    
     @State private var viewModel = BrowseViewModel()
     @State private var searchText = ""
-    @State private var cachedFilteredThemes: [Theme] = []
-    @State private var lastSearchText = ""
+    @State private var prefetchService = ImagePrefetchService.shared
 
     var body: some View {
         NavigationStack {
@@ -39,29 +34,10 @@ struct BrowseView: View {
             .navigationTitle("Browse")
             .toolbar { toolbar }
             .onAppear {
-                viewModel.configure(with: modelContext, themes: allThemes, sets: allSets)
-                print("🔍 BrowseView onAppear: allThemes.count = \(allThemes.count)")
-            }
-            .task {
-                if allThemes.isEmpty || allSets.isEmpty {
-                    await viewModel.loadInitialData()
+                // Configure services only once
+                if !viewModel.isConfigured {
+                    configureServices()
                 }
-            }
-            .onChange(of: allThemes.count) { oldValue, newValue in
-                print("🔍 BrowseView: allThemes count changed from \(oldValue) to \(newValue)")
-                // Clear cache to force recomputation
-                cachedFilteredThemes = []
-                lastSearchText = ""
-            }
-            .onChange(of: searchText) { _, newValue in
-                // Update cache when search changes
-                let allSorted = allThemes.sorted { $0.name < $1.name }
-                let themes = Array(allSorted.prefix(20))
-                let filtered = newValue.isEmpty ? themes : themes.filter { $0.name.localizedCaseInsensitiveContains(newValue) }
-                
-                cachedFilteredThemes = filtered
-                lastSearchText = newValue
-                print("🔍 Search changed: \(filtered.count) themes for '\(newValue)'")
             }
             .alert("Error", isPresented: .constant(viewModel.error != nil), presenting: viewModel.error) { _ in
                 Button("OK") { viewModel.error = nil }
@@ -88,7 +64,7 @@ struct BrowseView: View {
                 selectedThemeSubthemesView
             } else {
                 // Show root themes
-                rootThemesView
+                compactThemesView
             }
         }
     }
@@ -141,7 +117,7 @@ struct BrowseView: View {
                 
                 // Debug info (temporary)
                 #if DEBUG
-                Text("\(filteredRootThemes.count)/\(allThemes.count)")
+                Text("Themes loaded")
                     .font(.caption2)
                     .foregroundStyle(.orange)
                 #endif
@@ -160,37 +136,7 @@ struct BrowseView: View {
             .padding(.horizontal)
             
             // Root themes list
-            if viewModel.isLoading && filteredRootThemes.isEmpty {
-                ScrollView {
-                    ThemeSkeletonView()
-                        .padding()
-                }
-            } else if filteredRootThemes.isEmpty {
-                VStack {
-                    Spacer()
-                    Image(systemName: "square.grid.3x3")
-                        .font(.largeTitle)
-                        .foregroundStyle(.tertiary)
-                    Text("No themes found")
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 8)
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                List(filteredRootThemes) { theme in
-                    Button(action: {
-                        HapticFeedback.selection()
-                        viewModel.selectTheme(theme)
-                    }) {
-                        ThemeRowView(theme: theme, isSelected: viewModel.selectedTheme?.id == theme.id)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
-                .listStyle(.sidebar)
-            }
+            rootThemesView
         }
     }
     
@@ -260,8 +206,8 @@ struct BrowseView: View {
     
     // MARK: - Compact Layout Views
     
-    /// Root themes view for compact layout
-    private var rootThemesView: some View {
+    /// Themes list view for compact layout with search
+    private var compactThemesView: some View {
         VStack {
             // Search bar
             HStack {
@@ -274,25 +220,8 @@ struct BrowseView: View {
             .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal)
             
-            if viewModel.isLoading && filteredRootThemes.isEmpty {
-                ScrollView {
-                    ThemeSkeletonView()
-                        .padding()
-                }
-            } else if filteredRootThemes.isEmpty {
-                EmptyStateView.emptyBrowse {
-                    Task { await viewModel.refresh() }
-                }
-            } else {
-                List(filteredRootThemes) { theme in
-                    NavigationButton(action: { viewModel.selectTheme(theme) }) {
-                        ThemeRowView(theme: theme, isSelected: false)
-                    }
-                }
-                .refreshable {
-                    await viewModel.refresh()
-                }
-            }
+            // Use the paginated themes view
+            rootThemesView
         }
         .navigationTitle("Themes")
     }
@@ -356,22 +285,69 @@ struct BrowseView: View {
     
     // MARK: - Data Helpers
     
-    /// Filtered root themes based on search (cached to prevent recomputation during scrolling)
-    private var filteredRootThemes: [Theme] {
-        // Use cached themes if available and search hasn't changed
-        if !cachedFilteredThemes.isEmpty && searchText == lastSearchText {
-            return cachedFilteredThemes
+    /// Configure services when view first appears
+    private func configureServices() {
+        Task {
+            viewModel.configure(with: modelContext)
+            if !viewModel.hasData {
+                await viewModel.loadInitialData()
+            }
+            viewModel.isConfigured = true
         }
-        
-        // TEMPORARY FIX: Return first 20 themes directly while we debug the theme hierarchy
-        let allSorted = allThemes.sorted { $0.name < $1.name }
-        let themes = Array(allSorted.prefix(20))
-        
-        let filtered = searchText.isEmpty ? themes : themes.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
-        
-        // IMPORTANT: Don't update state from within a computed property - this causes the infinite loop!
-        // Instead, we'll use onChange modifiers to update the cache
-        return filtered
+    }
+    
+    // MARK: - Layout Components
+    
+    /// Root themes view with pagination
+    private var rootThemesView: some View {
+        PaginatedQuery.themesByName(pageSize: 20) { themes in
+            VStack {
+                if viewModel.isLoading && themes.isEmpty {
+                    LoadingView(message: "Loading themes...", isError: false)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if themes.isEmpty {
+                    VStack {
+                        Text("No themes found")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 8)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List(filteredThemes(from: themes)) { theme in
+                        Button(action: {
+                            HapticFeedback.selection()
+                            viewModel.selectTheme(theme)
+                        }) {
+                            ThemeRowView(theme: theme, isSelected: viewModel.selectedTheme?.id == theme.id)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .onAppear {
+                            // Prefetch theme images for better performance
+                            prefetchThemeImages(for: themes)
+                        }
+                    }
+                    .listStyle(.sidebar)
+                }
+            }
+        }
+    }
+    
+    /// Filter themes based on search text
+    private func filteredThemes(from themes: [Theme]) -> [Theme] {
+        if searchText.isEmpty {
+            return themes
+        } else {
+            return themes.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
+    
+    /// Prefetch images for themes to improve scrolling performance
+    private func prefetchThemeImages(for themes: [Theme]) {
+        // For now, themes don't have image URLs to prefetch
+        // This could be extended in the future if theme images are added
     }
 
     // MARK: - Toolbar
@@ -401,9 +377,6 @@ struct BrowseView: View {
             Button("Clear Cache") {
                 Task {
                     await viewModel.clearCachedThemes()
-                    // Clear view-level cache as well
-                    cachedFilteredThemes.removeAll()
-                    lastSearchText = ""
                     await viewModel.refresh()
                 }
             }

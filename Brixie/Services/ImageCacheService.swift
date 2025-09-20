@@ -340,6 +340,22 @@ final class ImageCacheService {
         }
     }
     
+    /// Check if an image is already cached (memory or disk)
+    func isImageCached(url: URL, imageType: ImageOptimizationService.ImageType = .medium) async -> Bool {
+        let optimizationService = ImageOptimizationService.shared
+        let cacheKey = optimizationService.cacheKey(for: url, imageType: imageType)
+        let memoryCacheKey = NSString(string: cacheKey)
+        
+        // Check memory cache first
+        if memoryCache.object(forKey: memoryCacheKey) != nil {
+            return true
+        }
+        
+        // Check disk cache
+        let diskCacheURL = optimizationService.diskCacheURL(for: url, imageType: imageType, in: cacheDirectory)
+        return fileManager.fileExists(atPath: diskCacheURL.path)
+    }
+    
     // MARK: - Private Methods
     
     /// Create cache directory if it doesn't exist

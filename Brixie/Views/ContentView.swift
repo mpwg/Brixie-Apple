@@ -73,35 +73,38 @@ struct ContentView: View {
     
     private var tabNavigationView: some View {
         TabView(selection: $selectedTab) {
-            BrowseView()
-                .tabItem {
-                    Label(NavigationTab.browse.title, systemImage: NavigationTab.browse.systemImage)
-                }
-                .tag(NavigationTab.browse)
-                .transition(.opacity.combined(with: .slide))
-            
-            SearchView()
-                .tabItem {
-                    Label(NavigationTab.search.title, systemImage: NavigationTab.search.systemImage)
-                }
-                .tag(NavigationTab.search)
-                .transition(.opacity.combined(with: .slide))
-            
-            CollectionView()
-                .tabItem {
-                    Label(NavigationTab.collection.title, systemImage: NavigationTab.collection.systemImage)
-                }
-                .tag(NavigationTab.collection)
-                .transition(.opacity.combined(with: .slide))
-            
-            WishlistView()
-                .tabItem {
-                    Label(NavigationTab.wishlist.title, systemImage: NavigationTab.wishlist.systemImage)
-                }
-                .tag(NavigationTab.wishlist)
-                .transition(.opacity.combined(with: .slide))
+            // Use lazy loading for each tab to improve performance
+            Group {
+                BrowseView()
+                    .tabItem {
+                        Label(NavigationTab.browse.title, systemImage: NavigationTab.browse.systemImage)
+                    }
+                    .tag(NavigationTab.browse)
+                    .id(NavigationTab.browse) // Preserve view identity
+                
+                SearchView()
+                    .tabItem {
+                        Label(NavigationTab.search.title, systemImage: NavigationTab.search.systemImage)
+                    }
+                    .tag(NavigationTab.search)
+                    .id(NavigationTab.search) // Preserve view identity
+                
+                CollectionView()
+                    .tabItem {
+                        Label(NavigationTab.collection.title, systemImage: NavigationTab.collection.systemImage)
+                    }
+                    .tag(NavigationTab.collection)
+                    .id(NavigationTab.collection) // Preserve view identity
+                
+                WishlistView()
+                    .tabItem {
+                        Label(NavigationTab.wishlist.title, systemImage: NavigationTab.wishlist.systemImage)
+                    }
+                    .tag(NavigationTab.wishlist)
+                    .id(NavigationTab.wishlist) // Preserve view identity
+            }
         }
-        .animation(.easeInOut(duration: AppConstants.Animation.tabSwitchDuration), value: selectedTab)
+        // Remove complex animations from TabView - let individual views handle their own animations
     }
     
     // MARK: - Sidebar Navigation (macOS, iPad)
@@ -155,30 +158,42 @@ struct ContentView: View {
         return horizontalSizeClass == .compact
     }
     
-    /// Returns the appropriate view for the selected tab
+    /// Returns the appropriate view for the selected tab with lazy loading
     @ViewBuilder
     private func destinationView(for tab: NavigationTab) -> some View {
-        switch tab {
-        case .browse:
-            BrowseView()
-        case .search:
-            SearchView()
-        case .collection:
-            CollectionView()
-        case .wishlist:
-            WishlistView()
+        // Use lazy loading to improve navigation performance
+        Group {
+            switch tab {
+            case .browse:
+                BrowseView()
+                    .id("browse-view") // Stable identity
+            case .search:
+                SearchView()
+                    .id("search-view") // Stable identity
+            case .collection:
+                CollectionView()
+                    .id("collection-view") // Stable identity
+            case .wishlist:
+                WishlistView()
+                    .id("wishlist-view") // Stable identity
+            }
         }
+        .transition(.opacity) // Simple fade transition for better performance
+        .animation(.easeInOut(duration: 0.2), value: tab) // Shorter, simpler animation
     }
     
     /// Configure services with model context
     private func configureServices() {
-        legoSetService.configure(with: modelContext)
-        themeService.configure(with: modelContext)
-        // offlineManager.startMonitoring() - temporarily disabled
-        
-        // Show API key prompt if not configured
-        if !apiConfig.isConfigured {
-            DispatchQueue.main.asyncAfter(deadline: .now() + AppConstants.Animation.navigationDelay) {
+        // Use Task to avoid blocking the main thread during service configuration
+        Task { @MainActor in
+            legoSetService.configure(with: modelContext)
+            themeService.configure(with: modelContext)
+            // offlineManager.startMonitoring() - temporarily disabled
+            
+            // Show API key prompt if not configured
+            if !apiConfig.isConfigured {
+                // Use shorter delay for better responsiveness
+                try? await Task.sleep(for: .milliseconds(100))
                 showingAPIKeyPrompt = true
             }
         }

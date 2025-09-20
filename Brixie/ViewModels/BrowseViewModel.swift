@@ -17,6 +17,7 @@ final class BrowseViewModel {
     var isLoading: Bool = false
     var error: BrixieError?
     var lastRefreshDate: Date?
+    var isConfigured: Bool = false
     
     // MARK: - Navigation State
     var selectedTheme: Theme?
@@ -66,14 +67,17 @@ final class BrowseViewModel {
     
     // MARK: - Public Methods
     
-    /// Configure the ViewModel with SwiftData context and data
-    func configure(with modelContext: ModelContext, themes: [Theme] = [], sets: [LegoSet] = []) {
+    /// Check if we have any data loaded
+    var hasData: Bool {
+        return !allThemes.isEmpty || !allSets.isEmpty
+    }
+    
+    /// Configure the ViewModel with SwiftData context
+    func configure(with modelContext: ModelContext) {
         legoSetService.configure(with: modelContext)
         themeService.configure(with: modelContext)
-        self.allThemes = themes
-        self.allSets = sets
         
-        // Clear caches when data changes
+        // Clear caches when reconfiguring
         clearPerformanceCaches()
     }
     

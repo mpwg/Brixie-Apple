@@ -205,6 +205,17 @@ final class ImageOptimizationService {
         }
     }
     
+    /// Get disk cache URL for optimized image
+    /// - Parameters:
+    ///   - url: Original image URL
+    ///   - imageType: Image type
+    ///   - cacheDirectory: Base cache directory
+    /// - Returns: URL for cached file on disk
+    func diskCacheURL(for url: URL, imageType: ImageType, in cacheDirectory: URL) -> URL {
+        let cacheKey = self.cacheKey(for: url, imageType: imageType)
+        return cacheDirectory.appendingPathComponent(cacheKey)
+    }
+    
     // MARK: - Private Helpers
     
     /// Downsample image before any processing to reduce memory footprint
