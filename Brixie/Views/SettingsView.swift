@@ -42,6 +42,14 @@ struct SettingsView: View {
                         apiConfig.clearAPIKey(); apiKey = ""; validationResult = nil
                     }.disabled(apiKey.isEmpty)
                 }
+                
+                #if DEBUG
+                Section("Debug Tools") {
+                    NavigationLink("Theme Debug") {
+                        ThemeDebugView()
+                    }
+                }
+                #endif
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)

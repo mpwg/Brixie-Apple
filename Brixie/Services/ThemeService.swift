@@ -198,7 +198,20 @@ final class ThemeService {
     /// Get root themes (themes with no parent)
     func getRootThemes() async throws -> [Theme] {
         let allThemes = try await fetchThemes()
-        return allThemes.filter { $0.parentId == nil }
+        let rootThemes = allThemes.filter { $0.parentId == nil }
+        
+        Logger.themeService.info("🎯 getRootThemes: \(rootThemes.count) root themes out of \(allThemes.count) total")
+        
+        // If we have suspiciously few root themes, log more details
+        if rootThemes.count < 30 {
+            Logger.themeService.warning("⚠️ Low root theme count detected: \(rootThemes.count)")
+            Logger.themeService.info("📝 All root themes:")
+            for (index, theme) in rootThemes.enumerated() {
+                Logger.themeService.info("  \(index + 1). \(theme.name) (ID: \(theme.id))")
+            }
+        }
+        
+        return rootThemes
     }
     
     /// Get child themes for a parent theme
@@ -273,7 +286,7 @@ final class ThemeService {
             let themesResponse = try await LegoAPI.legoThemesList(
                 page: currentPage,
                 pageSize: pageSize,
-                ordering: nil,
+                ordering: "id", // Ensure consistent ordering by ID
                 apiConfiguration: apiClientConfig
             )
             
@@ -281,17 +294,41 @@ final class ThemeService {
             allApiThemes.append(contentsOf: pageThemes)
             
             Logger.network.debug("Page \(currentPage): got \(pageThemes.count) themes (total so far: \(allApiThemes.count))")
+            Logger.network.debug("API Response - Count: \(themesResponse.count), Next: \(themesResponse.next != nil ? "exists" : "null"), Previous: \(themesResponse.previous != nil ? "exists" : "null")")
             
             // If we got fewer themes than the page size, we've reached the end
-            if pageThemes.count < pageSize {
+            // OR if next is null, we've reached the end
+            if pageThemes.count < pageSize || themesResponse.next == nil {
                 Logger.network.info("Completed theme fetch: \(allApiThemes.count) themes across \(currentPage) pages")
                 break
             }
             
             currentPage += 1
+            
+            // Safety check to prevent infinite loops
+            if currentPage > 100 {
+                Logger.network.error("⚠️ Theme fetch exceeded safety limit of 100 pages, stopping")
+                break
+            }
         }
         
         let apiThemes = allApiThemes
+        
+        // Add detailed logging for theme analysis
+        Logger.themeService.info("📊 API Theme Analysis:")
+        Logger.themeService.info("  Total themes from API: \(apiThemes.count)")
+        
+        let rootThemesFromAPI = apiThemes.filter { $0.parentId == nil }
+        let childThemesFromAPI = apiThemes.filter { $0.parentId != nil }
+        
+        Logger.themeService.info("  Root themes (parentId == nil): \(rootThemesFromAPI.count)")
+        Logger.themeService.info("  Child themes (parentId != nil): \(childThemesFromAPI.count)")
+        
+        // Log first 10 root themes for debugging
+        Logger.themeService.info("🎯 First 10 root themes from API:")
+        for (index, theme) in rootThemesFromAPI.prefix(10).enumerated() {
+            Logger.themeService.info("  \(index + 1). \(theme.name) (ID: \(theme.id))")
+        }
         
         // Convert API themes to local themes
         var localThemes: [Theme] = []
@@ -324,6 +361,12 @@ final class ThemeService {
         // Save changes to get stable IDs
         try modelContext.save()
         
+        // Log conversion results
+        let localRootThemes = localThemes.filter { $0.isRootTheme }
+        Logger.themeService.info("📱 Local Theme Analysis after conversion:")
+        Logger.themeService.info("  Total local themes: \(localThemes.count)")
+        Logger.themeService.info("  Local root themes: \(localRootThemes.count)")
+        
         // Now establish parent-child relationships
         Logger.themeService.info("Establishing theme relationships...")
         try establishThemeRelationships()
@@ -335,7 +378,12 @@ final class ThemeService {
         // Final save after establishing relationships
         try modelContext.save()
         
+        // Update sync timestamp
+        lastThemeSyncDate = Date()
+        saveLastThemeSyncDate()
+        
         Logger.themeService.info("All relationships established successfully")
+        Logger.themeService.info("✅ Theme sync completed at \(Date())")
         
         return localThemes
     }

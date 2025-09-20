@@ -298,41 +298,66 @@ struct BrowseView: View {
     
     // MARK: - Layout Components
     
-    /// Root themes view with pagination
+    /// Root themes view - shows all root themes (no pagination needed for ~148 themes)
     private var rootThemesView: some View {
-        PaginatedQuery.themesByName(pageSize: 20) { themes in
-            VStack {
-                if viewModel.isLoading && themes.isEmpty {
-                    LoadingView(message: "Loading themes...", isError: false)
+        // Query for root themes only (where parentId == nil)
+        let rootThemePredicate = #Predicate<Theme> { theme in
+            theme.parentId == nil
+        }
+        
+        return PaginatedQuery(
+            sort: SortDescriptor(\Theme.name),
+            predicate: rootThemePredicate,
+            pageSize: 500, // Large page size to load all root themes at once
+            content: { themes in
+                VStack {
+                    if viewModel.isLoading && themes.isEmpty {
+                        LoadingView(message: "Loading themes...", isError: false)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if themes.isEmpty {
+                        VStack {
+                            Text("No themes found")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                            Text("Try refreshing or check your connection")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 4)
+                            Spacer()
+                        }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if themes.isEmpty {
-                    VStack {
-                        Text("No themes found")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 8)
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    List(filteredThemes(from: themes)) { theme in
-                        Button(action: {
-                            HapticFeedback.selection()
-                            viewModel.selectTheme(theme)
-                        }) {
-                            ThemeRowView(theme: theme, isSelected: viewModel.selectedTheme?.id == theme.id)
-                                .contentShape(Rectangle())
+                    } else {
+                        // Debug info at the top
+                        #if DEBUG
+                        HStack {
+                            Text("Showing \(filteredThemes(from: themes).count) of \(themes.count) root themes")
+                                .font(.caption2)
+                                .foregroundStyle(.orange)
+                            Spacer()
                         }
-                        .buttonStyle(.plain)
-                        .onAppear {
-                            // Prefetch theme images for better performance
-                            prefetchThemeImages(for: themes)
+                        .padding(.horizontal)
+                        .padding(.top, 4)
+                        #endif
+                        
+                        List(filteredThemes(from: themes)) { theme in
+                            Button(action: {
+                                HapticFeedback.selection()
+                                viewModel.selectTheme(theme)
+                            }) {
+                                ThemeRowView(theme: theme, isSelected: viewModel.selectedTheme?.id == theme.id)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .onAppear {
+                                // Prefetch theme images for better performance
+                                prefetchThemeImages(for: themes)
+                            }
                         }
+                        .listStyle(.sidebar)
                     }
-                    .listStyle(.sidebar)
                 }
             }
-        }
+        )
     }
     
     /// Filter themes based on search text
