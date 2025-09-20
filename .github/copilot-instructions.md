@@ -91,6 +91,7 @@ Brixie is a **pure SwiftUI** multi-platform app for browsing LEGO sets via the R
 - `a11y.instructions.md` - Accessibility compliance requirements
 - `markdown.instructions.md` - Documentation standards
 - `localization.instructions.md` - Internationalization guidelines
+- `ai-agent-testing.instructions.md` - Comprehensive test implementation guidelines for AI agents, including Swift Testing patterns, mock data usage, and UI interaction verification
 
 These instruction files contain critical project requirements and must be consulted before any code modifications.
 
