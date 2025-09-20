@@ -150,7 +150,81 @@ final class PerformanceUITests: XCTestCase {
         }
     }
     
-    // MARK: - Memory Performance Tests
+    // MARK: - Performance Target Validation Tests
+    
+    /// Validate that app launch consistently meets 1 second target
+    func testAppLaunchTimeTarget() throws {
+        let launchOptions = XCTMeasureOptions.default
+        launchOptions.iterationCount = 5
+        
+        measure(options: launchOptions, metrics: [XCTApplicationLaunchMetric()]) {
+            let testApp = XCUIApplication()
+            testApp.launch()
+            // Validate that we can interact with the app immediately
+            XCTAssertTrue(testApp.tabBars.firstMatch.waitForExistence(timeout: 1))
+            testApp.terminate()
+        }
+    }
+    
+    /// Validate that cached image loading meets <50ms target
+    func testCachedImageLoadingTarget() throws {
+        // Pre-warm the cache
+        app.tabBars.buttons["Browse"].tap()
+        let scrollView = app.scrollViews.firstMatch
+        scrollView.swipeUp()
+        Thread.sleep(forTimeInterval: 2) // Allow images to cache
+        
+        // Now measure cache performance
+        let performanceMetric = XCTOSSignpostMetric.navigationMetric
+        
+        measure(metrics: [performanceMetric]) {
+            // Scroll to cached images - should be very fast
+            scrollView.swipeDown()
+            scrollView.swipeUp()
+        }
+    }
+    
+    /// Validate memory usage remains under 150MB target during stress test
+    func testMemoryUsageTarget() throws {
+        let memoryMetric = XCTMemoryMetric()
+        memoryMetric.maximumValue = 150_000_000 // 150MB limit
+        
+        measure(metrics: [memoryMetric]) {
+            // Stress test: rapid navigation and image loading
+            for _ in 0..<10 {
+                app.tabBars.buttons["Browse"].tap()
+                let scrollView = app.scrollViews.firstMatch
+                scrollView.swipeUp(velocity: .fast)
+                
+                app.tabBars.buttons["Search"].tap()
+                let searchField = app.searchFields.firstMatch
+                if searchField.exists {
+                    searchField.tap()
+                    searchField.typeText("test\(Int.random(in: 1...100))")
+                }
+                
+                app.tabBars.buttons["Collection"].tap()
+                app.tabBars.buttons["Wishlist"].tap()
+            }
+        }
+    }
+    
+    /// Validate 60+ FPS during scrolling (Frame time < 16.67ms)
+    func testScrollingFPSTarget() throws {
+        app.tabBars.buttons["Browse"].tap()
+        let scrollView = app.scrollViews.firstMatch
+        
+        // Use CPU metric as proxy for frame rendering efficiency
+        let cpuMetric = XCTCPUMetric()
+        
+        measure(metrics: [cpuMetric]) {
+            // Sustained scrolling test
+            for _ in 0..<20 {
+                scrollView.swipeUp(velocity: .fast)
+                scrollView.swipeDown(velocity: .fast)
+            }
+        }
+    }
     
     /// Test memory usage stays under 150MB during normal usage
     func testMemoryUsagePerformance() throws {

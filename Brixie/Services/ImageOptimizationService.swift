@@ -67,6 +67,7 @@ final class ImageOptimizationService {
     enum OutputFormat {
         case heic(quality: Float)
         case jpeg(quality: Float)
+        case webp(quality: Float)
         case original
         
         /// File extension for this format
@@ -76,6 +77,8 @@ final class ImageOptimizationService {
                 return "heic"
             case .jpeg:
                 return "jpg"
+            case .webp:
+                return "webp"
             case .original:
                 return "original"
             }
@@ -88,6 +91,8 @@ final class ImageOptimizationService {
                 return "public.heic"
             case .jpeg:
                 return "public.jpeg"
+            case .webp:
+                return "org.webmproject.webp"
             case .original:
                 return ""
             }
@@ -96,7 +101,7 @@ final class ImageOptimizationService {
         /// Quality value (0.0 to 1.0)
         var quality: Float {
             switch self {
-            case .heic(let quality), .jpeg(let quality):
+            case .heic(let quality), .jpeg(let quality), .webp(let quality):
                 return quality
             case .original:
                 return Float(AppConstants.ImageQuality.maximum)
@@ -108,6 +113,9 @@ final class ImageOptimizationService {
     
     /// Whether the device supports HEIC encoding
     private let supportsHEIC: Bool
+    
+    /// Whether the device supports WebP encoding
+    private let supportsWebP: Bool
     
     /// Preferred format based on device capabilities
     private let preferredFormat: OutputFormat
@@ -123,10 +131,21 @@ final class ImageOptimizationService {
             nil
         ) != nil
         
-        // Set preferred format
+        // Check WebP support (iOS 14+ and macOS 11+)
+        supportsWebP = CGImageDestinationCreateWithData(
+            NSMutableData(),
+            "org.webmproject.webp" as CFString,
+            1,
+            nil
+        ) != nil
+        
+        // Set preferred format (prioritize HEIC > WebP > JPEG)
         if supportsHEIC {
             preferredFormat = .heic(quality: Float(AppConstants.ImageQuality.medium))
             logger.info("🎯 ImageOptimizationService initialized with HEIC support")
+        } else if supportsWebP {
+            preferredFormat = .webp(quality: Float(AppConstants.ImageQuality.medium))
+            logger.info("🎯 ImageOptimizationService initialized with WebP support")
         } else {
             preferredFormat = .jpeg(quality: Float(AppConstants.ImageQuality.standardJPEG))
             logger.info("🎯 ImageOptimizationService initialized with JPEG fallback")
@@ -197,11 +216,29 @@ final class ImageOptimizationService {
     func getOptimalFormat(for imageType: ImageType) -> OutputFormat {
         switch imageType {
         case .thumbnail:
-            return supportsHEIC ? .heic(quality: Float(AppConstants.ImageQuality.standardHEIC)) : .jpeg(quality: Float(AppConstants.ImageQuality.low))
+            if supportsHEIC {
+                return .heic(quality: Float(AppConstants.ImageQuality.standardHEIC))
+            } else if supportsWebP {
+                return .webp(quality: Float(AppConstants.ImageQuality.standardHEIC))
+            } else {
+                return .jpeg(quality: Float(AppConstants.ImageQuality.low))
+            }
         case .medium:
-            return supportsHEIC ? .heic(quality: Float(AppConstants.ImageQuality.medium)) : .jpeg(quality: Float(AppConstants.ImageQuality.standardJPEG))
+            if supportsHEIC {
+                return .heic(quality: Float(AppConstants.ImageQuality.medium))
+            } else if supportsWebP {
+                return .webp(quality: Float(AppConstants.ImageQuality.medium))
+            } else {
+                return .jpeg(quality: Float(AppConstants.ImageQuality.standardJPEG))
+            }
         case .full:
-            return supportsHEIC ? .heic(quality: Float(AppConstants.ImageQuality.high)) : .jpeg(quality: Float(AppConstants.ImageQuality.medium))
+            if supportsHEIC {
+                return .heic(quality: Float(AppConstants.ImageQuality.high))
+            } else if supportsWebP {
+                return .webp(quality: Float(AppConstants.ImageQuality.high))
+            } else {
+                return .jpeg(quality: Float(AppConstants.ImageQuality.medium))
+            }
         }
     }
     
@@ -293,6 +330,8 @@ final class ImageOptimizationService {
                 return await self.convertToHEIC(image, quality: quality)
             case .jpeg(let quality):
                 return image.jpegData(compressionQuality: CGFloat(quality))
+            case .webp(let quality):
+                return await self.convertToWebP(image, quality: quality)
             case .original:
                 // Return PNG data as "original" fallback
                 return image.pngData()
@@ -310,6 +349,35 @@ final class ImageOptimizationService {
         guard let destination = CGImageDestinationCreateWithData(
             data,
             "public.heic" as CFString,
+            1,
+            nil
+        ) else {
+            return nil
+        }
+        
+        let options: [CFString: Any] = [
+            kCGImageDestinationLossyCompressionQuality: quality
+        ]
+        
+        CGImageDestinationAddImage(destination, cgImage, options as CFDictionary)
+        
+        guard CGImageDestinationFinalize(destination) else {
+            return nil
+        }
+        
+        return data as Data
+    }
+    
+    /// Convert image to WebP format
+    private func convertToWebP(_ image: UIImage, quality: Float) async -> Data? {
+        guard let cgImage = image.cgImage else {
+            return nil
+        }
+        
+        let data = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(
+            data,
+            "org.webmproject.webp" as CFString,
             1,
             nil
         ) else {
