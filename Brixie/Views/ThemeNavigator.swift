@@ -21,7 +21,9 @@ struct ThemeNavigator: View {
             
             List(filteredThemes, selection: $selectedTheme) { theme in
                 ThemeRow(theme: theme)
+                    .id(theme.id) // Explicit view identity
             }
+            .listStyle(.plain) // Use plain style for performance
             .accessibilityIdentifier("themeList")
         }
         .accessibilityElement(children: .contain)

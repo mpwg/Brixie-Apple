@@ -79,7 +79,7 @@ final class ImageCacheService {
         ) { [weak self] _ in
             Task { @MainActor in
                 self?.logger.warning("⚠️ Memory warning received - clearing memory cache")
-                self?.clearMemoryCache()
+                self?.handleMemoryWarning()
             }
         }
         logger.debug("📱 Memory warning observer registered")
@@ -270,6 +270,14 @@ final class ImageCacheService {
         
         logger.info("🗑️ Memory cache cleared (data: \(ByteCountFormatter.string(fromByteCount: Int64(previousDataCount), countStyle: .memory)), images: \(ByteCountFormatter.string(fromByteCount: Int64(previousImageCount), countStyle: .memory)))")
         logger.userAction("cleared_memory_cache")
+    }
+    
+    /// Handle memory warning by clearing both memory caches but keeping disk cache
+    @MainActor
+    private func handleMemoryWarning() {
+        memoryCache.removeAllObjects()
+        imageCache.removeAllObjects()
+        logger.warning("⚠️ Memory caches cleared due to memory pressure - disk cache preserved")
     }
     
     /// Clear disk cache

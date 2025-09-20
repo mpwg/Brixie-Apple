@@ -38,8 +38,10 @@ struct SearchView: View {
                         NavigationLink(destination: SetDetailView(set: set)) {
                             SetSearchRowView(set: set)
                         }
+                        .id(set.id) // Explicit view identity
                     }
                 }
+                .listStyle(.plain) // Use plain style for performance
             }
         }
         .navigationTitle("Search")

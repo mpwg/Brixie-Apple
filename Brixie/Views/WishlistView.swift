@@ -74,6 +74,7 @@ struct WishlistView: View {
                         NavigationLink(destination: SetDetailView(set: set)) {
                             WishlistSetRowView(set: set)
                         }
+                        .id(set.id) // Explicit view identity
                         .swipeActions(edge: .leading) {
                             Button("Own It") {
                                 // Move from wishlist to collection
@@ -93,6 +94,7 @@ struct WishlistView: View {
                 }
             }
         }
+        .listStyle(.plain) // Use plain style for performance
     }
     
     private var filteredSets: [LegoSet] {

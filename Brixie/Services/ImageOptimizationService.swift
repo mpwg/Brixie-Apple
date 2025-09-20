@@ -151,16 +151,20 @@ final class ImageOptimizationService {
         
         logger.debug("🔄 Starting optimization: type=\(imageType), format=\(format.fileExtension)")
         
+        // Get target size before entering background task
+        let targetSize = imageType.maxSize
+        
         return await Task.detached(priority: .utility) {
-            guard let sourceImage = await self.createUIImage(from: data) else {
+            // Use aggressive downsampling for better memory performance
+            guard let downsampledImage = Self.downsample(imageData: data, to: targetSize) else {
                 await MainActor.run {
-                    self.logger.error("❌ Failed to create UIImage from data")
+                    self.logger.error("❌ Failed to downsample image from data")
                 }
                 return nil
             }
             
-            let optimizedImage = await self.resizeImage(sourceImage, for: imageType)
-            let optimizedData = await self.convertToFormat(optimizedImage, format: format)
+            // Image is already downsampled, so we can convert directly
+            let optimizedData = await self.convertToFormat(downsampledImage, format: format)
             
             let duration = CFAbsoluteTimeGetCurrent() - startTime
             let originalSize = data.count
@@ -202,6 +206,28 @@ final class ImageOptimizationService {
     }
     
     // MARK: - Private Helpers
+    
+    /// Downsample image before any processing to reduce memory footprint
+    nonisolated static func downsample(imageData: Data, to pointSize: CGSize, scale: CGFloat = 3.0) -> UIImage? {
+        let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let imageSource = CGImageSourceCreateWithData(imageData as CFData, imageSourceOptions) else {
+            return nil
+        }
+        
+        let maxDimensionInPixels = max(pointSize.width, pointSize.height) * scale
+        let downsampleOptions = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxDimensionInPixels
+        ] as CFDictionary
+        
+        guard let downsampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downsampleOptions) else {
+            return nil
+        }
+        
+        return UIImage(cgImage: downsampledImage)
+    }
     
     /// Create UIImage from data
     private func createUIImage(from data: Data) async -> UIImage? {

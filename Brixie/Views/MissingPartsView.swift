@@ -61,6 +61,7 @@ struct MissingPartsView: View {
             Section("Missing Parts") {
                 ForEach(filteredParts, id: \.id) { part in
                     MissingPartRowView(part: part)
+                        .id(part.id) // Explicit view identity
                         .swipeActions(edge: .leading) {
                             if !part.isOrdered {
                                 Button("Mark Ordered") {
@@ -85,6 +86,7 @@ struct MissingPartsView: View {
                 }
             }
         }
+        .listStyle(.plain) // Use plain style for performance
     }
     
     private var filteredParts: [MissingPart] {

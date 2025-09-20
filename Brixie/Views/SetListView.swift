@@ -62,6 +62,7 @@ struct SetListView: View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 160))]) {
             ForEach(paginatedSets) { set in
                 SetCardView(set: set)
+                    .id(set.id) // Explicit view identity
             }
         }
         .padding()
@@ -71,7 +72,9 @@ struct SetListView: View {
     private var listView: some View {
         List(paginatedSets) { set in
             SetCardView(set: set)
+                .id(set.id) // Explicit view identity
         }
+        .listStyle(.plain) // Use plain style for performance
         .accessibilityIdentifier("listView")
     }
     

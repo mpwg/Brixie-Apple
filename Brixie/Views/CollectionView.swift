@@ -83,10 +83,12 @@ struct CollectionView: View {
                         NavigationLink(destination: SetDetailView(set: set)) {
                             CollectionSetRowView(set: set)
                         }
+                        .id(set.id) // Explicit view identity
                     }
                 }
             }
         }
+        .listStyle(.plain) // Use plain style for performance
     }
     
     private var groupedSets: [String: [LegoSet]] {

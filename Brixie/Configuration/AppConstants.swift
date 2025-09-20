@@ -33,16 +33,16 @@ enum AppConstants {
         /// Maximum disk cache size in bytes (50MB)
         static let maxDiskCacheSize: Int = 50 * 1_024 * 1_024
         
-        /// Memory cache limit for image data in bytes (15MB)
-        static let memoryDataCacheLimit: Int = 15 * 1_024 * 1_024
+        /// Memory cache limit for image data in bytes (20MB - optimized for performance)
+        static let memoryDataCacheLimit: Int = 20 * 1_024 * 1_024
         
-        /// Memory cache limit for images in bytes (10MB)
-        static let memoryImageCacheLimit: Int = 10 * 1_024 * 1_024
+        /// Memory cache limit for images in bytes (30MB - reduced from double caching)
+        static let memoryImageCacheLimit: Int = 30 * 1_024 * 1_024
         
-        /// Maximum number of images to keep in memory
+        /// Maximum number of images to keep in memory (reduced for better performance)
         static let maxImagesInMemory = 50
         
-        /// Maximum number of data objects in memory cache
+        /// Maximum number of data objects in memory cache (reduced for better performance)
         static let maxDataObjectsInMemory = 100
     }
     
