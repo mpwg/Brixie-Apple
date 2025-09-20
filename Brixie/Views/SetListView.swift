@@ -47,34 +47,29 @@ struct SetListView: View {
     }
     
     private func gridView(sets: [LegoSet]) -> some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 16)], spacing: 16) {
-                ForEach(Array(sets.enumerated()), id: \.element.id) { index, set in
-                    SetCardView(set: set)
-                        .id(set.id) // Explicit view identity
-                        .onAppear {
-                            handleSetAppear(set: set, index: index, allSets: sets)
-                        }
+        OptimizedLazyVGrid(
+            data: sets,
+            id: \.id,
+            columns: [GridItem(.adaptive(minimum: 160), spacing: 16)],
+            spacing: 16
+        ) { set in
+            SetCardView(set: set)
+                .scrollOptimizedItem {
+                    handleSetAppear(set: set, index: sets.firstIndex(of: set) ?? 0, allSets: sets)
                 }
-            }
-            .padding()
         }
         .accessibilityIdentifier("gridView")
     }
     
     private func listView(sets: [LegoSet]) -> some View {
-        List {
-            ForEach(Array(sets.enumerated()), id: \.element.id) { index, set in
-                SetCardView(set: set)
-                    .id(set.id) // Explicit view identity
-                    .listRowBackground(Color.clear) // Reduce overdraw
-                    .listRowInsets(EdgeInsets()) // Custom insets
-                    .onAppear {
-                        handleSetAppear(set: set, index: index, allSets: sets)
-                    }
-            }
+        OptimizedList(data: sets, id: \.id) { set in
+            SetCardView(set: set)
+                .listRowBackground(Color.clear) // Reduce overdraw
+                .listRowInsets(EdgeInsets()) // Custom insets
+                .scrollOptimizedItem {
+                    handleSetAppear(set: set, index: sets.firstIndex(of: set) ?? 0, allSets: sets)
+                }
         }
-        .listStyle(.plain) // Use plain style for performance
         .accessibilityIdentifier("listView")
     }
     

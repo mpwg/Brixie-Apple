@@ -51,27 +51,56 @@ struct AsyncCachedImage: View {
     }
     
     var body: some View {
-        // Use SwiftUI's native AsyncImage with optimized caching
-        AsyncImage(url: url) { phase in
-            switch phase {
-            case .empty:
+        // Use progressive loading for larger images, simple loading for thumbnails
+        if imageType == .full || imageType == .medium {
+            ProgressiveAsyncImage(url: url, contentMode: contentMode, showPlaceholder: showPlaceholder, imageType: imageType)
+        } else {
+            // Use native AsyncImage for thumbnails - they're small enough for direct loading
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .empty:
+                    if showPlaceholder {
+                        placeholderView
+                    } else {
+                        Color.clear
+                    }
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: contentMode)
+                case .failure:
+                    if showPlaceholder {
+                        errorView
+                    } else {
+                        Color.clear
+                    }
+                @unknown default:
+                    Color.clear
+                }
+            }
+        }
+    }
+    
+    // Use integrated progressive loading with background processing
+    private var optimizedBody: some View {
+        Group {
+            if let url = url {
+                ProgressiveAsyncImage(
+                    url: url, 
+                    contentMode: contentMode, 
+                    showPlaceholder: showPlaceholder, 
+                    imageType: imageType
+                )
+                .onAppear {
+                    // Trigger background processing for upcoming images
+                    BackgroundImageProcessor.shared.scheduleProcessing([url], imageType: imageType, delay: 0.5)
+                }
+            } else {
                 if showPlaceholder {
                     placeholderView
                 } else {
                     Color.clear
                 }
-            case .success(let image):
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: contentMode)
-            case .failure:
-                if showPlaceholder {
-                    errorView
-                } else {
-                    Color.clear
-                }
-            @unknown default:
-                Color.clear
             }
         }
         .id(url) // Preserve view identity for performance

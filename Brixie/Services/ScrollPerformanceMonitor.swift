@@ -12,14 +12,13 @@ import Combine
 
 /// Monitors scroll performance and frame rates (simplified implementation)
 @MainActor
-@Observable
-final class ScrollPerformanceMonitor {
+final class ScrollPerformanceMonitor: ObservableObject {
     private let logger = Logger(subsystem: "com.brixie", category: "ScrollPerformance")
     
-    var averageFPS: Double = 60.0
-    var memoryUsageMB: Double = 0.0
-    var performanceLevel: PerformanceLevel = .excellent
-    var droppedFrames: Int = 0
+    @Published var averageFPS: Double = 60.0
+    @Published var memoryUsageMB: Double = 0.0
+    @Published var performanceLevel: PerformanceLevel = .excellent
+    @Published var droppedFrames: Int = 0
     
     enum PerformanceLevel: String, CaseIterable {
         case excellent = "Excellent"

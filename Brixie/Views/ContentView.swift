@@ -56,6 +56,9 @@ struct ContentView: View {
         } message: {
             Text("Please configure your Rebrickable API key in Settings to use Brixie.")
         }
+        #if DEBUG
+        .performanceMonitored() // Add performance dashboard in debug builds
+        #endif
     }
     
     // MARK: - Main Content
@@ -72,39 +75,32 @@ struct ContentView: View {
     // MARK: - Tab Navigation (iOS, iPhone in portrait)
     
     private var tabNavigationView: some View {
-        TabView(selection: $selectedTab) {
-            // Use lazy loading for each tab to improve performance
-            Group {
+        // Use optimized lazy-loading TabView for better performance
+        LazyTabView(selection: $selectedTab) {
+            LazyTab(NavigationTab.browse) {
+                Label(NavigationTab.browse.title, systemImage: NavigationTab.browse.systemImage)
+            } content: {
                 BrowseView()
-                    .tabItem {
-                        Label(NavigationTab.browse.title, systemImage: NavigationTab.browse.systemImage)
-                    }
-                    .tag(NavigationTab.browse)
-                    .id(NavigationTab.browse) // Preserve view identity
-                
+            }
+            
+            LazyTab(NavigationTab.search) {
+                Label(NavigationTab.search.title, systemImage: NavigationTab.search.systemImage)
+            } content: {
                 SearchView()
-                    .tabItem {
-                        Label(NavigationTab.search.title, systemImage: NavigationTab.search.systemImage)
-                    }
-                    .tag(NavigationTab.search)
-                    .id(NavigationTab.search) // Preserve view identity
-                
+            }
+            
+            LazyTab(NavigationTab.collection) {
+                Label(NavigationTab.collection.title, systemImage: NavigationTab.collection.systemImage)
+            } content: {
                 CollectionView()
-                    .tabItem {
-                        Label(NavigationTab.collection.title, systemImage: NavigationTab.collection.systemImage)
-                    }
-                    .tag(NavigationTab.collection)
-                    .id(NavigationTab.collection) // Preserve view identity
-                
+            }
+            
+            LazyTab(NavigationTab.wishlist) {
+                Label(NavigationTab.wishlist.title, systemImage: NavigationTab.wishlist.systemImage)
+            } content: {
                 WishlistView()
-                    .tabItem {
-                        Label(NavigationTab.wishlist.title, systemImage: NavigationTab.wishlist.systemImage)
-                    }
-                    .tag(NavigationTab.wishlist)
-                    .id(NavigationTab.wishlist) // Preserve view identity
             }
         }
-        // Remove complex animations from TabView - let individual views handle their own animations
     }
     
     // MARK: - Sidebar Navigation (macOS, iPad)

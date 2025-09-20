@@ -139,3 +139,6 @@ extension LegoSet {
 }
 
 // MARK: - Hashable & Equatable
+
+// Note: @Model classes automatically conform to Hashable and Equatable
+// These extensions are only needed if we need custom implementations
